@@ -3,696 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>公車動態查詢器</title>
+    <title>高雄市公車動態查詢器</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Material Icons for backspace icon and other potential icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            color: #334155;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            width: 100%;
-            max-width: 900px;
-            margin-top: 20px;
-        }
-        h1 {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9;
             color: #1e293b;
-            font-size: 2.25rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            text-align: center;
         }
-        h2 {
-            color: #334155;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-top: 25px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-        }
-        /* Styling for the station list items */
-        .station-item {
-            background-color: #ffffff;
-            border-radius: 8px;
-            padding: 16px 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .station-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        }
-        .station-item .time-status {
-            flex-shrink: 0;
-            width: 100px; /* Fixed width for time display */
-            text-align: center;
-        }
-        .station-item .station-name {
-            flex-grow: 1;
-            margin-left: 16px;
-            margin-right: 16px;
-        }
-        .station-item .bus-id {
-            flex-shrink: 0;
-            width: 80px; /* Fixed width for bus ID */
-            text-align: right;
-            font-weight: 600;
-            color: #475569;
-        }
-        .button-group {
-            text-align: center;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-        .refresh-button {
-            background-color: #3b82f6;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-        }
-        .refresh-button:hover {
-            background-color: #2563eb;
-            transform: translateY(-2px);
-        }
-        .refresh-button:active {
-            transform: translateY(0);
-        }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none; /* Hidden by default */
-        }
+        /* Loading Spinner Animation */
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .error-message {
-            color: #ef4444;
-            background-color: #fee2e2;
-            border: 1px solid #fca5a5;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            text-align: center;
-            font-weight: 500;
+        .loading-spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1.2s linear infinite;
+        }
+        /* Page transition styles */
+        .page {
             display: none;
         }
-        /* Styling for the segmented direction toggle */
-        .direction-toggle-group {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden; /* Ensures rounded corners apply to the group */
-            border: 1px solid #cbd5e1; /* Subtle border for the group */
+        .page.active {
+            display: block;
         }
-        .direction-button {
-            flex: 1; /* Makes buttons take equal width */
-            background-color: #f8fafc; /* Light background for inactive */
-            color: #475569;
-            padding: 12px 20px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.2s ease, color 0.2s ease;
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .direction-button:first-child {
-            border-top-left-radius: 8px;
-            border-bottom-left-radius: 8px;
+        ::-webkit-scrollbar-track {
+            background: #f8fafc;
         }
-        .direction-button:last-child {
-            border-top-right-radius: 8px;
-            border-bottom-right-radius: 8px;
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
         }
-        .direction-button.active {
-            background-color: #3b82f6; /* Blue background for active */
-            color: white;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); /* Inner shadow for active state */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
-        .direction-button:hover:not(.active) {
-            background-color: #e2e8f0; /* Slightly darker hover for inactive */
-        }
-        /* Style for the route input group */
-        .route-input-group {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-        .route-input-group input[type="text"] {
-            padding: 10px 15px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 1rem;
-            width: 150px;
-            max-width: 100%;
-        }
-        .route-input-group button {
-            background-color: #10b981; /* Green color for switch button */
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-        }
-        .route-input-group button:hover {
-            background-color: #059669;
+        /* Removed filter-active for category buttons */
+        .material-icons {
+            font-size: 24px;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>公車動態查詢器</h1>
+<body class="antialiased">
 
-        <!-- Route ID Input and Switch Button -->
-        <div class="route-input-group">
-            <input type="text" id="routeIdInput" placeholder="輸入路線代號 (例如: 856)" value="856">
-            <button id="switchRouteButton">切換路線</button>
+    <!-- Route Selection Page -->
+    <div id="routeSelectionPage" class="page active">
+        <div class="container mx-auto p-4 md:p-6 max-w-4xl">
+            <header class="text-center mb-6">
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800">高雄市公車路線查詢</h1>
+                <p class="text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
+            </header>
+            
+            <!-- Sticky search and keyboard section -->
+            <!-- Ensured full opacity and very high z-index for absolute coverage -->
+            <div class="sticky top-0 py-4 z-[999] shadow-lg"> 
+                <!-- Added a solid background div to prevent any visual penetration -->
+                <div class="absolute inset-0 bg-slate-100"></div> 
+                <div class="relative z-10"> <!-- Ensure content is above the solid background -->
+                    <div class="relative mb-4">
+                        <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <svg class="w-6 h-6 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    
+                    <!-- Filter Keyboard -->
+                    <div id="filterKeyboard" class="grid grid-cols-5 gap-2 md:gap-3">
+                        <!-- Row 1 -->
+                        <button data-filter="紅" data-type="category" class="p-3 text-white font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
+                        <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
+                        <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
+                        <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
+                        <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
+                        
+                        <!-- Row 2 -->
+                        <button data-filter="橘" data-type="category" class="p-3 text-white font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
+                        <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
+                        <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
+                        <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
+                        <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">6</button>
+
+                        <!-- Row 3 -->
+                        <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md hover:bg-yellow-500 transition-colors">黃</button>
+                        <!-- "快線" button: data-filter is "E", but textContent is "快線" -->
+                        <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">快線</button>
+                        <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">7</button>
+                        <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">8</button>
+                        <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
+
+                        <!-- Row 4 -->
+                        <button data-filter="綠" data-type="category" class="p-3 text-white font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
+                        <!-- "公車小黃" button: data-filter is "小黃", textContent is "公車小黃" -->
+                        <button data-filter="小黃" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors text-xs md:text-base">公車小黃</button>
+                        <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
+                        <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
+                        <!-- Backspace button styling (already white background, black icon) -->
+                        <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
+                            <span class="material-icons">backspace</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="initialLoading" class="text-center py-20">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-4 text-slate-600">正在載入所有路線...</p>
+            </div>
+            
+            <div id="routeListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+                <!-- Route items will be injected here -->
+            </div>
+             <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden">找不到相符的路線。</p>
         </div>
+    </div>
 
-        <div class="button-group">
-            <button id="refreshButton" class="refresh-button">
-                <span id="refreshText">更新數據</span>
-                <span id="loadingSpinner" class="loading-spinner"></span>
-            </button>
-        </div>
+    <!-- Bus Tracker Page -->
+    <div id="busTrackerPage" class="page">
+        <div class="container mx-auto p-4 md:p-6 max-w-4xl">
+            <header class="flex items-center justify-between mb-4">
+                 <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    返回路線列表
+                </button>
+                <button id="refreshButton" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2 shadow-md hover:shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                    </svg>
+                    <span id="refreshText">更新</span>
+                </button>
+            </header>
+            
+            <div id="trackerLoading" class="text-center py-20">
+                <div class="loading-spinner mx-auto"></div>
+                <p class="mt-4 text-slate-600">正在載入路線動態...</p>
+            </div>
 
-        <div id="errorMessage" class="error-message">
-            載入數據時發生錯誤。請稍後再試。
-        </div>
+            <div id="trackerContent" class="hidden">
+                <h1 id="routeTitle" class="text-2xl md:text-3xl font-bold text-slate-800 text-center mb-2"></h1>
+                <p id="routeDescription" class="text-slate-500 text-center mb-6"></p>
 
-        <!-- Direction Toggle Buttons as a Segmented Control -->
-        <div class="direction-toggle-group">
-            <button id="goDirectionButton" class="direction-button active" data-direction="1">去程</button>
-            <button id="backDirectionButton" class="direction-button" data-direction="2">返程</button>
-        </div>
+                <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+                    <strong class="font-bold">錯誤!</strong>
+                    <span class="block sm:inline" id="errorMessageText"></span>
+                </div>
 
-        <div id="estimateTimesSection">
-            <h2>預計到站時間</h2>
-            <div id="stationList" class="space-y-4">
-                <!-- Station cards will be rendered here -->
+                <div class="bg-white p-4 rounded-xl shadow-md">
+                    <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden">
+                        <button id="goDirectionButton" class="direction-button flex-1 p-3 font-semibold transition-colors" data-direction="1">去程</button>
+                        <button id="backDirectionButton" class="direction-button flex-1 p-3 font-semibold transition-colors" data-direction="2">返程</button>
+                    </div>
+
+                    <div id="estimateTimesSection">
+                        <div id="stationList" class="space-y-3">
+                            <!-- Station cards will be rendered here -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIG & GLOBAL VARS ---
             const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
-
-            // Headers extracted directly from the 856.txt curl command
             const HEADERS = {
-                'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6',
-                'Connection': 'keep-alive',
-                'Origin': 'https://ibus.tbkc.gov.tw',
-                'Referer': 'https://ibus.tbkc.gov.tw/ibus/driving-map/856',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-origin',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
-                'accept': '*/*',
-                'content-type': 'application/json',
-                'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-                'sec-ch-ua-mobile': '?0',
-                'sec-ch-ua-platform': '"Windows"',
-                'Cookie': '_ga=GA1.1.998906947.1752413536; _ga_YD5S4Y1RMZ=GS2.1.s1752418127$o2$g0$t1752418127$j60$l0$h0; _ga_CF7EG0W7E4=GS2.1.s1752419784$o1$g0$t1752419793$j51$l0$h0; XSRF-TOKEN=eyJpdiI6IktsRlA2bjZNOEVcLytPbFRvXC9wZWl0QT09IiwidmFsdWUiOiJIYVllZ3A5dWdkZU82emVoZ0ZcL3RXTHhGWVg2MGp0aEdBMDZYSCsyemZ0STVYVm9xZEpZNFNKMVZqYld5aXF0eitEem50bE52TVhjTTdIZEZOdGxTb2c9PSIsIm1hYyI6IjIzNGJkYjQ2YmYzNGJhNzc3ZjIwYzY1YTZhNjVlODYzY2ZjMWQzZjMzN2NkNWQzODI3YTljN2VmOGI4NmRiNGEifQ%3D%3D; laravel_session=eyJpdiI6IlEwZ3c4RVNOWXRReXVtMUNuRmE2Nmc9PSIsIndmZ3c8fHJvcGU+dmFsdWUiOiJON3puR1YzQ2JBUzhHRlZPd3lVQkRsQ0J0cWZqTHJBOWJrdERTK1V6OWYweTBqdmxMUXJwdWIzOWVnXFwvZlVlV2pmSUpESGN0TmozRjFUV21mNjNrZmpRPT0iLCJtYWMiOiIyM2UzNjNkYjM2Y2ZmMGI5N2VlZTRkY2RlYjk1NjkwZjAzMWMyZmRkNjU2NzI0ODNmMjFjOWEyMDRjMGU1Y2Y1In0%3D'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
             };
 
-            // GraphQL queries and variables extracted from the 856.txt curl commands
-            const GRAPHQL_QUERIES = {
-                QUERY_ESTIMATE_TIMES: {
-                    operationName: "QUERY_ESTIMATE_TIMES",
-                    variables: { lang: "zh", routeId: 856 },
-                    query: `query QUERY_ESTIMATE_TIMES($routeId: Int!, $lang: String!) {
-    route(xno: $routeId, lang: $lang) {
-        opType
-        departure
-        destination
-        estimateTimes {
-            ...estimateTimesFragment
-            __typename
-        }
-        stations {
-            ...routeStationsFragment
-            __typename
-        }
-        buses {
-            ...busesFragment
-            __typename
-        }
-        __typename
-    }
-}
-
-fragment routeStationsFragment on RouteStationConnection {
-    edges {
-        ivrNo
-        node {
-            id
-            name
-            __typename
-        }
-        __typename
-    }
-    __typename
-}
-
-fragment estimateTimesFragment on EstimateTimeConnection {
-    edges {
-        node {
-            id
-            goBack
-            comeTime
-            clogType
-            etas {
-                busId
-                etaTime
-                isLast
-                __typename
-            }
-            __typename
-        }
-        __typename
-    }
-    __typename
-}
-
-fragment busesFragment on RouteBusConnection {
-    edges {
-        goBack
-        node {
-            id
-            type
-            lat
-            lon
-            type
-            azimuth
-            status
-            dutyStatus
-            capacity
-            isCrowded
-            dataTime
-            __typename
-        }
-        __typename
-    }
-    __typename
-}`
-                },
-                QUERY_ROUTE_FOR_MAP_CONTENT: {
-                    operationName: "QUERY_ROUTE_FOR_MAP_CONTENT",
-                    variables: { lang: "zh", routeId: 856 },
-                    query: `query QUERY_ROUTE_FOR_MAP_CONTENT($routeId: Int!, $lang: String!) {
-    route(xno: $routeId, lang: $lang) {
-        id
-        name
-        opType
-        providers {
-            ...providersFragment
-            __typename
-        }
-        routePoint {
-            go
-            back
-            __typename
-        }
-        buses {
-            ...busesFragment
-            __typename
-        }
-        stations {
-            ...mapMarkerStationsFragment
-            __typename
-        }
-        __typename
-    }
-}
-
-fragment busesFragment on RouteBusConnection {
-    edges {
-        goBack
-        node {
-            id
-            type
-            lat
-            lon
-            type
-            azimuth
-            status
-            dutyStatus
-            capacity
-            isCrowded
-            dataTime
-            __typename
-        }
-        __typename
-    }
-    __typename
-}
-
-fragment mapMarkerStationsFragment on RouteStationConnection {
-    edges {
-        goBack
-        orderNo
-        ivrNo
-        node {
-            id
-            name
-            lat
-            lon
-            routes {
-                edges {
-                    goBack
-                    node {
-                        id
-                        name
-                        departure
-                        destination
-                        __typename
-                    }
-                    __typename
-                }
-                __typename
-            }
-            __typename
-        }
-        __typename
-    }
-    __typename
-}
-
-fragment providersFragment on ProviderConnection {
-    edges {
-        node {
-            id
-            name
-            url
-            __typename
-        }
-        __typename
-    }
-    __typename
-}`
-                },
-                QUERY_BUSES: {
-                    operationName: "QUERY_BUSES",
-                    variables: { lang: "zh", routeId: 856 },
-                    query: `query QUERY_BUSES($routeId: Int!, $lang: String!) {
-    route(xno: $routeId, lang: $lang) {
-        buses {
-            ...busesFragment
-            __typename
-        }
-        __typename
-    }
-}
-
-fragment busesFragment on RouteBusConnection {
-    edges {
-        goBack
-        node {
-            id
-            type
-            lat
-            lon
-            type
-            azimuth
-            status
-            dutyStatus
-            capacity
-            isCrowded
-            dataTime
-            __typename
-        }
-        __typename
-    }
-    __typename
-}`
-                }
-            };
-
-            // DOM elements
-            const routeIdInput = document.getElementById('routeIdInput');
-            const switchRouteButton = document.getElementById('switchRouteButton');
-            const stationListDiv = document.getElementById('stationList');
+            // --- DOM ELEMENTS ---
+            const routeSelectionPage = document.getElementById('routeSelectionPage');
+            const busTrackerPage = document.getElementById('busTrackerPage');
+            const routeSearchInput = document.getElementById('routeSearchInput');
+            const routeListContainer = document.getElementById('routeListContainer');
+            const initialLoading = document.getElementById('initialLoading');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const filterKeyboard = document.getElementById('filterKeyboard');
+            
+            const backButton = document.getElementById('backButton');
             const refreshButton = document.getElementById('refreshButton');
-            const refreshText = document.getElementById('refreshText');
-            const loadingSpinner = document.getElementById('loadingSpinner');
+            const trackerLoading = document.getElementById('trackerLoading');
+            const trackerContent = document.getElementById('trackerContent');
+            const routeTitle = document.getElementById('routeTitle');
+            const routeDescription = document.getElementById('routeDescription');
+            const stationListDiv = document.getElementById('stationList');
             const errorMessageDiv = document.getElementById('errorMessage');
+            const errorMessageText = document.getElementById('errorMessageText');
             const goDirectionButton = document.getElementById('goDirectionButton');
             const backDirectionButton = document.getElementById('backDirectionButton');
 
-            // Global variable to store the fetched route data
+            // --- STATE ---
+            let allRoutes = [];
             let currentRouteData = null;
-            // Default direction: 1 for Go (去程), 2 for Back (返程)
-            let currentDirection = 1;
+            let currentDirection = 1; // 1 for Go, 2 for Back
+            let currentRouteId = null;
 
-            /**
-             * Converts Unix timestamp to a readable date and time string.
-             * This function is now only used for bus dataTime, not for comeTime.
-             * @param {string} unixTimestamp - The Unix timestamp string.
-             * @returns {string} Formatted date and time string.
-             */
-            function formatUnixTimestamp(unixTimestamp) {
-                if (!unixTimestamp) return 'N/A';
-                const date = new Date(parseInt(unixTimestamp) * 1000);
-                return date.toLocaleString('zh-TW', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
+            // --- GraphQL QUERIES ---
+            const GQL = {
+                QUERY_SIDE_ROUTES: `query QUERY_SIDE_ROUTES($lang: String!) {
+                    routes(lang: $lang) {
+                        edges {
+                            node {
+                                id, opType, gxCode, seq, name, description
+                            }
+                        }
+                    }
+                }`,
+                QUERY_ROUTE_DETAILS: `query QUERY_ESTIMATE_TIMES($routeId: Int!, $lang: String!) {
+                    route(xno: $routeId, lang: $lang) {
+                        opType, departure, destination
+                        estimateTimes { edges { node { id, goBack, comeTime, etas { busId, etaTime } } } }
+                        stations { edges { ivrNo, node { id, name } } }
+                    }
+                }`
+            };
 
-            /**
-             * Fetches data from the GraphQL API.
-             * @param {object} queryData - Object containing operationName, variables, and query string.
-             * @param {number} routeId - The bus route ID to query.
-             * @returns {Promise<object>} The JSON response data.
-             */
-            async function fetchBusData(queryData, routeId) {
+            // --- API FUNCTIONS ---
+            async function fetchAPI(query, variables) {
                 try {
-                    // Update the routeId in the query variables
-                    const updatedQueryData = {
-                        ...queryData,
-                        variables: { ...queryData.variables, routeId: routeId }
-                    };
-
                     const response = await fetch(API_URL, {
                         method: 'POST',
                         headers: HEADERS,
-                        body: JSON.stringify(updatedQueryData)
+                        body: JSON.stringify({ query, variables })
                     });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    return data.data.route; // Return the route object directly
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
                 } catch (error) {
-                    console.error("Error fetching data:", queryData.operationName, error);
-                    throw error; // Re-throw to be caught by the caller
+                    console.error("API Fetch Error:", error);
+                    throw error;
                 }
             }
 
-            /**
-             * Renders estimated arrival times for stations in an app-like layout, filtered by direction.
-             * @param {object} data - The route data containing estimate times and station information.
-             * @param {number} direction - The direction to filter by (1 for Go, 2 for Back).
-             */
-            function displayEstimateTimes(data, direction) {
-                stationListDiv.innerHTML = ''; // Clear previous data
-
-                if (!data || !data.estimateTimes || !data.estimateTimes.edges.length) {
-                    stationListDiv.innerHTML = `<p class="text-center py-4 text-gray-500">目前沒有預計到站時間資訊。</p>`;
-                    return;
+            // --- PAGE 1: ROUTE SELECTION ---
+            async function initRouteSelection() {
+                try {
+                    const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: "zh" });
+                    allRoutes = data.data.routes.edges
+                        .map(edge => edge.node)
+                        .filter(route => route.gxCode !== 0)
+                        .sort((a, b) => a.seq - b.seq);
+                    
+                    displayInitialPrompt();
+                    initialLoading.style.display = 'none';
+                } catch (error) {
+                    initialLoading.innerHTML = '<p class="text-red-500">無法載入路線列表，請重新整理頁面。</p>';
                 }
+            }
 
-                // Create a map for quick station name lookup
-                const stationMap = new Map();
-                if (data.stations && data.stations.edges) {
-                    data.stations.edges.forEach(edge => {
-                        stationMap.set(edge.node.id, edge.node.name);
-                    });
+            function displayInitialPrompt() {
+                routeListContainer.innerHTML = `
+                    <div id="initialPrompt" class="text-center col-span-full py-10 text-slate-500">
+                        <p class="text-lg">請使用鍵盤或直接輸入開始搜尋路線。</p>
+                    </div>`;
+                noResultsMessage.style.display = 'none';
+            }
+
+            function displayRoutes(routes) {
+                routeListContainer.innerHTML = '';
+                if (routes.length === 0) {
+                    noResultsMessage.style.display = 'block';
+                } else {
+                    noResultsMessage.style.display = 'none';
                 }
-
-                // Filter estimates by the current direction
-                const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
-
-                if (filteredEstimates.length === 0) {
-                    stationListDiv.innerHTML = `<p class="text-center py-4 text-gray-500">此方向目前沒有預計到站時間資訊。</p>`;
-                    return;
-                }
-
-                filteredEstimates.forEach(edge => {
-                    const estimate = edge.node;
-                    const stationName = stationMap.get(estimate.id) || `未知站點 (ID: ${estimate.id})`;
-                    let timeDisplay = '<span class="text-gray-500">N/A</span>'; // Default display
-                    let busIdDisplay = ''; // Default to empty, only show for approaching bus
-
-                    if (estimate.etas && estimate.etas.length > 0) {
-                        const firstEta = estimate.etas[0];
-                        if (firstEta.etaTime !== undefined && firstEta.etaTime !== null) {
-                            if (firstEta.etaTime === 0) {
-                                timeDisplay = '<span class="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-semibold">即將到站</span>';
-                                busIdDisplay = firstEta.busId ? `<span class="text-gray-600 text-sm font-semibold">${firstEta.busId}</span>` : '';
-                            } else if (firstEta.etaTime === 1) {
-                                timeDisplay = '<span class="px-3 py-1 bg-blue-500 text-white rounded-full text-sm font-semibold">進站中</span>';
-                                busIdDisplay = firstEta.busId ? `<span class="text-gray-600 text-sm font-semibold">${firstEta.busId}</span>` : '';
-                            } else {
-                                // Display remaining minutes
-                                timeDisplay = `<span class="text-xl font-bold text-blue-700">${firstEta.etaTime} 分鐘</span>`;
-                            }
-                        } else if (estimate.comeTime) {
-                            // Fallback to comeTime if etaTime is not available, use comeTime directly
-                            timeDisplay = `<span class="text-xl font-bold text-gray-700">${estimate.comeTime}</span>`;
-                        } else {
-                            // If no ETA and no comeTime, display "末班駛離"
-                            timeDisplay = '<span class="text-gray-500">末班駛離</span>';
-                        }
-                    } else if (estimate.comeTime) {
-                        // If no ETAs at all, use comeTime directly
-                        timeDisplay = `<span class="text-xl font-bold text-gray-700">${estimate.comeTime}</span>`;
-                    } else {
-                        // If no ETAs and no comeTime, display "末班駛離"
-                        timeDisplay = '<span class="text-gray-500">末班駛離</span>';
-                    }
-
-                    const stationCard = document.createElement('div');
-                    stationCard.className = 'station-item'; // Use the new class for styling
-                    stationCard.innerHTML = `
-                        <div class="time-status">
-                            ${timeDisplay}
-                        </div>
-                        <div class="station-name">
-                            <p class="text-lg font-medium text-gray-800">${stationName}</p>
-                        </div>
-                        <div class="bus-id">
-                            ${busIdDisplay}
-                        </div>
+                
+                routes.forEach(route => {
+                    const card = document.createElement('div');
+                    card.className = 'route-card p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border-l-4 border-transparent hover:border-blue-500';
+                    card.dataset.routeId = route.gxCode;
+                    card.dataset.routeName = route.name;
+                    card.dataset.routeDesc = route.description;
+                    
+                    card.innerHTML = `
+                        <h3 class="font-bold text-lg text-slate-800">${route.name}</h3>
+                        <p class="text-sm text-slate-500">${route.description}</p>
                     `;
-                    stationListDiv.appendChild(stationCard);
+                    card.addEventListener('click', () => {
+                        navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc);
+                    });
+                    routeListContainer.appendChild(card);
                 });
             }
 
-            /**
-             * Handles the direction toggle button click.
-             * @param {Event} event - The click event object.
-             */
-            function handleDirectionToggle(event) {
-                const clickedButton = event.target;
-                const newDirection = parseInt(clickedButton.dataset.direction);
+            function applySearch(searchTerm) {
+                const lowerCaseTerm = searchTerm.toLowerCase().trim();
+                
+                if (!lowerCaseTerm) {
+                    displayInitialPrompt();
+                    return;
+                }
 
+                let filtered = [];
+                // Special handling for "其他", "快線" (E), and "公車小黃" categories
+                if (lowerCaseTerm === '其他') {
+                    filtered = allRoutes.filter(route => 
+                        route.name.toLowerCase().includes('joy') || 
+                        route.name.toLowerCase().includes('大樹')
+                    );
+                } else if (lowerCaseTerm === '快線') { // "快線" button text, searches for routes starting with 'E'
+                    filtered = allRoutes.filter(route => 
+                        route.name.toLowerCase().startsWith('e')
+                    );
+                } else if (lowerCaseTerm === '公車小黃') { // "公車小黃" button text, searches for routes including '小黃'
+                    filtered = allRoutes.filter(route => 
+                        route.name.toLowerCase().includes('小黃')
+                    );
+                } else if (lowerCaseTerm === '黃') { // "黃" button text, searches for routes including '黃' but excluding '小黃'
+                    filtered = allRoutes.filter(route => 
+                        route.name.toLowerCase().includes('黃') && !route.name.toLowerCase().includes('小黃')
+                    );
+                }
+                else {
+                    // General search by route name (route.name)
+                    filtered = allRoutes.filter(route => 
+                        route.name.toLowerCase().includes(lowerCaseTerm)
+                    );
+                }
+                
+                displayRoutes(filtered);
+            }
+
+            // Keyboard Listener
+            filterKeyboard.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (!button) return;
+
+                const value = button.dataset.filter;
+                const type = button.dataset.type;
+
+                if (type === 'category') {
+                    // Display the button's text content in the input field
+                    routeSearchInput.value = button.textContent; 
+                } else if (type === 'number') {
+                    routeSearchInput.value += value;
+                } else if (type === 'action') {
+                    if (value === 'reset') {
+                        routeSearchInput.value = '';
+                    } else if (value === 'backspace') {
+                        routeSearchInput.value = routeSearchInput.value.slice(0, -1);
+                    }
+                }
+                
+                const event = new Event('input', { bubbles: true, cancelable: true });
+                routeSearchInput.dispatchEvent(event);
+            });
+
+            // Input Listener
+            routeSearchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value;
+                
+                // Remove filter-active style from category buttons (as per previous request)
+                const categoryButtons = document.querySelectorAll('[data-type="category"]');
+                categoryButtons.forEach(btn => {
+                    btn.classList.remove('filter-active');
+                });
+
+                applySearch(searchTerm);
+            });
+
+
+            // --- PAGE 2: BUS TRACKER ---
+            function updateDirectionButtons() {
+                if (currentDirection === 1) {
+                    goDirectionButton.classList.add('bg-blue-500', 'text-white');
+                    goDirectionButton.classList.remove('bg-white', 'text-blue-500');
+                    backDirectionButton.classList.add('bg-white', 'text-blue-500');
+                    backDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                } else {
+                    backDirectionButton.classList.add('bg-blue-500', 'text-white');
+                    backDirectionButton.classList.remove('bg-white', 'text-blue-500');
+                    goDirectionButton.classList.add('bg-white', 'text-blue-500');
+                    goDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                }
+            }
+            
+            function handleDirectionToggle(event) {
+                const newDirection = parseInt(event.currentTarget.dataset.direction);
                 if (newDirection !== currentDirection) {
                     currentDirection = newDirection;
-
-                    // Update active button styling
-                    goDirectionButton.classList.remove('active');
-                    backDirectionButton.classList.remove('active');
-                    clickedButton.classList.add('active');
-
-                    // Re-render the station list with the new direction
+                    updateDirectionButtons();
                     if (currentRouteData) {
                         displayEstimateTimes(currentRouteData, currentDirection);
                     }
                 }
             }
 
-            /**
-             * Main function to load and display all bus data.
-             * Now accepts an optional routeId parameter.
-             * @param {number|null} newRouteId - The new route ID to load, or null to use the current input value.
-             */
-            async function loadBusData(newRouteId = null) {
-                refreshButton.disabled = true;
-                refreshText.style.display = 'none';
-                loadingSpinner.style.display = 'block';
+            function displayEstimateTimes(data, direction) {
+                stationListDiv.innerHTML = '';
                 errorMessageDiv.style.display = 'none';
 
-                const routeId = newRouteId !== null ? newRouteId : parseInt(routeIdInput.value);
-
-                if (isNaN(routeId) || routeId <= 0) {
-                    errorMessageDiv.textContent = '請輸入有效的路線代號 (正整數)。';
-                    errorMessageDiv.style.display = 'block';
-                    refreshButton.disabled = false;
-                    refreshText.style.display = 'inline';
-                    loadingSpinner.style.display = 'none';
+                if (!data || !data.estimateTimes || !data.estimateTimes.edges.length) {
+                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500">目前沒有預計到站時間資訊。</p>`;
                     return;
                 }
 
+                const stationMap = new Map(data.stations.edges.map(edge => [edge.node.id, edge.node.name]));
+                const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
+
+                if (filteredEstimates.length === 0) {
+                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500">此方向目前沒有班次資訊。</p>`;
+                    return;
+                }
+
+                filteredEstimates.forEach(({ node: estimate }) => {
+                    const stationName = stationMap.get(estimate.id) || `未知站點 (ID: ${estimate.id})`;
+                    let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
+                    let busIdDisplay = '';
+                    let timeColorClass = 'text-slate-500';
+
+                    if (estimate.etas && estimate.etas.length > 0) {
+                        const firstEta = estimate.etas[0];
+                        if (firstEta.etaTime !== null) {
+                            if (firstEta.etaTime <= 1) {
+                                timeDisplay = '進站中';
+                                timeColorClass = 'text-red-500 animate-pulse';
+                            } else if (firstEta.etaTime <= 5) {
+                                timeDisplay = `${firstEta.etaTime} 分`;
+                                timeColorClass = 'text-orange-500';
+                            } else {
+                                timeDisplay = `${firstEta.etaTime} 分`;
+                                timeColorClass = 'text-blue-600';
+                            }
+                            busIdDisplay = firstEta.busId ? `<span class="text-xs bg-slate-200 text-slate-600 font-mono px-2 py-1 rounded">${firstEta.busId}</span>` : '';
+                        }
+                    } else if (estimate.comeTime) {
+                        timeDisplay = estimate.comeTime;
+                        timeColorClass = 'text-slate-700';
+                    }
+
+                    const stationCard = document.createElement('div');
+                    stationCard.className = 'flex items-center justify-between p-4 bg-slate-50 rounded-lg';
+                    stationCard.innerHTML = `
+                        <div class="flex-1">
+                            <p class="text-lg font-medium text-slate-800">${stationName}</p>
+                        </div>
+                        <div class="flex items-center gap-4 w-40 justify-end">
+                            <div class="text-right flex-1">
+                                <p class="text-lg font-bold ${timeColorClass}">${timeDisplay}</p>
+                            </div>
+                            <div class="w-20 text-right">${busIdDisplay}</div>
+                        </div>
+                    `;
+                    stationListDiv.appendChild(stationCard);
+                });
+            }
+            
+            async function loadBusData(routeId) {
+                trackerLoading.style.display = 'flex';
+                trackerContent.style.display = 'none';
+                errorMessageDiv.style.display = 'none';
+                refreshButton.disabled = true;
+
                 try {
-                    // Fetch all data concurrently using the dynamic routeId
-                    const [estimateTimesData, mapContentData, busesData] = await Promise.all([
-                        fetchBusData(GRAPHQL_QUERIES.QUERY_ESTIMATE_TIMES, routeId),
-                        fetchBusData(GRAPHQL_QUERIES.QUERY_ROUTE_FOR_MAP_CONTENT, routeId),
-                        fetchBusData(GRAPHQL_QUERIES.QUERY_BUSES, routeId)
-                    ]);
-
-                    // Combine data for rendering
-                    currentRouteData = {
-                        ...mapContentData, // Contains id, name, opType, providers, routePoint, stations
-                        ...estimateTimesData, // Contains estimateTimes, (overwrites stations and buses if present but we use mapContentData's stations)
-                        buses: busesData.buses, // Ensure the latest bus data is used
-                    };
-
-                    // Display estimate times for the current direction
+                    const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: "zh" });
+                    
+                    if (!result.data.route) {
+                        throw new Error("找不到該路線的資訊，請確認路線代號是否正確。");
+                    }
+                    
+                    currentRouteData = result.data.route;
                     displayEstimateTimes(currentRouteData, currentDirection);
+                    trackerContent.style.display = 'block';
 
                 } catch (error) {
-                    console.error("Failed to load bus data:", error);
-                    errorMessageDiv.textContent = `載入路線 ${routeId} 的數據時發生錯誤。請稍後再試。`;
+                    errorMessageText.textContent = error.message;
                     errorMessageDiv.style.display = 'block';
                 } finally {
+                    trackerLoading.style.display = 'none';
                     refreshButton.disabled = false;
-                    refreshText.style.display = 'inline';
-                    loadingSpinner.style.display = 'none';
                 }
             }
 
-            // Event listener for the refresh button
-            refreshButton.addEventListener('click', () => loadBusData()); // Call without specific routeId to use current input
+            // --- NAVIGATION ---
+            function navigateToTracker(routeId, routeName, routeDesc) {
+                currentRouteId = routeId;
+                routeSelectionPage.classList.remove('active');
+                busTrackerPage.classList.add('active');
 
-            // Event listener for the switch route button
-            switchRouteButton.addEventListener('click', () => {
-                const newRouteId = parseInt(routeIdInput.value);
-                loadBusData(newRouteId); // Pass the new routeId directly
+                // Reset tracker page state
+                routeTitle.textContent = routeName;
+                routeDescription.textContent = routeDesc;
+                currentDirection = 1;
+                updateDirectionButtons();
+                
+                loadBusData(currentRouteId);
+            }
+
+            function navigateToSelection() {
+                busTrackerPage.classList.remove('active');
+                routeSelectionPage.classList.add('active');
+                currentRouteData = null;
+                currentRouteId = null;
+            }
+
+            // --- EVENT LISTENERS ---
+            backButton.addEventListener('click', navigateToSelection);
+            refreshButton.addEventListener('click', () => {
+                if(currentRouteId) loadBusData(currentRouteId);
             });
-
-            // Event listeners for direction toggle buttons
             goDirectionButton.addEventListener('click', handleDirectionToggle);
             backDirectionButton.addEventListener('click', handleDirectionToggle);
 
-            // Load data when the page loads (using the default value in the input field)
-            loadBusData(parseInt(routeIdInput.value));
+            // --- INITIALIZATION ---
+            initRouteSelection();
         });
     </script>
 </body>
