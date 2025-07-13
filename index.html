@@ -6,8 +6,8 @@
     <title>高雄市公車動態查詢器</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Material Icons for backspace icon and other potential icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- 將 Material Icons 引入改為 Outlined 樣式 -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
@@ -49,7 +49,8 @@
             background: #94a3b8;
         }
         /* Removed filter-active for category buttons */
-        .material-icons {
+        /* 更新 Material Icons 的類別名稱 */
+        .material-icons-outlined {
             font-size: 24px;
         }
         /* Ensure the body has enough padding at the bottom for the fixed keyboard */
@@ -110,7 +111,7 @@
             
             <!-- Search input section (remains at top) -->
             <div class="relative mb-4">
-                <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500" readonly>
                 <svg class="w-6 h-6 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -133,14 +134,14 @@
                 <!-- 調整鍵盤按鈕之間的水平間距為更小，以提供更多空間 -->
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
                     <!-- Row 1 -->
-                    <button data-filter="紅" data-type="category" class="p-3 text-white font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
+                    <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
                     <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
                     <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
                     <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
                     <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
                     
                     <!-- Row 2 -->
-                    <button data-filter="橘" data-type="category" class="p-3 text-white font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
+                    <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
                     <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
                     <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
                     <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
@@ -155,15 +156,15 @@
                     <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
 
                     <!-- Row 4 -->
-                    <button data-filter="綠" data-type="category" class="p-3 text-white font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
+                    <button data-filter="綠" data-type="category" class="p-3 text-black font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
                     <!-- "公車小黃" button: data-filter is "小黃", textContent is "公車小黃" -->
                     <!-- 移除 p-3 Tailwind 類別，完全由 bus-taxi-button CSS 控制內邊距 -->
                     <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
                     <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
                     <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
-                    <!-- Backspace button styling (already white background, black icon) -->
                     <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
-                        <span class="material-icons">backspace</span>
+                        <!-- 將 class 從 material-icons 改為 material-icons-outlined -->
+                        <span class="material-icons-outlined">backspace</span>
                     </button>
                 </div>
             </div>
@@ -254,8 +255,6 @@
             let currentRouteData = null;
             let currentDirection = 1; // 1 for Go, 2 for Back
             let currentRouteId = null;
-
-            // Define the category filters and their corresponding search values
             const categoryFilters = [
                 { prefix: '公車小黃', filterValue: '小黃' }, // Specific: '公車小黃' should be checked before '黃'
                 { prefix: '紅', filterValue: '紅' },
@@ -267,13 +266,13 @@
                 { prefix: '快線', filterValue: 'E' }
             ];
 
-            // --- GraphQL QUERIES ---
+
             const GQL = {
                 QUERY_SIDE_ROUTES: `query QUERY_SIDE_ROUTES($lang: String!) {
                     routes(lang: $lang) {
                         edges {
                             node {
-                                id, opType, gxCode, seq, name, description
+                                id, opType, id, seq, name, description
                             }
                         }
                     }
@@ -286,8 +285,6 @@
                     }
                 }`
             };
-
-            // --- API FUNCTIONS ---
             async function fetchAPI(query, variables) {
                 try {
                     const response = await fetch(API_URL, {
@@ -309,11 +306,27 @@
                     const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: "zh" });
                     allRoutes = data.data.routes.edges
                         .map(edge => edge.node)
-                        .filter(route => route.gxCode !== 0)
+                        .filter(route => route.id !== 0)
                         .sort((a, b) => a.seq - b.seq);
                     
-                    displayInitialPrompt();
                     initialLoading.style.display = 'none';
+                    
+                    // Check URL for routeId on initial load
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const routeIdFromUrl = urlParams.get('route');
+
+                    if (routeIdFromUrl) {
+                        const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
+                        if (route) {
+                            navigateToTracker(route.id, route.name, route.description, false); // Don't push state again
+                        } else {
+                            displayInitialPrompt(); // Route not found, show initial prompt
+                            history.replaceState(null, '', window.location.pathname); // Clean URL
+                        }
+                    } else {
+                        displayInitialPrompt();
+                    }
+
                 } catch (error) {
                     initialLoading.innerHTML = '<p class="text-red-500">無法載入路線列表，請重新整理頁面。</p>';
                 }
@@ -338,7 +351,7 @@
                 routes.forEach(route => {
                     const card = document.createElement('div');
                     card.className = 'route-card p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border-l-4 border-transparent hover:border-blue-500';
-                    card.dataset.routeId = route.gxCode;
+                    card.dataset.routeId = route.id;
                     card.dataset.routeName = route.name;
                     card.dataset.routeDesc = route.description;
                     
@@ -347,7 +360,7 @@
                         <p class="text-sm text-slate-500">${route.description}</p>
                     `;
                     card.addEventListener('click', () => {
-                        navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc);
+                        navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc, true); // Push state
                     });
                     routeListContainer.appendChild(card);
                 });
@@ -412,7 +425,6 @@
                 displayRoutes(filteredRoutes);
             }
 
-            // Keyboard Listener
             filterKeyboard.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
@@ -421,8 +433,6 @@
                 const type = button.dataset.type;
 
                 if (type === 'category') {
-                    // Display the button's text content in the input field
-                    // For "公車小黃", get textContent of spans to avoid literal "<br>"
                     if (button.dataset.filter === '小黃') {
                         routeSearchInput.value = '公車小黃'; 
                     } else {
@@ -442,11 +452,8 @@
                 routeSearchInput.dispatchEvent(event);
             });
 
-            // Input Listener
             routeSearchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value;
-                
-                // Remove filter-active style from category buttons (as per previous request)
                 const categoryButtons = document.querySelectorAll('[data-type="category"]');
                 categoryButtons.forEach(btn => {
                     btn.classList.remove('filter-active');
@@ -454,9 +461,6 @@
 
                 applySearch(searchTerm);
             });
-
-
-            // --- PAGE 2: BUS TRACKER ---
             function updateDirectionButtons() {
                 if (currentDirection === 1) {
                     goDirectionButton.classList.add('bg-blue-500', 'text-white');
@@ -512,10 +516,12 @@
                                 timeDisplay = '進站中';
                                 timeColorClass = 'text-red-500 animate-pulse';
                             } else if (firstEta.etaTime <= 5) {
-                                timeDisplay = `${firstEta.etaTime} 分`;
+                                // Removed " 分"
+                                timeDisplay = `${firstEta.etaTime}`;
                                 timeColorClass = 'text-orange-500';
                             } else {
-                                timeDisplay = `${firstEta.etaTime} 分`;
+                                // Removed " 分"
+                                timeDisplay = `${firstEta.etaTime}`;
                                 timeColorClass = 'text-blue-600';
                             }
                             busIdDisplay = firstEta.busId ? `<span class="text-xs bg-slate-200 text-slate-600 font-mono px-2 py-1 rounded">${firstEta.busId}</span>` : '';
@@ -531,11 +537,11 @@
                         <div class="flex-1">
                             <p class="text-lg font-medium text-slate-800">${stationName}</p>
                         </div>
-                        <div class="flex items-center gap-4 w-40 justify-end">
-                            <div class="text-right flex-1">
+                        <div class="flex items-center gap-4 justify-end"> <!-- Removed w-40 -->
+                            <div class="text-right flex-1 min-w-[40px]"> <!-- Added min-w to prevent time text from collapsing -->
                                 <p class="text-lg font-bold ${timeColorClass}">${timeDisplay}</p>
                             </div>
-                            <div class="w-20 text-right">${busIdDisplay}</div>
+                            <div class="flex-none">${busIdDisplay}</div> <!-- Removed w-20, added flex-none -->
                         </div>
                     `;
                     stationListDiv.appendChild(stationCard);
@@ -567,14 +573,17 @@
                     refreshButton.disabled = false;
                 }
             }
-
-            // --- NAVIGATION ---
-            function navigateToTracker(routeId, routeName, routeDesc) {
+            function navigateToTracker(routeId, routeName, routeDesc, pushState = true) {
                 currentRouteId = routeId;
                 routeSelectionPage.classList.remove('active');
                 busTrackerPage.classList.add('active');
+                const url = `${window.location.pathname}?route=${routeId}`;
+                if (pushState) {
+                    history.pushState({ page: 'tracker', routeId: routeId }, '', url);
+                } else {
+                    history.replaceState({ page: 'tracker', routeId: routeId }, '', url);
+                }
 
-                // Reset tracker page state
                 routeTitle.textContent = routeName;
                 routeDescription.textContent = routeDesc;
                 currentDirection = 1;
@@ -588,17 +597,30 @@
                 routeSelectionPage.classList.add('active');
                 currentRouteData = null;
                 currentRouteId = null;
+                history.pushState({ page: 'selection' }, '', window.location.pathname);
             }
 
-            // --- EVENT LISTENERS ---
             backButton.addEventListener('click', navigateToSelection);
             refreshButton.addEventListener('click', () => {
                 if(currentRouteId) loadBusData(currentRouteId);
             });
             goDirectionButton.addEventListener('click', handleDirectionToggle);
             backDirectionButton.addEventListener('click', handleDirectionToggle);
+            window.addEventListener('popstate', (event) => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const routeIdFromUrl = urlParams.get('route');
 
-            // --- INITIALIZATION ---
+                if (routeIdFromUrl) {
+                    const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
+                    if (route) {
+                        navigateToTracker(route.id, route.name, route.description, false);
+                    } else {
+                        navigateToSelection();
+                    }
+                } else {
+                    navigateToSelection();
+                }
+            });
             initRouteSelection();
         });
     </script>
