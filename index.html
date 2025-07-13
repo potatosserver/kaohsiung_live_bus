@@ -52,6 +52,50 @@
         .material-icons {
             font-size: 24px;
         }
+        /* Ensure the body has enough padding at the bottom for the fixed keyboard */
+        #routeSelectionPage .container {
+            /* Adjusted to reduce the large spacing at the bottom */
+            padding-bottom: 20px;
+        }
+        @media (min-width: 768px) { /* Adjust for larger screens if needed */
+            #routeSelectionPage .container {
+                /* Adjusted for larger screens */
+                padding-bottom: 30px;
+            }
+        }
+
+        /* For "公車小黃" button to wrap text on narrow screens */
+        .bus-taxi-button {
+            line-height: 1.2; /* 調整行高以更好地換行 */
+            white-space: normal; /* 允許文字換行 */
+            display: flex; /* 使用 flexbox 居中內容 */
+            flex-direction: column; /* 將內容垂直堆疊 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            text-align: center; /* 確保文字在其行內居中 */
+            /* 調整內邊距，減少水平內邊距以提供更多文字空間 */
+            padding: 0.4rem 0.2rem; 
+        }
+
+        /* 讓公車和小黃在窄螢幕時強制換行 */
+        .bus-taxi-button .bus-text,
+        .bus-taxi-button .taxi-text {
+            display: block; 
+        }
+
+        @media (min-width: 768px) {
+            .bus-taxi-button {
+                /* 在大螢幕上恢復標準內邊距 */
+                padding: 0.75rem;
+                flex-direction: row; /* 在大螢幕上恢復水平排列 */
+                white-space: nowrap; /* 在寬螢幕時不換行 */
+            }
+            /* 在大螢幕時，讓公車和小黃恢復行內顯示 */
+            .bus-taxi-button .bus-text,
+            .bus-taxi-button .taxi-text {
+                display: inline;
+            }
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -64,55 +108,12 @@
                 <p class="text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
             
-            <!-- Sticky search and keyboard section -->
-            <!-- Ensured full opacity and very high z-index for absolute coverage -->
-            <div class="sticky top-0 py-4 z-[999] shadow-lg"> 
-                <!-- Added a solid background div to prevent any visual penetration -->
-                <div class="absolute inset-0 bg-slate-100"></div> 
-                <div class="relative z-10"> <!-- Ensure content is above the solid background -->
-                    <div class="relative mb-4">
-                        <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <svg class="w-6 h-6 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    
-                    <!-- Filter Keyboard -->
-                    <div id="filterKeyboard" class="grid grid-cols-5 gap-2 md:gap-3">
-                        <!-- Row 1 -->
-                        <button data-filter="紅" data-type="category" class="p-3 text-white font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
-                        <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
-                        <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
-                        <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
-                        <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
-                        
-                        <!-- Row 2 -->
-                        <button data-filter="橘" data-type="category" class="p-3 text-white font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
-                        <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
-                        <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
-                        <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
-                        <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">6</button>
-
-                        <!-- Row 3 -->
-                        <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md hover:bg-yellow-500 transition-colors">黃</button>
-                        <!-- "快線" button: data-filter is "E", but textContent is "快線" -->
-                        <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">快線</button>
-                        <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">7</button>
-                        <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">8</button>
-                        <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
-
-                        <!-- Row 4 -->
-                        <button data-filter="綠" data-type="category" class="p-3 text-white font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
-                        <!-- "公車小黃" button: data-filter is "小黃", textContent is "公車小黃" -->
-                        <button data-filter="小黃" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors text-xs md:text-base">公車小黃</button>
-                        <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
-                        <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
-                        <!-- Backspace button styling (already white background, black icon) -->
-                        <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
-                            <span class="material-icons">backspace</span>
-                        </button>
-                    </div>
-                </div>
+            <!-- Search input section (remains at top) -->
+            <div class="relative mb-4">
+                <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <svg class="w-6 h-6 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
             </div>
 
             <div id="initialLoading" class="text-center py-20">
@@ -124,6 +125,48 @@
                 <!-- Route items will be injected here -->
             </div>
              <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden">找不到相符的路線。</p>
+        </div>
+
+        <!-- Filter Keyboard (moved to bottom and fixed) -->
+        <div id="filterKeyboardContainer" class="fixed bottom-0 left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
+            <div class="container mx-auto max-w-4xl">
+                <!-- 調整鍵盤按鈕之間的水平間距為更小，以提供更多空間 -->
+                <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
+                    <!-- Row 1 -->
+                    <button data-filter="紅" data-type="category" class="p-3 text-white font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
+                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
+                    <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
+                    <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
+                    <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
+                    
+                    <!-- Row 2 -->
+                    <button data-filter="橘" data-type="category" class="p-3 text-white font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
+                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
+                    <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
+                    <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
+                    <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">6</button>
+
+                    <!-- Row 3 -->
+                    <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md hover:bg-yellow-500 transition-colors">黃</button>
+                    <!-- "快線" button: data-filter is "E", but textContent is "快線" -->
+                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">快線</button>
+                    <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">7</button>
+                    <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">8</button>
+                    <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
+
+                    <!-- Row 4 -->
+                    <button data-filter="綠" data-type="category" class="p-3 text-white font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
+                    <!-- "公車小黃" button: data-filter is "小黃", textContent is "公車小黃" -->
+                    <!-- 移除 p-3 Tailwind 類別，完全由 bus-taxi-button CSS 控制內邊距 -->
+                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
+                    <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
+                    <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
+                    <!-- Backspace button styling (already white background, black icon) -->
+                    <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
+                        <span class="material-icons">backspace</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -191,7 +234,8 @@
             const routeListContainer = document.getElementById('routeListContainer');
             const initialLoading = document.getElementById('initialLoading');
             const noResultsMessage = document.getElementById('noResultsMessage');
-            const filterKeyboard = document.getElementById('filterKeyboard');
+            const filterKeyboard = document.getElementById('filterKeyboard'); // This is the grid itself
+            const filterKeyboardContainer = document.getElementById('filterKeyboardContainer'); // The new container for the fixed keyboard
             
             const backButton = document.getElementById('backButton');
             const refreshButton = document.getElementById('refreshButton');
@@ -210,6 +254,18 @@
             let currentRouteData = null;
             let currentDirection = 1; // 1 for Go, 2 for Back
             let currentRouteId = null;
+
+            // Define the category filters and their corresponding search values
+            const categoryFilters = [
+                { prefix: '公車小黃', filterValue: '小黃' }, // Specific: '公車小黃' should be checked before '黃'
+                { prefix: '紅', filterValue: '紅' },
+                { prefix: '橘', filterValue: '橘' },
+                { prefix: '黃', filterValue: '黃' },
+                { prefix: '綠', filterValue: '綠' },
+                { prefix: '其他', filterValue: '其他' },
+                { prefix: '幹線', filterValue: '幹線' },
+                { prefix: '快線', filterValue: 'E' }
+            ];
 
             // --- GraphQL QUERIES ---
             const GQL = {
@@ -297,6 +353,7 @@
                 });
             }
 
+            // Modified applySearch function to prioritize category search
             function applySearch(searchTerm) {
                 const lowerCaseTerm = searchTerm.toLowerCase().trim();
                 
@@ -305,34 +362,54 @@
                     return;
                 }
 
-                let filtered = [];
-                // Special handling for "其他", "快線" (E), and "公車小黃" categories
-                if (lowerCaseTerm === '其他') {
-                    filtered = allRoutes.filter(route => 
-                        route.name.toLowerCase().includes('joy') || 
-                        route.name.toLowerCase().includes('大樹')
-                    );
-                } else if (lowerCaseTerm === '快線') { // "快線" button text, searches for routes starting with 'E'
-                    filtered = allRoutes.filter(route => 
-                        route.name.toLowerCase().startsWith('e')
-                    );
-                } else if (lowerCaseTerm === '公車小黃') { // "公車小黃" button text, searches for routes including '小黃'
-                    filtered = allRoutes.filter(route => 
-                        route.name.toLowerCase().includes('小黃')
-                    );
-                } else if (lowerCaseTerm === '黃') { // "黃" button text, searches for routes including '黃' but excluding '小黃'
-                    filtered = allRoutes.filter(route => 
-                        route.name.toLowerCase().includes('黃') && !route.name.toLowerCase().includes('小黃')
-                    );
+                let filteredRoutes = [...allRoutes]; // Start with all routes
+
+                let categoryMatched = false;
+                let remainingSearchTerm = lowerCaseTerm;
+
+                // Try to match a category prefix first
+                for (const category of categoryFilters) {
+                    const lowerCasePrefix = category.prefix.toLowerCase();
+                    if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
+                        // Apply category filter based on the filterValue
+                        if (category.filterValue === '其他') {
+                            filteredRoutes = filteredRoutes.filter(route =>
+                                route.name.toLowerCase().includes('joy') ||
+                                route.name.toLowerCase().includes('大樹')
+                            );
+                        } else if (category.filterValue === 'E') { // 快線
+                            filteredRoutes = filteredRoutes.filter(route =>
+                                route.name.toLowerCase().startsWith('e')
+                            );
+                        } else if (category.filterValue === '小黃') { // 公車小黃
+                            filteredRoutes = filteredRoutes.filter(route =>
+                                route.name.toLowerCase().includes('小黃')
+                            );
+                        } else if (category.filterValue === '黃') { // 黃, but not 小黃
+                            filteredRoutes = filteredRoutes.filter(route =>
+                                route.name.toLowerCase().includes('黃') && !route.name.toLowerCase().includes('小黃')
+                            );
+                        } else { // Generic category (紅, 橘, 綠, 幹線)
+                            filteredRoutes = filteredRoutes.filter(route =>
+                                route.name.toLowerCase().includes(category.filterValue.toLowerCase())
+                            );
+                        }
+
+                        remainingSearchTerm = lowerCaseTerm.substring(lowerCasePrefix.length).trim();
+                        categoryMatched = true;
+                        break; // Found a category, break the loop
+                    }
                 }
-                else {
-                    // General search by route name (route.name)
-                    filtered = allRoutes.filter(route => 
-                        route.name.toLowerCase().includes(lowerCaseTerm)
+
+                // If there's a remaining search term (after category prefix) or no category was matched,
+                // apply general search to the current filtered set.
+                if (remainingSearchTerm) {
+                    filteredRoutes = filteredRoutes.filter(route =>
+                        route.name.toLowerCase().includes(remainingSearchTerm)
                     );
                 }
                 
-                displayRoutes(filtered);
+                displayRoutes(filteredRoutes);
             }
 
             // Keyboard Listener
@@ -345,7 +422,12 @@
 
                 if (type === 'category') {
                     // Display the button's text content in the input field
-                    routeSearchInput.value = button.textContent; 
+                    // For "公車小黃", get textContent of spans to avoid literal "<br>"
+                    if (button.dataset.filter === '小黃') {
+                        routeSearchInput.value = '公車小黃'; 
+                    } else {
+                        routeSearchInput.value = button.textContent;
+                    }
                 } else if (type === 'number') {
                     routeSearchInput.value += value;
                 } else if (type === 'action') {
