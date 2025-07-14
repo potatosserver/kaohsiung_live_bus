@@ -13,6 +13,10 @@
             background-color: #f1f5f9;
             color: #1e293b;
             /* Padding bottom will be handled dynamically by JS for specific pages */
+            user-select: none; /* 鎖定文字選取 */
+            -webkit-user-select: none; /* For Safari */
+            -moz-user-select: none; /* For Firefox */
+            -ms-user-select: none; /* For Internet Explorer/Edge */
         }
         /* Loading Spinner Animation */
         @keyframes spin {
@@ -34,19 +38,20 @@
         .page.active {
             display: block;
         }
-        /* Custom scrollbar */
+        /* Custom scrollbar - Hidden but scrollable */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 0px; /* For vertical scrollbar */
+            height: 0px; /* For horizontal scrollbar */
         }
         ::-webkit-scrollbar-track {
-            background: #f8fafc;
+            background: transparent; /* Make track transparent */
         }
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: transparent; /* Make thumb transparent */
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: transparent; /* Make thumb transparent on hover */
         }
         /* Updated Material Icons class name */
         .material-icons-outlined {
@@ -365,12 +370,28 @@
                 <p class="text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
             
-            <div class="relative mb-4">
-                <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500" readonly>
-                <svg class="w-6 h-6 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+            <!-- START: Modified Search Bar -->
+            <div class="flex items-center gap-2 mb-4 bg-white border-2 border-slate-300 rounded-xl shadow-sm p-1">
+                <!-- Special Category Display -->
+                <div class="flex-shrink-0 pl-3 pr-2">
+                    <span id="categoryDisplay" class="font-semibold text-blue-600">全部路線</span>
+                </div>
+                
+                <!-- Vertical Separator -->
+                <div class="w-px bg-slate-300 self-stretch my-2"></div>
+            
+                <!-- Search Input Area -->
+                <div class="relative flex-grow">
+                    <!-- The input is now for numbers, readonly, text-left, and borderless -->
+                    <input type="text" id="routeSearchInput" placeholder="請由鍵盤輸入號碼" class="w-full p-3 text-lg bg-transparent border-none focus:outline-none focus:ring-0 text-left" readonly>
+                    <!-- The icon is moved to the right for better alignment -->
+                    <svg class="w-6 h-6 text-slate-400 absolute top-1/2 right-3 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
             </div>
+            <!-- END: Modified Search Bar -->
+
 
             <div id="initialLoading" class="text-center py-20">
                 <div class="loading-spinner mx-auto"></div>
@@ -528,6 +549,7 @@
             const settingsPage = document.getElementById('settingsPage');
             
             const routeSearchInput = document.getElementById('routeSearchInput');
+            const categoryDisplay = document.getElementById('categoryDisplay'); // New element for category text
             const routeListContainer = document.getElementById('routeListContainer');
             const initialLoading = document.getElementById('initialLoading');
             const noResultsMessage = document.getElementById('noResultsMessage');
@@ -562,6 +584,7 @@
             let countdownInterval = null;
             let currentLang = localStorage.getItem("lang") || "zh";
             let activePage = 'dynamic'; // Default active page
+            let selectedCategoryPrefix = ''; // New: Store selected category for search
 
             let favoriteStations = []; // Array to store favorite station objects
             let longPressTimer; // For touch long press detection
@@ -578,6 +601,19 @@
                 { prefix: '幹線', filterValue: '幹線' },
                 { prefix: '快線', filterValue: 'E' }
             ];
+            
+            // New map for display text
+            const categoryDisplayMap = {
+                '紅': '紅線接駁',
+                '橘': '橘線接駁',
+                '黃': '黃線接駁',
+                '綠': '綠線接駁',
+                '幹線': '幹線公車',
+                'E': '快線公車',
+                '小黃': '公車小黃',
+                '其他': '其他路線'
+            };
+
 
             const GQL = {
                 QUERY_SIDE_ROUTES: `query QUERY_SIDE_ROUTES($lang: String!) {
@@ -822,7 +858,7 @@
                 });
             }
 
-            // Applies search filter to routes based on input
+            // Applies search filter to routes based on input (NO CHANGE TO THIS FUNCTION'S LOGIC)
             function applySearch(searchTerm) {
                 const lowerCaseTerm = searchTerm.toLowerCase().trim();
                 
@@ -833,6 +869,7 @@
 
                 let filteredRoutes = [...allRoutes];
 
+                // This logic remains the same, it checks if the combined search term starts with a category prefix
                 let categoryMatched = false;
                 let remainingSearchTerm = lowerCaseTerm;
 
@@ -842,19 +879,20 @@
                         if (category.filterValue === '其他') {
                             filteredRoutes = filteredRoutes.filter(route =>
                                 route.name.toLowerCase().includes('joy') ||
-                                route.name.toLowerCase().includes('大樹')
+                                route.name.toLowerCase().includes('大樹祈福線')
                             );
                         } else if (category.filterValue === 'E') {
                             filteredRoutes = filteredRoutes.filter(route =>
                                 route.name.toLowerCase().startsWith('e')
                             );
                         } else if (category.filterValue === '小黃') {
+                            // MODIFIED: Filter by opType === 9 for "公車小黃"
                             filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().includes('小黃')
+                                route.opType === 9
                             );
                         } else if (category.filterValue === '黃') {
                             filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().includes('黃') && !route.name.toLowerCase().includes('小黃')
+                                route.name.toLowerCase().includes('黃') && route.opType !== 9 // Exclude opType 9 from "黃" category
                             );
                         } else {
                             filteredRoutes = filteredRoutes.filter(route =>
@@ -877,7 +915,7 @@
                 displayRoutes(filteredRoutes);
             }
 
-            // Keyboard input handling
+            // --- START: MODIFIED Keyboard input handling ---
             filterKeyboard.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
@@ -886,34 +924,41 @@
                 const type = button.dataset.type;
 
                 if (type === 'category') {
-                    if (button.dataset.filter === '小黃') {
-                        routeSearchInput.value = '公車小黃'; 
+                    // Define the search prefix based on the button clicked. This is used for filtering.
+                    let searchPrefix;
+                    if (value === '小黃') {
+                        searchPrefix = '公車小黃';
+                    } else if (value === 'E') {
+                        searchPrefix = '快線';
                     } else {
-                        routeSearchInput.value = button.textContent;
+                        searchPrefix = button.textContent;
                     }
+
+                    selectedCategoryPrefix = searchPrefix;
+                    // Update the blue display text using the map
+                    categoryDisplay.textContent = categoryDisplayMap[value] || '全部路線';
+                    routeSearchInput.value = ''; // Reset number input when category changes
+
                 } else if (type === 'number') {
                     routeSearchInput.value += value;
+
                 } else if (type === 'action') {
                     if (value === 'reset') {
+                        selectedCategoryPrefix = '';
                         routeSearchInput.value = '';
+                        categoryDisplay.textContent = '全部路線'; // Reset display text
                     } else if (value === 'backspace') {
                         routeSearchInput.value = routeSearchInput.value.slice(0, -1);
                     }
                 }
                 
-                const event = new Event('input', { bubbles: true, cancelable: true });
-                routeSearchInput.dispatchEvent(event);
+                // On every keypress, construct the full search term and call applySearch
+                const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
+                applySearch(fullSearchTerm);
             });
-
-            routeSearchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value;
-                const categoryButtons = document.querySelectorAll('[data-type="category"]');
-                categoryButtons.forEach(btn => {
-                    btn.classList.remove('filter-active');
-                });
-
-                applySearch(searchTerm);
-            });
+            // --- END: MODIFIED Keyboard input handling ---
+            
+            // The old 'input' event listener on routeSearchInput is no longer needed as it's readonly and controlled by the keyboard.
 
             // --- PAGE 2: BUS TRACKER ---
 
@@ -1183,6 +1228,11 @@
                 currentRouteData = null;
                 currentRouteId = null;
                 currentRouteName = null;
+                // 重置搜尋狀態
+                routeSearchInput.value = ''; 
+                selectedCategoryPrefix = '';
+                categoryDisplay.textContent = '全部路線';
+                applySearch(''); // Clear search results and show initial prompt
                 history.pushState({ page: 'selection' }, '', window.location.pathname);
                 clearInterval(countdownInterval);
                 hideFavoriteButton();
