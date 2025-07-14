@@ -151,71 +151,64 @@
 <body class="antialiased">
 
     <!-- Route Selection Page -->
-    <div id="routeSelectionPage" class="page active">
+    <div id="routeSelectionPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <!-- Reduced font size for header title -->
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-800">高雄市公車路線查詢</h1>
-                <!-- Reduced font size for header description -->
-                <p class="text-sm md:text-base text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800">高雄市公車路線查詢</h1>
+                <p class="text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
             
             <!-- Search input section (remains at top) -->
             <div class="relative mb-4">
-                <!-- Reduced font size for input placeholder -->
-                <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-3 pl-10 text-base bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500" readonly>
-                <svg class="w-5 h-5 text-slate-400 absolute top-1/2 left-3 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <input type="text" id="routeSearchInput" placeholder="請由下方鍵盤或直接輸入" class="w-full p-4 pl-12 text-lg bg-white border-2 border-slate-300 rounded-xl shadow-sm transition text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500" readonly>
+                <svg class="w-6 h-6 text-slate-400 absolute top-1/2 left-4 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
             </div>
 
             <div id="initialLoading" class="text-center py-20">
                 <div class="loading-spinner mx-auto"></div>
-                <!-- Reduced font size for loading message -->
-                <p class="mt-4 text-sm text-slate-600">正在載入所有路線...</p>
+                <p class="mt-4 text-slate-600">正在載入所有路線...</p>
             </div>
             
             <div id="routeListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
                 <!-- Route items will be injected here -->
             </div>
-            <!-- Reduced font size for no results message -->
-            <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-base hidden">找不到相符的路線。</p>
+             <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden">找不到相符的路線。</p>
         </div>
 
         <!-- Filter Keyboard (moved to bottom and fixed) -->
         <div id="filterKeyboardContainer" class="fixed bottom-0 left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
             <div class="container mx-auto max-w-4xl">
-                <!-- Reduced padding and font size for keyboard buttons -->
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
                     <!-- Row 1 -->
-                    <button data-filter="紅" data-type="category" class="p-2 text-sm text-black font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
-                    <button data-filter="其他" data-type="category" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
-                    <button data-filter="1" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
-                    <button data-filter="2" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
-                    <button data-filter="3" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
+                    <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
+                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
+                    <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
+                    <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
+                    <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
                     
                     <!-- Row 2 -->
-                    <button data-filter="橘" data-type="category" class="p-2 text-sm text-black font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
-                    <button data-filter="幹線" data-type="category" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
-                    <button data-filter="4" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
-                    <button data-filter="5" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
-                    <button data-filter="6" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">6</button>
+                    <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
+                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
+                    <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
+                    <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
+                    <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">6</button>
 
                     <!-- Row 3 -->
-                    <button data-filter="黃" data-type="category" class="p-2 text-sm text-black font-bold bg-yellow-400 rounded-lg shadow-md hover:bg-yellow-500 transition-colors">黃</button>
-                    <button data-filter="E" data-type="category" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">快線</button>
-                    <button data-filter="7" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">7</button>
-                    <button data-filter="8" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">8</button>
-                    <button data-filter="9" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
+                    <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md hover:bg-yellow-500 transition-colors">黃</button>
+                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">快線</button>
+                    <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">7</button>
+                    <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">8</button>
+                    <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
 
                     <!-- Row 4 -->
-                    <button data-filter="綠" data-type="category" class="p-2 text-sm text-black font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
-                    <!-- Adjusted padding and font size for bus-taxi-button -->
-                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors bus-taxi-button text-sm"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
-                    <button data-filter="reset" data-type="action" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
-                    <button data-filter="0" data-type="number" class="p-2 text-sm bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
-                    <button data-filter="backspace" data-type="action" class="p-2 text-sm bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
-                        <span class="material-icons-outlined text-base">backspace</span>
+                    <button data-filter="綠" data-type="category" class="p-3 text-black font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
+                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
+                    <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
+                    <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
+                    <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
+                        <span class="material-icons-outlined">backspace</span>
                     </button>
                 </div>
             </div>
@@ -231,7 +224,7 @@
             <!-- START: Top Fixed Section -->
             <div class="flex-shrink-0">
                 <header class="flex items-center justify-between mb-4">
-                     <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                     <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
@@ -239,16 +232,16 @@
                     </button>
                 </header>
                 
-                <h1 id="routeTitle" class="text-2xl md:text-3xl font-bold text-slate-800 text-center mb-2"></h1>
-                <p id="routeDescription" class="text-slate-500 text-center mb-6"></p>
+                <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center mb-2"></h1>
+                <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
 
-                <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+                <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
                     <strong class="font-bold">錯誤!</strong>
                     <span class="block sm:inline" id="errorMessageText"></span>
                 </div>
 
                 <!-- Direction buttons are now part of the fixed top section -->
-                <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden">
+                <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
                     <button id="goDirectionButton" class="direction-button flex-1 p-3 font-semibold transition-colors" data-direction="1">去程</button>
                     <button id="backDirectionButton" class="direction-button flex-1 p-3 font-semibold transition-colors" data-direction="2">返程</button>
                 </div>
@@ -260,7 +253,7 @@
             <div id="estimateTimesSection" class="flex-grow overflow-y-auto">
                 <div id="trackerLoading" class="text-center py-20 hidden">
                     <div class="loading-spinner mx-auto"></div>
-                    <p class="mt-4 text-slate-600">正在載入路線動態...</p>
+                    <p class="mt-4 text-slate-600 text-sm">正在載入路線動態...</p>
                 </div>
                 
                 <div id="stationList" class="space-y-3">
@@ -382,8 +375,7 @@
             function displayInitialPrompt() {
                 routeListContainer.innerHTML = `
                     <div id="initialPrompt" class="text-center col-span-full py-10 text-slate-500">
-                        <!-- Reduced font size for initial prompt -->
-                        <p class="text-base">請使用鍵盤或直接輸入開始搜尋路線。</p>
+                        <p class="text-lg">請使用鍵盤或直接輸入開始搜尋路線。</p>
                     </div>`;
                 noResultsMessage.style.display = 'none';
                 updateCountdownButton.style.display = 'none'; // Hide on selection page
@@ -399,16 +391,14 @@
                 
                 routes.forEach(route => {
                     const card = document.createElement('div');
-                    // Adjusted padding and font sizes for route cards
-                    card.className = 'route-card p-3 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border-l-4 border-transparent hover:border-blue-500';
+                    card.className = 'route-card p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border-l-4 border-transparent hover:border-blue-500';
                     card.dataset.routeId = route.id;
                     card.dataset.routeName = route.name;
                     card.dataset.routeDesc = route.description;
                     
                     card.innerHTML = `
-                        <!-- Reduced font size for route name and description -->
-                        <h3 class="font-bold text-base text-slate-800">${route.name}</h3>
-                        <p class="text-xs text-slate-500">${route.description}</p>
+                        <h3 class="font-bold text-lg text-slate-800">${route.name}</h3>
+                        <p class="text-sm text-slate-500">${route.description}</p>
                     `;
                     card.addEventListener('click', () => {
                         navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc, true);
@@ -524,7 +514,7 @@
                     backDirectionButton.classList.remove('bg-blue-500', 'text-white');
                 } else {
                     backDirectionButton.classList.add('bg-blue-500', 'text-white');
-                    backDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                    backDirectionButton.classList.remove('bg-white', 'text-blue-500');
                     goDirectionButton.classList.add('bg-white', 'text-blue-500');
                     goDirectionButton.classList.remove('bg-blue-500', 'text-white');
                 }
@@ -541,94 +531,108 @@
                 }
             }
 
-            function displayEstimateTimes(data, direction) {
-                stationListDiv.innerHTML = '';
-                errorMessageDiv.style.display = 'none';
+            // Helper function to create a station card element
+            function createStationCard(estimate, stationName, displayedBusIds) {
+                let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
+                let busIdDisplay = '';
+                let timeColorClass = 'text-slate-500';
+                let pillBgColorClass = 'bg-slate-200';
 
-                if (!data || !data.estimateTimes || !data.estimateTimes.edges.length) {
-                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500">目前沒有預計到站時間資訊。</p>`;
-                    return;
+                if (estimate.etas && estimate.etas.length > 0) {
+                    // Find the ETA with the minimum etaTime
+                    const closestEta = estimate.etas.reduce((minEta, currentEta) => {
+                        // Ensure etaTime is a number and handle null/undefined gracefully
+                        const minTime = minEta.etaTime !== null ? minEta.etaTime : Infinity;
+                        const currentTime = currentEta.etaTime !== null ? currentEta.etaTime : Infinity;
+                        return currentTime < minTime ? currentEta : minEta;
+                    }, { etaTime: Infinity }); // Initialize with a very high etaTime
+
+                    if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
+                        if (closestEta.etaTime <= 1) { // "進站中" or "即將到站"
+                            timeDisplay = '進站中';
+                            timeColorClass = 'text-red-700';
+                            pillBgColorClass = 'bg-red-200';
+                        } else if (closestEta.etaTime <= 3) {
+                            timeDisplay = '即將到站';
+                            timeColorClass = 'text-green-700';
+                            pillBgColorClass = 'bg-green-200';
+                        } else {
+                            timeDisplay = `${closestEta.etaTime}分`;
+                            timeColorClass = 'text-blue-700';
+                            pillBgColorClass = 'bg-blue-200';
+                        }
+
+                        // Only display busId if it hasn't been displayed before for any station
+                        if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
+                            // Add Material Icon to the busIdDisplay and wrap it in a styled block
+                            busIdDisplay = `<span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
+                                                <span class="material-icons-outlined text-sm">directions_bus</span>
+                                                <span>${closestEta.busId}</span>
+                                            </span>`;
+                            displayedBusIds.add(closestEta.busId); // Add busId to the set of displayed IDs
+                        }
+                    }
+                } else if (estimate.comeTime) {
+                    timeDisplay = estimate.comeTime;
+                    timeColorClass = 'text-slate-700';
+                    pillBgColorClass = 'bg-slate-200';
                 }
+
+                const stationCard = document.createElement('div');
+                stationCard.className = 'flex items-center justify-between p-3 bg-slate-50 rounded-lg'; // Reduced padding
+                stationCard.dataset.stationId = estimate.id; // Add stationId for lookup
+                stationCard.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="inline-flex items-center justify-center px-2 py-0.5 rounded-full w-[90px] text-center ${pillBgColorClass}">
+                            <p class="text-base font-bold ${timeColorClass}">${timeDisplay}</p>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-base font-medium text-slate-800">${stationName}</p>
+                        </div>
+                    </div>
+                    <div class="flex-none">${busIdDisplay}</div>
+                `;
+                return stationCard;
+            }
+
+            function displayEstimateTimes(data, direction) {
+                errorMessageDiv.style.display = 'none';
 
                 const stationMap = new Map(data.stations.edges.map(edge => [edge.node.id, edge.node.name]));
                 const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
 
-                if (filteredEstimates.length === 0) {
-                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500">此方向目前沒有班次資訊。</p>`;
+                // Handle cases with no data or no estimates for the current direction
+                if (!data || !data.estimateTimes || !data.estimateTimes.edges.length || filteredEstimates.length === 0) {
+                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">目前沒有預計到站時間資訊。</p>`;
+                    if (filteredEstimates.length === 0 && data && data.estimateTimes && data.estimateTimes.edges.length) {
+                        // More specific message if there's data but not for this direction
+                        stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">此方向目前沒有班次資訊。</p>`;
+                    }
                     return;
                 }
 
-                // Use a Set to keep track of bus IDs that have already been displayed
-                // This ensures each bus ID is displayed only once, at the first station it appears for.
-                const displayedBusIds = new Set(); 
+                // Use a DocumentFragment to build the new list efficiently
+                const fragment = document.createDocumentFragment();
+                const displayedBusIds = new Set(); // To track displayed bus IDs for the current update cycle
 
                 filteredEstimates.forEach(({ node: estimate }) => {
                     const stationName = stationMap.get(estimate.id) || `未知站點 (ID: ${estimate.id})`;
-                    let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
-                    let busIdDisplay = '';
-                    let timeColorClass = 'text-slate-500';
-                    let pillBgColorClass = 'bg-slate-200';
-
-                    if (estimate.etas && estimate.etas.length > 0) {
-                        // Find the ETA with the minimum etaTime
-                        const closestEta = estimate.etas.reduce((minEta, currentEta) => {
-                            // Ensure etaTime is a number and handle null/undefined gracefully
-                            const minTime = minEta.etaTime !== null ? minEta.etaTime : Infinity;
-                            const currentTime = currentEta.etaTime !== null ? currentEta.etaTime : Infinity;
-                            return currentTime < minTime ? currentEta : minEta;
-                        }, { etaTime: Infinity }); // Initialize with a very high etaTime
-
-                        if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
-                            if (closestEta.etaTime <= 1) { // "進站中" or "即將到站"
-                                timeDisplay = '進站中';
-                                timeColorClass = 'text-red-700';
-                                pillBgColorClass = 'bg-red-200';
-                            } else if (closestEta.etaTime <= 3) {
-                                timeDisplay = '即將到站';
-                                timeColorClass = 'text-green-700';
-                                pillBgColorClass = 'bg-green-200';
-                            } else {
-                                timeDisplay = `${closestEta.etaTime}分`;
-                                timeColorClass = 'text-blue-700';
-                                pillBgColorClass = 'bg-blue-200';
-                            }
-
-                            // Only display busId if it hasn't been displayed before for any station
-                            if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
-                                // Add Material Icon to the busIdDisplay and wrap it in a styled block
-                                busIdDisplay = `<span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
-                                                    <span class="material-icons-outlined text-sm">directions_bus</span>
-                                                    <span>${closestEta.busId}</span>
-                                                </span>`;
-                                displayedBusIds.add(closestEta.busId); // Add busId to the set of displayed IDs
-                            }
-                        }
-                    } else if (estimate.comeTime) {
-                        timeDisplay = estimate.comeTime;
-                        timeColorClass = 'text-slate-700';
-                        pillBgColorClass = 'bg-slate-200';
-                    }
-
-                    const stationCard = document.createElement('div');
-                    stationCard.className = 'flex items-center justify-between p-4 bg-slate-50 rounded-lg';
-                    stationCard.innerHTML = `
-                        <div class="flex items-center gap-4 flex-1">
-                            <div class="inline-flex items-center justify-center px-3 py-1 rounded-full w-[100px] text-center ${pillBgColorClass}">
-                                <p class="text-lg font-bold ${timeColorClass}">${timeDisplay}</p>
-                            </div>
-                            <div class="flex-1">
-                                <p class="text-lg font-medium text-slate-800">${stationName}</p>
-                            </div>
-                        </div>
-                        <div class="flex-none">${busIdDisplay}</div>
-                    `;
-                    stationListDiv.appendChild(stationCard);
+                    const card = createStationCard(estimate, stationName, displayedBusIds);
+                    fragment.appendChild(card);
                 });
+
+                // Efficiently replace all children in one go
+                // This avoids repeated DOM manipulations and reflows/repaints
+                while (stationListDiv.firstChild) {
+                    stationListDiv.removeChild(stationListDiv.firstChild);
+                }
+                stationListDiv.appendChild(fragment);
             }
             
-            async function loadBusData(routeId) {
-                trackerLoading.style.display = 'block';
-                stationListDiv.innerHTML = ''; // Clear previous list
+            async function loadBusData(routeId, isInitialLoad = false) { // Added isInitialLoad parameter
+                if (isInitialLoad) { // Only show loading spinner for initial load
+                    trackerLoading.style.display = 'block';
+                }
                 errorMessageDiv.style.display = 'none';
                 updateCountdownButton.disabled = true; // Disable update button during loading
 
@@ -647,7 +651,7 @@
                     errorMessageText.textContent = error.message;
                     errorMessageDiv.style.display = 'block';
                 } finally {
-                    trackerLoading.style.display = 'none';
+                    trackerLoading.style.display = 'none'; // Always hide it after fetch completes
                     updateCountdownButton.disabled = false; // Re-enable update button after loading
                 }
             }
@@ -669,7 +673,7 @@
                 routeDescription.textContent = ''; 
                 currentDirection = 1;
                 
-                loadBusData(currentRouteId);
+                loadBusData(currentRouteId, true); // Pass true for initial load
                 countdownTimer.reset(); // Reset countdown when navigating to tracker page
             }
 
@@ -711,7 +715,7 @@
 
                     // Call loadBusData directly for the current route
                     if (currentRouteId) {
-                        await loadBusData(currentRouteId);
+                        await loadBusData(currentRouteId, false); // Pass false for updates
                     }
                     this.reset();
                 }
@@ -768,7 +772,7 @@
                         routeTitle.textContent = route.name;
                         routeDescription.textContent = ''; // 移除路線名底下的終點站標示
                         currentDirection = 1;
-                        await loadBusData(currentRouteId); // Load data immediately
+                        await loadBusData(currentRouteId, true); // Pass true for initial load
                         countdownTimer.reset(); // Start countdown
                     } else {
                         // Route not found, fall back to selection page
@@ -790,7 +794,7 @@
             }
 
             // Start countdown interval regardless of initial page, but it will only
-            // update if busTrackerPage is active (checked inside the interval).
+            // update if busTrackerPage.classList.contains('active') is true (checked inside the interval).
             countdownInterval = setInterval(() => {
                 if (busTrackerPage.classList.contains('active') && navigator.onLine) {
                     updateCountdownButton.style.display = "flex";
