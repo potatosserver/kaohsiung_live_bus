@@ -146,6 +146,33 @@
         .spin-update {
             animation: spin-180 0.5s ease forwards;
         }
+        
+        /* --- START: NEW STYLES FOR KEYBOARD --- */
+        /* Styles for the keyboard to make buttons square on narrow screens */
+        @media (max-width: 767px) { /* Below Tailwind's 'md' breakpoint */
+            #filterKeyboard {
+                gap: 4px !important; /* Consistent gap, equivalent to Tailwind's gap-1. Use !important to override Tailwind. */
+                max-width: 384px; /* Constrain width, equivalent to max-w-sm */
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            #filterKeyboard > button {
+                aspect-ratio: 1 / 1; /* Force square shape */
+                padding: 0; /* Remove padding to allow content to fill the square */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            /* The bus-taxi button needs special handling for its text */
+            #filterKeyboard .bus-taxi-button {
+                padding: 4px; /* Add a little padding back for the two-line text */
+                line-height: 1.1;
+            }
+        }
+        /* --- END: NEW STYLES FOR KEYBOARD --- */
+
     </style>
 </head>
 <body class="antialiased">
@@ -224,15 +251,20 @@
             <!-- START: Top Fixed Section -->
             <div class="flex-shrink-0">
                 <header class="flex items-center justify-between mb-4">
-                     <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2 text-sm">
+                    <!-- Moved backButton to be alongside routeTitle -->
+                    <!-- The back button is now a simple circular icon -->
+                </header>
+                
+                <div class="flex items-center justify-center mb-2">
+                    <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-full transition-colors flex items-center justify-center mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
-                        返回路線列表
                     </button>
-                </header>
-                
-                <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center mb-2"></h1>
+                    <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
+                    <!-- Placeholder for potential right-side element if needed -->
+                    <div class="w-9 h-9 mr-2"></div> 
+                </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
 
                 <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
