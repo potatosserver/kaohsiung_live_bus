@@ -371,7 +371,7 @@
             </header>
             
             <!-- START: Modified Search Bar -->
-            <div class="flex items-center gap-2 mb-4 bg-white border-2 border-slate-300 rounded-xl shadow-sm p-1">
+            <div id="searchBarContainer" class="flex items-center gap-2 mb-4 bg-white border-2 border-slate-300 rounded-xl shadow-sm p-1 mx-auto">
                 <!-- Special Category Display -->
                 <div class="flex-shrink-0 pl-3 pr-2">
                     <span id="categoryDisplay" class="font-semibold text-blue-600">全部路線</span>
@@ -408,25 +408,25 @@
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
                     <!-- Removed hover:bg-red-600 and transition-colors from all keyboard buttons -->
                     <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md">紅</button>
-                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md">其他</button>
+                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md">幹線</button>
                     <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md">1</button>
                     <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md">2</button>
                     <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md">3</button>
                     
                     <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md">橘</button>
-                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md">幹線</button>
+                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md">快線</button>
                     <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md">4</button>
                     <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md">5</button>
                     <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md">6</button>
 
                     <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md">黃</button>
-                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md">快線</button>
+                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
                     <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md">7</button>
                     <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md">8</button>
                     <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md">9</button>
 
                     <button data-filter="綠" data-type="category" class="p-3 text-black font-bold bg-green-500 rounded-lg shadow-md">綠</button>
-                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
+                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md">其他</button>
                     <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md">重設</button>
                     <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md">0</button>
                     <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 rounded-lg shadow-md flex justify-center items-center">
@@ -650,6 +650,19 @@
                 } catch (error) {
                     console.error("API Fetch Error:", error);
                     throw error;
+                }
+            }
+            
+            // Function to synchronize search bar and keyboard width
+            function matchKeyboardWidth() {
+                const keyboard = document.getElementById('filterKeyboard');
+                const searchBarContainer = document.getElementById('searchBarContainer');
+                if (keyboard && searchBarContainer) {
+                    const keyboardWidth = keyboard.offsetWidth;
+                    // Ensure the width is not zero before setting
+                    if (keyboardWidth > 0) {
+                        searchBarContainer.style.width = `${keyboardWidth}px`;
+                    }
                 }
             }
 
@@ -1418,10 +1431,15 @@
             loadFavorites(); // Load favorites on app start
             await initRouteSelection(); // Always init routes first
 
-            // Call on initial load to set correct padding
+            // Call on initial load to set correct padding and match width
             adjustContentPadding();
-            // Call on window resize to adjust for orientation changes or dynamic keyboard height
-            window.addEventListener('resize', adjustContentPadding);
+            matchKeyboardWidth();
+
+            // Call on window resize to adjust for orientation changes, dynamic keyboard height, and width matching
+            window.addEventListener('resize', () => {
+                adjustContentPadding();
+                matchKeyboardWidth();
+            });
 
 
             const urlParams = new URLSearchParams(window.location.search);
