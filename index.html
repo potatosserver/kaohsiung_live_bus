@@ -12,7 +12,7 @@
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             background-color: #f1f5f9;
             color: #1e293b;
-            padding-bottom: 70px; /* Add padding for the fixed navigation bar */
+            /* Padding bottom will be handled dynamically by JS for specific pages */
         }
         /* Loading Spinner Animation */
         @keyframes spin {
@@ -53,12 +53,13 @@
             font-size: 24px;
         }
         /* Ensure the body has enough padding at the bottom for the fixed keyboard */
+        /* This will be set dynamically by JavaScript */
         #routeSelectionPage .container {
-            padding-bottom: 20px;
+            padding-bottom: 20px; /* Default, will be overridden by JS */
         }
         @media (min-width: 768px) {
             #routeSelectionPage .container {
-                padding-bottom: 30px;
+                padding-bottom: 30px; /* Default, will be overridden by JS */
             }
         }
 
@@ -218,7 +219,7 @@
         #favoriteActionButton {
             position: fixed;
             padding: 8px 16px;
-            background-color: #93c5fd; /* Light Blue-300 for a lighter shade */
+            background-color: #1d4ed8; /* A darker, more vibrant blue */
             color: white;
             border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -230,7 +231,7 @@
             gap: 6px;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.2s; /* Added background-color to transition */
             transform: translateY(10px);
         }
         #favoriteActionButton.show {
@@ -238,6 +239,10 @@
             visibility: visible;
             transform: translateY(0);
         }
+        #favoriteActionButton:hover {
+            background-color: #2563eb; /* Slightly lighter blue on hover */
+        }
+
 
         /* Styles for toast messages */
         .toast-message {
@@ -723,6 +728,7 @@
                 if (pageId === 'routeSelectionPage') {
                     filterKeyboardContainer.style.display = 'block';
                     updateCountdownButton.style.display = 'none';
+                    adjustContentPadding(); // Adjust padding when keyboard is visible
                 } else if (pageId === 'busTrackerPage') {
                     filterKeyboardContainer.style.display = 'none'; // Hide keyboard on tracker page
                     if (navigator.onLine) {
@@ -730,9 +736,19 @@
                     } else {
                         updateCountdownButton.style.display = 'none';
                     }
+                    // Reset padding if it was adjusted for keyboard
+                    const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
+                    if (routeSelectionContainer) {
+                        routeSelectionContainer.style.paddingBottom = ''; // Clear inline style
+                    }
                 } else {
                     filterKeyboardContainer.style.display = 'none';
                     updateCountdownButton.style.display = 'none';
+                    // Reset padding if it was adjusted for keyboard
+                    const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
+                    if (routeSelectionContainer) {
+                        routeSelectionContainer.style.paddingBottom = ''; // Clear inline style
+                    }
                 }
 
                 // Update active navigation button
@@ -936,7 +952,7 @@
             // Helper function to create a station card element
             function createStationCard(estimate, stationName, displayedBusIds) {
                 let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
-                let busIdDisplay = '';
+                let busIdDisplayHtml = ''; // Changed variable name to avoid confusion with the element
                 let timeColorClass = 'text-slate-500';
                 let pillBgColorClass = 'bg-slate-200';
 
@@ -962,9 +978,12 @@
                             pillBgColorClass = 'bg-blue-200';
                         }
 
+                        // Only display busId if it exists and hasn't been displayed for this station already
                         if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
-                            busIdDisplay = `<span class="material-icons-outlined text-sm">directions_bus</span>
-                                            <span>${closestEta.busId}</span>`;
+                            busIdDisplayHtml = `<div class="bus-id-display">
+                                                    <span class="material-icons-outlined text-sm">directions_bus</span>
+                                                    <span>${closestEta.busId}</span>
+                                                </div>`;
                             displayedBusIds.add(closestEta.busId);
                         }
                     }
@@ -997,7 +1016,7 @@
                         <div class="station-name">
                             <p class="text-base font-medium text-slate-800">${stationName}</p>
                         </div>
-                        <div class="bus-id-display">${busIdDisplay}</div>
+                        ${busIdDisplayHtml} <!-- Insert the bus ID display here -->
                     </div>
                 `;
 
@@ -1017,53 +1036,64 @@
 
                 // --- START: Improved Touch Event Listeners ---
                 let touchStartX, touchStartY;
-                let isScrolling = false;
+                let longPressTimer;
+                let isLongPress = false; // Flag to indicate if a long press has been detected and handled
 
                 stationCard.addEventListener('touchstart', (e) => {
                     if (e.touches.length === 1) {
                         touchStartX = e.touches[0].clientX;
                         touchStartY = e.touches[0].clientY;
-                        isScrolling = false; // Reset on new touch
+                        isLongPress = false; // Reset flag for new touch
 
                         longPressTimer = setTimeout(() => {
-                            // Only trigger if not scrolling
-                            if (!isScrolling) {
-                                e.preventDefault();
-                                const stationData = {
-                                    routeId: parseInt(e.currentTarget.dataset.routeId),
-                                    routeName: e.currentTarget.dataset.routeName,
-                                    stationId: e.currentTarget.dataset.stationId,
-                                    stationName: e.currentTarget.dataset.stationName,
-                                    direction: currentDirection,
-                                    destination: currentDirection === 1 ? currentRouteData.destination : currentRouteData.departure
-                                };
-                                showFavoriteButton(stationData, e.touches[0].clientX, e.touches[0].clientY);
-                            }
+                            isLongPress = true; // Mark as long press
+                            // Prevent default context menu, but only if it's a long press
+                            // This prevents both the context menu and potential scrolling if held long enough
+                            e.preventDefault(); 
+                            const stationData = {
+                                routeId: parseInt(e.currentTarget.dataset.routeId),
+                                routeName: e.currentTarget.dataset.routeName,
+                                stationId: e.currentTarget.dataset.stationId,
+                                stationName: e.currentTarget.dataset.stationName,
+                                direction: currentDirection,
+                                destination: currentDirection === 1 ? currentRouteData.destination : currentRouteData.departure
+                            };
+                            showFavoriteButton(stationData, e.touches[0].clientX, e.touches[0].clientY);
                         }, 700); // 700ms for long press
                     }
                 });
 
                 stationCard.addEventListener('touchmove', (e) => {
-                    if (!touchStartX || !touchStartY) {
-                        return;
-                    }
+                    if (!longPressTimer) return; // If timer already cleared or not set, ignore
 
                     const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
                     const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
 
-                    // If moved more than a 10px threshold, it's a scroll
+                    // If moved more than a 10px threshold, it's a scroll, cancel long press
                     if (deltaX > 10 || deltaY > 10) {
-                        isScrolling = true;
                         clearTimeout(longPressTimer);
+                        longPressTimer = null; // Clear timer reference
+                        isLongPress = false; // It's not a long press
                     }
                 });
 
-                const cancelLongPress = () => {
-                    clearTimeout(longPressTimer);
-                };
+                stationCard.addEventListener('touchend', (e) => {
+                    if (longPressTimer) { // If timer is still active (not cleared by touchmove)
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null; // Clear timer reference
+                    }
+                    // If it was a long press, the action has already been taken (showFavoriteButton).
+                    // If it was a short tap, no default action is defined for station cards, so nothing happens.
+                    // No need to call e.preventDefault() here unless we want to prevent a click.
+                });
 
-                stationCard.addEventListener('touchend', cancelLongPress);
-                stationCard.addEventListener('touchcancel', cancelLongPress);
+                stationCard.addEventListener('touchcancel', (e) => {
+                    if (longPressTimer) {
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                    isLongPress = false;
+                });
                 // --- END: Improved Touch Event Listeners ---
 
                 return stationCard;
@@ -1245,6 +1275,28 @@
                 }
             };
 
+            // Function to calculate and apply padding for fixed keyboard and nav
+            function adjustContentPadding() {
+                const mainNavHeight = mainNav.offsetHeight;
+                // Temporarily show the keyboard to measure its height accurately
+                filterKeyboardContainer.style.display = 'block';
+                const keyboardHeight = filterKeyboardContainer.offsetHeight;
+                // If the current page is not route selection, hide it again
+                if (!routeSelectionPage.classList.contains('active')) {
+                    filterKeyboardContainer.style.display = 'none'; 
+                }
+
+                // Calculate total height needed for padding, add a small buffer
+                const totalFixedBottomHeight = mainNavHeight + keyboardHeight + 10; // 10px buffer
+
+                // Apply padding to the main content container of the route selection page
+                // This ensures content can scroll above the fixed keyboard and nav
+                const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
+                if (routeSelectionContainer) {
+                    routeSelectionContainer.style.paddingBottom = `${totalFixedBottomHeight}px`;
+                }
+            }
+
             // --- Event Listeners ---
             backButton.addEventListener('click', navigateToSelection);
             goDirectionButton.addEventListener('click', handleDirectionToggle);
@@ -1253,13 +1305,15 @@
             window.addEventListener('popstate', (event) => {
                 const state = event.state || {};
                 const urlParams = new URLSearchParams(window.location.search);
-                const routeIdFromUrl = urlParams.get('route') || state.routeId;
-                const pageFromUrl = urlParams.get('page') || (state.page === 'favorites' ? 'favorites' : null) || (state.page === 'settings' ? 'settings' : null);
+                const routeIdFromUrl = urlParams.get('route');
+                const pageFromUrl = urlParams.get('page');
+                const stationIdFromState = state.stationId;
+                const directionFromState = state.direction;
 
                 if (routeIdFromUrl) {
                     const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                     if (route) {
-                        navigateToTracker(route.id, route.name, route.description, false, state.stationId, state.direction);
+                        navigateToTracker(route.id, route.name, route.description, false, stationIdFromState, directionFromState);
                     } else {
                         navigateToSelection();
                     }
@@ -1304,6 +1358,12 @@
             // --- Initial Load Logic ---
             loadFavorites(); // Load favorites on app start
             await initRouteSelection(); // Always init routes first
+
+            // Call on initial load to set correct padding
+            adjustContentPadding();
+            // Call on window resize to adjust for orientation changes or dynamic keyboard height
+            window.addEventListener('resize', adjustContentPadding);
+
 
             const urlParams = new URLSearchParams(window.location.search);
             const routeIdFromUrl = urlParams.get('route');
