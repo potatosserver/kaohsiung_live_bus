@@ -200,7 +200,7 @@
             align-items: center;
             justify-content: center;
             flex-grow: 1;
-            padding: 8px 4px;
+            padding: 4px 4px; /* Reduced padding from 8px to 4px */
             font-size: 0.8rem;
             color: #64748b; /* Slate-500 equivalent */
             background-color: transparent;
@@ -599,7 +599,7 @@
                 { prefix: '綠', filterValue: '綠' },
                 { prefix: '其他', filterValue: '其他' },
                 { prefix: '幹線', filterValue: '幹線' },
-                { prefix: '快線', filterValue: 'E' }
+                { prefix: 'E', filterValue: 'E' }
             ];
             
             // New map for display text
@@ -955,6 +955,16 @@
                 // On every keypress, construct the full search term and call applySearch
                 const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                 applySearch(fullSearchTerm);
+            });
+
+            // Add touchend event listener to release active state on touch devices
+            filterKeyboard.addEventListener('touchend', (e) => {
+                const button = e.target.closest('button');
+                if (button) {
+                    // This forces the browser to re-evaluate the :active state,
+                    // effectively releasing it on touchend.
+                    button.blur(); 
+                }
             });
             // --- END: MODIFIED Keyboard input handling ---
             
