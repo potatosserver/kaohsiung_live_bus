@@ -406,29 +406,30 @@
         <div id="filterKeyboardContainer" class="fixed bottom-[70px] left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
             <div class="container mx-auto max-w-4xl">
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
-                    <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md hover:bg-red-600 transition-colors">紅</button>
-                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">其他</button>
-                    <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">1</button>
-                    <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">2</button>
-                    <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">3</button>
+                    <!-- Removed hover:bg-red-600 and transition-colors from all keyboard buttons -->
+                    <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md">紅</button>
+                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md">其他</button>
+                    <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md">1</button>
+                    <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md">2</button>
+                    <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md">3</button>
                     
-                    <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md hover:bg-orange-600 transition-colors">橘</button>
-                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">幹線</button>
-                    <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">4</button>
-                    <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">5</button>
-                    <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">6</button>
+                    <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md">橘</button>
+                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md">幹線</button>
+                    <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md">4</button>
+                    <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md">5</button>
+                    <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md">6</button>
 
-                    <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md hover:bg-yellow-500 transition-colors">黃</button>
-                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">快線</button>
-                    <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">7</button>
-                    <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">8</button>
-                    <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">9</button>
+                    <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md">黃</button>
+                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md">快線</button>
+                    <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md">7</button>
+                    <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md">8</button>
+                    <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md">9</button>
 
-                    <button data-filter="綠" data-type="category" class="p-3 text-black font-bold bg-green-500 rounded-lg shadow-md hover:bg-green-600 transition-colors">綠</button>
-                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
-                    <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">重設</button>
-                    <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md hover:bg-slate-100 transition-colors">0</button>
-                    <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 hover:bg-slate-100 rounded-lg shadow-md transition-colors flex justify-center items-center">
+                    <button data-filter="綠" data-type="category" class="p-3 text-black font-bold bg-green-500 rounded-lg shadow-md">綠</button>
+                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
+                    <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md">重設</button>
+                    <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md">0</button>
+                    <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 rounded-lg shadow-md flex justify-center items-center">
                         <span class="material-icons-outlined">backspace</span>
                     </button>
                 </div>
@@ -599,7 +600,7 @@
                 { prefix: '綠', filterValue: '綠' },
                 { prefix: '其他', filterValue: '其他' },
                 { prefix: '幹線', filterValue: '幹線' },
-                { prefix: 'E', filterValue: 'E' }
+                { prefix: '快線', filterValue: 'E' }
             ];
             
             // New map for display text
@@ -842,7 +843,8 @@
                 
                 routes.forEach(route => {
                     const card = document.createElement('div');
-                    card.className = 'route-card p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border-l-4 border-transparent hover:border-blue-500';
+                    // Removed hover:shadow-xl hover:-translate-y-1 transition-all hover:border-blue-500
+                    card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent';
                     card.dataset.routeId = route.id;
                     card.dataset.routeName = route.name;
                     card.dataset.routeDesc = route.description;
@@ -923,6 +925,12 @@
                 const value = button.dataset.filter;
                 const type = button.dataset.type;
 
+                // Add a temporary active class for visual feedback
+                button.classList.add('active-keyboard-button');
+                setTimeout(() => {
+                    button.classList.remove('active-keyboard-button');
+                }, 150); // Remove after 150ms
+
                 if (type === 'category') {
                     // Define the search prefix based on the button clicked. This is used for filtering.
                     let searchPrefix;
@@ -955,16 +963,6 @@
                 // On every keypress, construct the full search term and call applySearch
                 const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                 applySearch(fullSearchTerm);
-            });
-
-            // Add touchend event listener to release active state on touch devices
-            filterKeyboard.addEventListener('touchend', (e) => {
-                const button = e.target.closest('button');
-                if (button) {
-                    // This forces the browser to re-evaluate the :active state,
-                    // effectively releasing it on touchend.
-                    button.blur(); 
-                }
             });
             // --- END: MODIFIED Keyboard input handling ---
             
@@ -1261,7 +1259,8 @@
                     noFavoritesMessage.classList.add('hidden');
                     favoriteStations.forEach(fav => {
                         const favCard = document.createElement('div');
-                        favCard.className = 'favorite-card-item flex items-center justify-between p-4 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer';
+                        // Removed hover:shadow-xl hover:-translate-y-1 transition-all
+                        favCard.className = 'favorite-card-item flex items-center justify-between p-4 bg-white rounded-lg shadow-md cursor-pointer';
                         
                         const directionText = fav.destination ? `往 ${fav.destination}` : `方向 ${fav.direction}`;
 
