@@ -17,6 +17,7 @@
             -webkit-user-select: none; /* For Safari */
             -moz-user-select: none; /* For Firefox */
             -ms-user-select: none; /* For Internet Explorer/Edge */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Dark mode transition */
         }
         /* Loading Spinner Animation */
         @keyframes spin {
@@ -102,10 +103,10 @@
         #updateCountdown {
             white-space: nowrap;
             position: fixed;
-            bottom: 10px;
+            bottom: 70px; 
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1000;
+            z-index: 1001; 
             padding: 8px 16px;
             background-color: #e0f2fe; /* Light blue */
             color: #333;
@@ -120,27 +121,15 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            cursor: pointer; /* Add cursor pointer for interactivity */
+            cursor: pointer; 
         }
 
         #updateCountdown:hover {
-            background-color: #bfdbfe; /* Lighter blue on hover */
+            background-color: #bfdbfe; 
             box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
 
-        body.dark-mode #updateCountdown {
-            background-color: #e8def8;
-            color: #1c1b1f;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        body.dark-mode #updateCountdown:hover {
-            background-color: #d0bcff;
-            color: #1c1b1f;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-        }
-
-        #updateCountdown .material-icons-outlined { /* Changed to material-icons-outlined */
+        #updateCountdown .material-icons-outlined {
             font-size: 18px;
             vertical-align: middle;
         }
@@ -154,31 +143,28 @@
             animation: spin-180 0.5s ease forwards;
         }
         
-        /* --- START: NEW STYLES FOR KEYBOARD --- */
         /* Styles for the keyboard to make buttons square on narrow screens */
-        @media (max-width: 767px) { /* Below Tailwind's 'md' breakpoint */
+        @media (max-width: 767px) { 
             #filterKeyboard {
-                gap: 4px !important; /* Consistent gap, equivalent to Tailwind's gap-1. Use !important to override Tailwind. */
-                max-width: 384px; /* Constrain width, equivalent to max-w-sm */
+                gap: 4px !important;
+                max-width: 384px; 
                 margin-left: auto;
                 margin-right: auto;
             }
 
             #filterKeyboard > button {
-                aspect-ratio: 1 / 1; /* Force square shape */
-                padding: 0; /* Remove padding to allow content to fill the square */
+                aspect-ratio: 1 / 1; 
+                padding: 0; 
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
             
-            /* The bus-taxi button needs special handling for its text */
             #filterKeyboard .bus-taxi-button {
-                padding: 4px; /* Add a little padding back for the two-line text */
+                padding: 4px; 
                 line-height: 1.1;
             }
         }
-        /* --- END: NEW STYLES FOR KEYBOARD --- */
 
         /* Styles for the main navigation bar */
         #mainNav {
@@ -186,8 +172,8 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: #ffffff; /* White background */
-            border-top: 1px solid #e2e8f0; /* Light border top */
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0; 
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             z-index: 1000;
             display: flex;
@@ -200,23 +186,23 @@
             align-items: center;
             justify-content: center;
             flex-grow: 1;
-            padding: 4px 4px; /* Reduced padding from 8px to 4px */
+            padding: 4px 4px;
             font-size: 0.8rem;
-            color: #64748b; /* Slate-500 equivalent */
+            color: #64748b; 
             background-color: transparent;
             border: none;
             cursor: pointer;
             transition: color 0.2s, background-color 0.2s;
         }
         #mainNav button .material-icons-outlined {
-            font-size: 28px; /* Larger icons */
+            font-size: 28px; 
             margin-bottom: 4px;
         }
         #mainNav button:hover {
-            color: #3b82f6; /* Blue-500 equivalent */
+            color: #3b82f6; 
         }
         #mainNav button.active-nav {
-            color: #3b82f6; /* Blue-500 equivalent */
+            color: #3b82f6; 
             font-weight: 600;
         }
 
@@ -224,19 +210,19 @@
         #favoriteActionButton {
             position: fixed;
             padding: 8px 16px;
-            background-color: #1d4ed8; /* A darker, more vibrant blue */
+            background-color: #1d4ed8; 
             color: white;
             border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             font-size: 0.9em;
             cursor: pointer;
-            z-index: 2000; /* Above everything */
+            z-index: 2000; 
             display: flex;
             align-items: center;
             gap: 6px;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.2s; /* Added background-color to transition */
+            transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.2s;
             transform: translateY(10px);
         }
         #favoriteActionButton.show {
@@ -245,14 +231,13 @@
             transform: translateY(0);
         }
         #favoriteActionButton:hover {
-            background-color: #2563eb; /* Slightly lighter blue on hover */
+            background-color: #2563eb; 
         }
-
 
         /* Styles for toast messages */
         .toast-message {
             position: fixed;
-            bottom: 80px; /* Above the nav bar */
+            bottom: 80px; 
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0, 0, 0, 0.7);
@@ -263,7 +248,7 @@
             z-index: 2000;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
-            pointer-events: none; /* Allow clicks to pass through */
+            pointer-events: none;
         }
         .toast-message.show {
             opacity: 1;
@@ -271,94 +256,252 @@
 
         /* Styles for the station list in bus tracker page */
         #stationList {
-            position: relative; /* For positioning the line */
-            padding-left: 20px; /* Space for the line and icons */
+            position: relative; 
+            padding-left: 20px; 
         }
 
         #stationList::before {
             content: '';
             position: absolute;
-            left: 21px; /* Adjusted to align with the center of the dots/hearts */
+            left: 21px; 
             top: 0;
             bottom: 0;
-            width: 2px; /* Line thickness */
-            background-color: #cbd5e1; /* Slate-300 equivalent */
-            z-index: 0; /* Ensure line is behind icons */
+            width: 2px;
+            background-color: #cbd5e1; 
+            z-index: 0; 
         }
 
         .station-item {
             position: relative;
             display: flex;
             align-items: center;
-            margin-bottom: 12px; /* Spacing between items */
+            margin-bottom: 12px;
         }
 
         .station-item:last-child {
-            margin-bottom: 0; /* No margin for the last item */
+            margin-bottom: 0;
         }
 
         .station-icon-container {
             position: absolute;
-            left: -19px; /* Adjust to place the icon/dot over the line */
-            z-index: 1; /* Ensure icon is above the line */
-            background-color: #f1f5f9; /* Match body background to hide line intersection */
-            border-radius: 50%; /* For the dot/heart background */
+            left: -19px; 
+            z-index: 1; 
+            background-color: #f1f5f9; 
+            border-radius: 50%; 
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px; /* Size of the icon container */
+            width: 40px; 
             height: 40px;
         }
 
         .station-dot {
             width: 12px;
             height: 12px;
-            background-color: #3b82f6; /* Blue dot */
+            background-color: #3b82f6; 
             border-radius: 50%;
         }
 
         .station-content {
             flex: 1;
-            padding: 12px; /* Padding inside the card */
-            background-color: #ffffff; /* White background for the card */
+            padding: 12px;
+            background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-left: 20px; /* Push content to the right of the line/icon */
+            margin-left: 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px; /* Space between time and name */
+            gap: 10px; 
         }
 
-        .station-content .time-pill {
-            flex-shrink: 0; /* Prevent time pill from shrinking */
-            min-width: 90px; /* Fixed width for time pill */
+        .station-content .time-pill, .favorite-time-display .time-pill {
+            flex-shrink: 0; 
+            min-width: 90px;
             text-align: center;
             padding: 6px 8px;
-            border-radius: 9999px; /* Full rounded corners */
-            font-weight: 700; /* Bold */
+            border-radius: 9999px; 
+            font-weight: 700;
             font-size: 0.9em;
         }
 
+        /* Unified time pill colors for light mode */
+        .time-pill.bg-slate-200 { background-color: #e2e8f0; color: #1e293b; } /* Default/Unknown */
+        .time-pill.bg-red-200 { background-color: #fee2e2; color: #b91c1c; } /* 進站中 */
+        .time-pill.bg-green-200 { background-color: #dcfce7; color: #166534; } /* 即將到站 */
+        .time-pill.bg-blue-200 { background-color: #dbeafe; color: #1e40af; } /* N 分 */
+        .favorite-time-display .time-pill.bg-yellow-200 { background-color: #fef9c3; color: #854d0e; } /* Favorites "即將到站" */
+
+
         .station-content .station-name {
-            flex-grow: 1; /* Allow station name to take available space */
+            flex-grow: 1; 
             font-weight: 500;
             color: #1e293b;
         }
 
         .station-content .bus-id-display {
-            flex-shrink: 0; /* Prevent bus ID from shrinking */
+            flex-shrink: 0; 
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background-color: #dbeafe; /* Blue-100 */
-            color: #1e40af; /* Blue-800 */
+            background-color: #dbeafe; 
+            color: #1e40af; 
             font-size: 0.75em;
             font-weight: 600;
             padding: 2px 8px;
             border-radius: 9999px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
+
+        /* Styles for Favorites Page Drag & Drop */
+        #favoriteListContainer .favorite-card-item.dragging {
+            opacity: 0.4;
+            background: #e0f2fe;
+            border: 2px dashed #3b82f6;
+        }
+
+        #favoriteListContainer .favorite-card-item {
+            touch-action: none; 
+        }
+
+        .drag-handle {
+            cursor: move; 
+            cursor: grab;
+            padding: 8px;
+            color: #94a3b8; 
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        /* --- START: DARK MODE STYLES --- */
+        body.dark-mode {
+            background-color: #0f172a; /* slate-900 */
+            color: #e2e8f0; /* slate-200 */
+        }
+        /* General Text */
+        body.dark-mode .text-slate-800 { color: #e2e8f0; }
+        body.dark-mode .text-slate-700 { color: #cbd5e1; }
+        body.dark-mode .text-slate-600 { color: #94a3b8; }
+        body.dark-mode .text-slate-500 { color: #64748b; }
+
+        /* Backgrounds and Borders */
+        body.dark-mode .bg-white { background-color: #1e293b; } /* slate-800 */
+        body.dark-mode .border-slate-200 { border-color: #334155; } /* slate-700 */
+        body.dark-mode .border-slate-300 { border-color: #475569; } /* slate-600 */
+
+        /* Search Bar */
+        body.dark-mode #searchBarContainer {
+            background-color: #1e293b; /* slate-800 */
+            border-color: #475569; /* slate-600 */
+        }
+        body.dark-mode #categoryDisplay { color: #93c5fd; } /* blue-300 */
+        body.dark-mode #searchBarContainer .w-px { background-color: #475569; }
+        body.dark-mode #routeSearchInput { color: #e2e8f0; }
+        body.dark-mode #routeSearchInput::placeholder { color: #94a3b8; }
+        body.dark-mode #searchBarContainer svg { color: #94a3b8; }
+
+        /* Loading & Messages */
+        body.dark-mode .loading-spinner {
+            border: 4px solid #334155; /* slate-700 */
+            border-top: 4px solid #60a5fa; /* blue-400 */
+        }
+        body.dark-mode #noResultsMessage, body.dark-mode #noFavoritesMessage { color: #94a3b8; }
+
+        /* Keyboard */
+        body.dark-mode #filterKeyboardContainer {
+            background-color: #1e293b; /* slate-800 */
+            border-top-color: #334155; /* slate-700 */
+        }
+        body.dark-mode #filterKeyboard button {
+             transition: background-color 0.2s ease;
+        }
+        body.dark-mode #filterKeyboard button[data-type="number"],
+        body.dark-mode #filterKeyboard button[data-filter="幹線"],
+        body.dark-mode #filterKeyboard button[data-filter="E"],
+        body.dark-mode #filterKeyboard button[data-filter="其他"],
+        body.dark-mode #filterKeyboard button[data-filter="reset"],
+        body.dark-mode #filterKeyboard button[data-filter="backspace"],
+        body.dark-mode #filterKeyboard .bus-taxi-button {
+            background-color: #334155; /* slate-700 */
+            color: #e2e8f0;
+        }
+        body.dark-mode #filterKeyboard button[data-filter="紅"],
+        body.dark-mode #filterKeyboard button[data-filter="橘"],
+        body.dark-mode #filterKeyboard button[data-filter="黃"],
+        body.dark-mode #filterKeyboard button[data-filter="綠"] {
+            color: #0f172a; /* Darker text for contrast on bright buttons */
+        }
+
+        /* Bus Tracker Page */
+        body.dark-mode #backButton {
+            background-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode #backButton:hover { background-color: #475569; }
+        body.dark-mode .direction-toggle-group { border-color: #60a5fa; }
+        body.dark-mode .direction-button { background-color: transparent; color: #60a5fa; }
+        body.dark-mode .direction-button.bg-blue-500 { background-color: #60a5fa; color: #1e293b; }
+        
+        /* Station List */
+        body.dark-mode #stationList::before { background-color: #475569; }
+        body.dark-mode .station-icon-container { background-color: #0f172a; }
+        body.dark-mode .station-dot { background-color: #60a5fa; }
+        body.dark-mode .station-content { background-color: #1e293b; }
+        
+        /* Unified Time Pills for Dark Mode */
+        body.dark-mode .time-pill.bg-slate-200 { background-color: #334155; color: #cbd5e1; }
+        body.dark-mode .time-pill.bg-red-200 { background-color: #991b1b; color: #fecaca; }
+        body.dark-mode .time-pill.bg-green-200 { background-color: #166534; color: #dcfce7; }
+        body.dark-mode .time-pill.bg-blue-200 { background-color: #1e40af; color: #dbeafe; }
+        body.dark-mode .favorite-time-display .time-pill.bg-yellow-200 { background-color: #854d0e; color: #fef9c3; }
+        
+        body.dark-mode .bus-id-display { background-color: #1e3a8a; color: #bfdbfe; }
+        
+        /* Favorite Cards */
+        body.dark-mode .favorite-card-item { background-color: #1e293b; }
+        body.dark-mode .favorite-card-item.dragging { background: #0f172a; border-color: #60a5fa; }
+        body.dark-mode .drag-handle { color: #64748b; }
+        body.dark-mode .remove-favorite-btn { background-color: #7f1d1d; color: #fecaca; }
+        body.dark-mode .remove-favorite-btn:hover { background-color: #991b1b; }
+
+        /* Main Nav */
+        body.dark-mode #mainNav {
+            background-color: #1e293b; /* slate-800 */
+            border-top-color: #334155; /* slate-700 */
+        }
+        body.dark-mode #mainNav button { color: #94a3b8; }
+        body.dark-mode #mainNav button:hover { color: #93c5fd; }
+        body.dark-mode #mainNav button.active-nav { color: #93c5fd; }
+        
+        /* Update Countdown & Error Message */
+        body.dark-mode #updateCountdown {
+            background-color: #e8def8;
+            color: #1c1b1f;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        body.dark-mode #updateCountdown:hover {
+            background-color: #d0bcff;
+            color: #1c1b1f;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+        body.dark-mode #errorMessage {
+            background-color: #7f1d1d;
+            border-color: #f87171;
+            color: #fecaca;
+        }
+
+        /* Settings Page Dark Mode */
+        body.dark-mode .dark\:bg-slate-800 { background-color: #1e293b !important; }
+        body.dark-mode .dark\:text-slate-200 { color: #e2e8f0; }
+        body.dark-mode .dark\:text-slate-300 { color: #cbd5e1; }
+        body.dark-mode .dark\:text-slate-400 { color: #94a3b8; }
+        body.dark-mode .dark\:border-slate-700 { border-color: #334155; }
+        body.dark-mode .dark\:hover\:bg-slate-700:hover { background-color: #334155; }
+        body.dark-mode .dark\:bg-slate-700 { background-color: #334155; }
+        body.dark-mode .dark\:border-slate-600 { border-color: #475569; }
+        body.dark-mode .dark\:peer-focus\:ring-blue-800:focus { --tw-ring-color: rgba(30, 64, 175, 0.5); }
+        /* --- END: DARK MODE STYLES --- */
     </style>
 </head>
 <body class="antialiased">
@@ -370,35 +513,29 @@
                 <p class="text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
             
-            <!-- START: Modified Search Bar -->
-            <div id="searchBarContainer" class="flex items-center gap-2 mb-4 bg-white border-2 border-slate-300 rounded-xl shadow-sm p-1 mx-auto">
-                <!-- Special Category Display -->
-                <div class="flex-shrink-0 pl-3 pr-2">
-                    <span id="categoryDisplay" class="font-semibold text-blue-600">全部路線</span>
-                </div>
+            <div id="searchBarStickyWrapper" class="sticky top-0 z-10 bg-transparent py-2">
+                <div id="searchBarContainer" class="flex items-center gap-2 bg-white border-2 border-slate-300 rounded-xl shadow-sm py-1 px-2 mx-auto max-w-sm md:max-w-4xl">
+                    <div class="flex-shrink-0 pl-3 pr-2">
+                        <span id="categoryDisplay" class="font-semibold text-blue-600">全部路線</span>
+                    </div>
+                    
+                    <div class="w-px bg-slate-300 self-stretch my-2"></div>
                 
-                <!-- Vertical Separator -->
-                <div class="w-px bg-slate-300 self-stretch my-2"></div>
-            
-                <!-- Search Input Area -->
-                <div class="relative flex-grow">
-                    <!-- The input is now for numbers, readonly, text-left, and borderless -->
-                    <input type="text" id="routeSearchInput" placeholder="請由鍵盤輸入號碼" class="w-full p-3 text-lg bg-transparent border-none focus:outline-none focus:ring-0 text-left" readonly>
-                    <!-- The icon is moved to the right for better alignment -->
-                    <svg class="w-6 h-6 text-slate-400 absolute top-1/2 right-3 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                    <div class="relative flex-grow">
+                        <input type="text" id="routeSearchInput" placeholder="請由鍵盤輸入號碼" class="w-full py-2 px-3 text-lg bg-transparent border-none focus:outline-none focus:ring-0 text-left" readonly>
+                        <svg class="w-6 h-6 text-slate-400 absolute top-1/2 right-3 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <!-- END: Modified Search Bar -->
-
 
             <div id="initialLoading" class="text-center py-20">
                 <div class="loading-spinner mx-auto"></div>
                 <p class="mt-4 text-slate-600">正在載入所有路線...</p>
             </div>
             
-            <div id="routeListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
+            <div id="routeListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 max-w-sm md:max-w-4xl mx-auto">
                 </div>
              <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden">找不到相符的路線。</p>
         </div>
@@ -406,7 +543,6 @@
         <div id="filterKeyboardContainer" class="fixed bottom-[70px] left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
             <div class="container mx-auto max-w-4xl">
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
-                    <!-- Removed hover:bg-red-600 and transition-colors from all keyboard buttons -->
                     <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md">紅</button>
                     <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md">幹線</button>
                     <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md">1</button>
@@ -461,11 +597,11 @@
                 </div>
 
                 <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
-                    <button id="goDirectionButton" class="direction-button flex-1 p-3 font-semibold transition-colors" data-direction="1">去程</button>
-                    <button id="backDirectionButton" class="direction-button flex-1 p-3 font-semibold transition-colors" data-direction="2">返程</button>
+                    <button id="goDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="1">去程</button>
+                    <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2">返程</button>
                 </div>
             </div>
-            <div id="estimateTimesSection" class="flex-grow overflow-y-auto">
+            <div id="estimateTimesSection" class="flex-grow overflow-y-auto pb-[80px]" style="scroll-padding-top: 1rem;">
                 <div id="trackerLoading" class="text-center py-20 hidden">
                     <div class="loading-spinner mx-auto"></div>
                     <p class="mt-4 text-slate-600 text-sm">正在載入路線動態...</p>
@@ -481,13 +617,13 @@
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800">常用站牌</h1>
-                <p class="text-slate-500 mt-2">在此管理您常用的公車站牌。</p>
+                <p class="text-slate-500 mt-2">長按並拖動以排序，點擊可查看路線詳情。</p>
             </header>
             <div id="favoriteListContainer" class="space-y-3">
-                <!-- Favorite stations will be rendered here -->
             </div>
             <div id="noFavoritesMessage" class="text-center py-20 text-slate-500 hidden">
-                <p>長按或右鍵點擊路線頁面的站牌即可將其加入最愛。</p>
+                <p>還沒有常用站牌喔！</p>
+                <p class="mt-2 text-sm">在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。</p>
             </div>
         </div>
     </div>
@@ -498,8 +634,43 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800">設定</h1>
                 <p class="text-slate-500 mt-2">調整應用程式設定。</p>
             </header>
-            <div class="text-center py-20 text-slate-500">
-                <p>設定功能即將推出。</p>
+            
+            <div class="space-y-6">
+                <!-- Appearance Settings Card -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h2 class="text-lg font-semibold text-slate-700">外觀</h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">dark_mode</span>
+                                <span class="text-slate-600">深色模式</span>
+                            </div>
+                            <!-- Material Style Toggle Switch -->
+                            <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="darkModeToggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Card -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h2 class="text-lg font-semibold text-slate-700">關於</h2>
+                    </div>
+                    <div class="p-4">
+                        <a href="https://github.com/potatosserver/kaohsiung_live_bus" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors -m-2">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-3 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
+                                <span>GitHub 原始碼</span>
+                            </div>
+                            <span class="material-icons-outlined text-slate-400">open_in_new</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -510,13 +681,11 @@
         <span id="updateCountdownText">30秒後更新</span>
     </button>
 
-    <!-- Floating button for adding/removing favorites -->
     <button id="favoriteActionButton" class="hidden">
         <span class="material-icons-outlined" id="favoriteActionIcon"></span>
         <span id="favoriteActionText"></span>
     </button>
 
-    <!-- Toast message container -->
     <div id="toastContainer" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[2000] flex flex-col items-center space-y-2"></div>
 
     <div id="mainNav">
@@ -525,9 +694,7 @@
             <span>動態</span>
         </button>
         <button id="navFavorites" data-page="favorites">
-            <span class="material-icons-outlined">favorite</span> <!-- Changed to heart icon -->
-            <span>最愛</span> <!-- Changed text to "最愛" -->
-        </button>
+            <span class="material-icons-outlined">favorite</span> <span>最愛</span> </button>
         <button id="navSettings" data-page="settings">
             <span class="material-icons-outlined">settings</span>
             <span>設定</span>
@@ -544,13 +711,14 @@
             };
 
             // --- DOM ELEMENTS ---
+            const body = document.body;
             const routeSelectionPage = document.getElementById('routeSelectionPage');
             const busTrackerPage = document.getElementById('busTrackerPage');
             const favoriteStationsPage = document.getElementById('favoriteStationsPage');
             const settingsPage = document.getElementById('settingsPage');
             
             const routeSearchInput = document.getElementById('routeSearchInput');
-            const categoryDisplay = document.getElementById('categoryDisplay'); // New element for category text
+            const categoryDisplay = document.getElementById('categoryDisplay');
             const routeListContainer = document.getElementById('routeListContainer');
             const initialLoading = document.getElementById('initialLoading');
             const noResultsMessage = document.getElementById('noResultsMessage');
@@ -569,28 +737,31 @@
             const updateCountdownButton = document.getElementById('updateCountdown');
             const mainNav = document.getElementById('mainNav');
 
-            const favoriteListContainer = document.getElementById('favoriteListContainer'); // New
-            const noFavoritesMessage = document.getElementById('noFavoritesMessage'); // New
-            const favoriteActionButton = document.getElementById('favoriteActionButton'); // New
-            const favoriteActionIcon = document.getElementById('favoriteActionIcon'); // New
-            const favoriteActionText = document.getElementById('favoriteActionText'); // New
-            const toastContainer = document.getElementById('toastContainer'); // New
+            const favoriteListContainer = document.getElementById('favoriteListContainer');
+            const noFavoritesMessage = document.getElementById('noFavoritesMessage');
+            const favoriteActionButton = document.getElementById('favoriteActionButton');
+            const favoriteActionIcon = document.getElementById('favoriteActionIcon');
+            const favoriteActionText = document.getElementById('favoriteActionText');
+            const toastContainer = document.getElementById('toastContainer');
+            
+            const darkModeToggle = document.getElementById('darkModeToggle');
 
             // --- STATE ---
             let allRoutes = [];
             let currentRouteData = null;
             let currentDirection = 1; // 1 for Go, 2 for Back
             let currentRouteId = null;
-            let currentRouteName = null; // New: Store current route name
+            let currentRouteName = null;
             let countdownInterval = null;
             let currentLang = localStorage.getItem("lang") || "zh";
-            let activePage = 'dynamic'; // Default active page
-            let selectedCategoryPrefix = ''; // New: Store selected category for search
+            let activePage = 'dynamic';
+            let selectedCategoryPrefix = '';
 
-            let favoriteStations = []; // Array to store favorite station objects
-            let longPressTimer; // For touch long press detection
-            let currentStationContext = null; // Stores data of the station being long-pressed/right-clicked
-            let favoriteButtonHideTimeout; // To hide the favorite action button
+            let favoriteStations = [];
+            let longPressTimer;
+            let currentStationContext = null;
+            let favoriteButtonHideTimeout;
+            let draggedItem = null;
 
             const categoryFilters = [
                 { prefix: '公車小黃', filterValue: '小黃' },
@@ -603,7 +774,6 @@
                 { prefix: '快線', filterValue: 'E' }
             ];
             
-            // New map for display text
             const categoryDisplayMap = {
                 '紅': '紅線接駁',
                 '橘': '橘線接駁',
@@ -635,9 +805,28 @@
                 }`
             };
 
-            // --- UTILITY FUNCTIONS ---
+            // --- DARK MODE LOGIC ---
+            function applyInitialTheme() {
+                const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                darkModeToggle.checked = isDarkMode;
+                if (isDarkMode) {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+            }
 
-            // Fetches data from the GraphQL API
+            darkModeToggle.addEventListener('change', () => {
+                if (darkModeToggle.checked) {
+                    body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'true');
+                } else {
+                    body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'false');
+                }
+            });
+
+            // --- UTILITY FUNCTIONS ---
             async function fetchAPI(query, variables) {
                 try {
                     const response = await fetch(API_URL, {
@@ -653,26 +842,13 @@
                 }
             }
             
-            // Function to synchronize search bar and keyboard width
-            function matchKeyboardWidth() {
-                const keyboard = document.getElementById('filterKeyboard');
-                const searchBarContainer = document.getElementById('searchBarContainer');
-                if (keyboard && searchBarContainer) {
-                    const keyboardWidth = keyboard.offsetWidth;
-                    // Ensure the width is not zero before setting
-                    if (keyboardWidth > 0) {
-                        searchBarContainer.style.width = `${keyboardWidth}px`;
-                    }
-                }
-            }
-
             function loadFavorites() {
                 try {
                     const favorites = localStorage.getItem('favoriteStations');
                     favoriteStations = favorites ? JSON.parse(favorites) : [];
                 } catch (e) {
                     console.error("Error loading favorites from localStorage:", e);
-                    favoriteStations = []; // Reset if corrupted
+                    favoriteStations = [];
                 }
             }
 
@@ -688,9 +864,7 @@
                 return favoriteStations.some(fav => fav.routeId === Number(routeId) && fav.stationId === String(stationId) && fav.direction === Number(direction));
             }
 
-            // Toggles a station's favorite status, now including direction
             function toggleFavorite(stationData) {
-                // Enforce types when adding to or searching in the array to prevent mismatches.
                 const routeId = Number(stationData.routeId);
                 const stationId = String(stationData.stationId);
                 const direction = Number(stationData.direction);
@@ -705,27 +879,24 @@
                 }
                 saveFavorites();
                 
-                // Refresh the bus tracker page to update the heart/dot icon if it's active
                 if (busTrackerPage.classList.contains('active') && currentRouteId) {
                     loadBusData(currentRouteId, false);
                 }
             }
 
-            // Displays the floating favorite action button
             function showFavoriteButton(stationData, clientX, clientY) {
-                clearTimeout(favoriteButtonHideTimeout); // Clear any existing hide timeout
+                clearTimeout(favoriteButtonHideTimeout);
 
-                currentStationContext = stationData; // Store the context
+                currentStationContext = stationData;
                 const { routeId, stationId, direction } = stationData;
                 const isCurrentlyFavorite = isFavorite(routeId, stationId, direction);
 
-                favoriteActionIcon.textContent = isCurrentlyFavorite ? 'favorite' : 'favorite_border'; // Changed to heart icons
+                favoriteActionIcon.textContent = isCurrentlyFavorite ? 'favorite' : 'favorite_border';
                 favoriteActionText.textContent = isCurrentlyFavorite ? '移除最愛' : '加入最愛';
 
                 favoriteActionButton.classList.remove('hidden');
                 favoriteActionButton.classList.add('show');
 
-                // Position the button near the click/long-press location
                 const buttonWidth = favoriteActionButton.offsetWidth;
                 const buttonHeight = favoriteActionButton.offsetHeight;
 
@@ -740,16 +911,14 @@
                 favoriteActionButton.style.left = `${left}px`;
                 favoriteActionButton.style.top = `${top}px`;
 
-                // Hide the button after a few seconds if not interacted with
                 favoriteButtonHideTimeout = setTimeout(() => {
                     favoriteActionButton.classList.remove('show');
                     favoriteActionButton.addEventListener('transitionend', () => {
                         favoriteActionButton.classList.add('hidden');
                     }, { once: true });
-                }, 3000); // Hide after 3 seconds
+                }, 3000);
             }
 
-            // Hides the floating favorite action button
             function hideFavoriteButton() {
                 clearTimeout(favoriteButtonHideTimeout);
                 favoriteActionButton.classList.remove('show');
@@ -758,50 +927,43 @@
                 }, { once: true });
             }
 
-            // Event listener for the floating favorite button click
             favoriteActionButton.addEventListener('click', () => {
                 if (currentStationContext) {
                     toggleFavorite(currentStationContext);
-                    hideFavoriteButton(); // Hide after action
+                    hideFavoriteButton();
                 }
             });
 
             // --- PAGE MANAGEMENT ---
-
-            // Shows the specified page and manages keyboard/countdown visibility
             function showPage(pageId) {
                 const pages = document.querySelectorAll('.page');
                 pages.forEach(page => page.classList.remove('active'));
                 document.getElementById(pageId).classList.add('active');
 
-                // Adjust visibility of keyboard and countdown based on page
                 if (pageId === 'routeSelectionPage') {
                     filterKeyboardContainer.style.display = 'block';
                     updateCountdownButton.style.display = 'none';
-                    adjustContentPadding(); // Adjust padding when keyboard is visible
+                    adjustContentPadding();
                 } else if (pageId === 'busTrackerPage') {
-                    filterKeyboardContainer.style.display = 'none'; // Hide keyboard on tracker page
+                    filterKeyboardContainer.style.display = 'none';
                     if (navigator.onLine) {
                         updateCountdownButton.style.display = 'flex';
                     } else {
                         updateCountdownButton.style.display = 'none';
                     }
-                    // Reset padding if it was adjusted for keyboard
                     const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
                     if (routeSelectionContainer) {
-                        routeSelectionContainer.style.paddingBottom = ''; // Clear inline style
+                        routeSelectionContainer.style.paddingBottom = '';
                     }
                 } else {
                     filterKeyboardContainer.style.display = 'none';
                     updateCountdownButton.style.display = 'none';
-                    // Reset padding if it was adjusted for keyboard
                     const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
                     if (routeSelectionContainer) {
-                        routeSelectionContainer.style.paddingBottom = ''; // Clear inline style
+                        routeSelectionContainer.style.paddingBottom = '';
                     }
                 }
 
-                // Update active navigation button
                 document.querySelectorAll('#mainNav button').forEach(button => {
                     button.classList.remove('active-nav');
                 });
@@ -812,15 +974,12 @@
                 }
                 activePage = navButtonId;
 
-                // If navigating to favorites page, refresh its content
                 if (pageId === 'favoriteStationsPage') {
                     displayFavoriteStations();
                 }
             }
 
             // --- PAGE 1: ROUTE SELECTION ---
-
-            // Initializes the route selection page by fetching all routes
             async function initRouteSelection() {
                 try {
                     const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: "zh" });
@@ -830,13 +989,12 @@
                         .sort((a, b) => a.seq - b.seq);
                     
                     initialLoading.style.display = 'none';
-                    displayInitialPrompt(); // Always display initial prompt if no route in URL
+                    displayInitialPrompt();
                 } catch (error) {
                     initialLoading.innerHTML = '<p class="text-red-500">無法載入路線列表，請重新整理頁面。</p>';
                 }
             }
 
-            // Displays the initial prompt in the route list area
             function displayInitialPrompt() {
                 routeListContainer.innerHTML = `
                     <div id="initialPrompt" class="text-center col-span-full py-10 text-slate-500">
@@ -845,7 +1003,6 @@
                 noResultsMessage.style.display = 'none';
             }
 
-            // Displays filtered routes in cards
             function displayRoutes(routes) {
                 routeListContainer.innerHTML = '';
                 if (routes.length === 0) {
@@ -856,7 +1013,6 @@
                 
                 routes.forEach(route => {
                     const card = document.createElement('div');
-                    // Removed hover:shadow-xl hover:-translate-y-1 transition-all hover:border-blue-500
                     card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent';
                     card.dataset.routeId = route.id;
                     card.dataset.routeName = route.name;
@@ -873,7 +1029,6 @@
                 });
             }
 
-            // Applies search filter to routes based on input (NO CHANGE TO THIS FUNCTION'S LOGIC)
             function applySearch(searchTerm) {
                 const lowerCaseTerm = searchTerm.toLowerCase().trim();
                 
@@ -884,7 +1039,6 @@
 
                 let filteredRoutes = [...allRoutes];
 
-                // This logic remains the same, it checks if the combined search term starts with a category prefix
                 let categoryMatched = false;
                 let remainingSearchTerm = lowerCaseTerm;
 
@@ -901,13 +1055,12 @@
                                 route.name.toLowerCase().startsWith('e')
                             );
                         } else if (category.filterValue === '小黃') {
-                            // MODIFIED: Filter by opType === 9 for "公車小黃"
                             filteredRoutes = filteredRoutes.filter(route =>
                                 route.opType === 9
                             );
                         } else if (category.filterValue === '黃') {
                             filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().includes('黃') && route.opType !== 9 // Exclude opType 9 from "黃" category
+                                route.name.toLowerCase().includes('黃') && route.opType !== 9
                             );
                         } else {
                             filteredRoutes = filteredRoutes.filter(route =>
@@ -930,7 +1083,6 @@
                 displayRoutes(filteredRoutes);
             }
 
-            // --- START: MODIFIED Keyboard input handling ---
             filterKeyboard.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
@@ -938,14 +1090,12 @@
                 const value = button.dataset.filter;
                 const type = button.dataset.type;
 
-                // Add a temporary active class for visual feedback
                 button.classList.add('active-keyboard-button');
                 setTimeout(() => {
                     button.classList.remove('active-keyboard-button');
-                }, 150); // Remove after 150ms
+                }, 150);
 
                 if (type === 'category') {
-                    // Define the search prefix based on the button clicked. This is used for filtering.
                     let searchPrefix;
                     if (value === '小黃') {
                         searchPrefix = '公車小黃';
@@ -956,9 +1106,8 @@
                     }
 
                     selectedCategoryPrefix = searchPrefix;
-                    // Update the blue display text using the map
                     categoryDisplay.textContent = categoryDisplayMap[value] || '全部路線';
-                    routeSearchInput.value = ''; // Reset number input when category changes
+                    routeSearchInput.value = '';
 
                 } else if (type === 'number') {
                     routeSearchInput.value += value;
@@ -967,23 +1116,17 @@
                     if (value === 'reset') {
                         selectedCategoryPrefix = '';
                         routeSearchInput.value = '';
-                        categoryDisplay.textContent = '全部路線'; // Reset display text
+                        categoryDisplay.textContent = '全部路線';
                     } else if (value === 'backspace') {
                         routeSearchInput.value = routeSearchInput.value.slice(0, -1);
                     }
                 }
                 
-                // On every keypress, construct the full search term and call applySearch
                 const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                 applySearch(fullSearchTerm);
             });
-            // --- END: MODIFIED Keyboard input handling ---
-            
-            // The old 'input' event listener on routeSearchInput is no longer needed as it's readonly and controlled by the keyboard.
 
             // --- PAGE 2: BUS TRACKER ---
-
-            // Updates direction buttons text and active state
             function updateDirectionButtons() {
                 if (!currentRouteData) return;
 
@@ -1003,7 +1146,6 @@
                 }
             }
             
-            // Handles direction toggle button clicks
             function handleDirectionToggle(event) {
                 const newDirection = parseInt(event.currentTarget.dataset.direction);
                 if (newDirection !== currentDirection) {
@@ -1015,12 +1157,10 @@
                 }
             }
 
-            // Helper function to create a station card element
             function createStationCard(estimate, stationName, displayedBusIds) {
                 let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
-                let busIdDisplayHtml = ''; // Changed variable name to avoid confusion with the element
-                let timeColorClass = 'text-slate-500';
-                let pillBgColorClass = 'bg-slate-200';
+                let busIdDisplayHtml = ''; 
+                let pillBgColorClass = 'bg-slate-200'; // Default background for time pill
 
                 if (estimate.etas && estimate.etas.length > 0) {
                     const closestEta = estimate.etas.reduce((minEta, currentEta) => {
@@ -1032,19 +1172,15 @@
                     if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
                         if (closestEta.etaTime <= 1) {
                             timeDisplay = '進站中';
-                            timeColorClass = 'text-red-700';
                             pillBgColorClass = 'bg-red-200';
                         } else if (closestEta.etaTime <= 3) {
                             timeDisplay = '即將到站';
-                            timeColorClass = 'text-green-700';
                             pillBgColorClass = 'bg-green-200';
                         } else {
                             timeDisplay = `${closestEta.etaTime}分`;
-                            timeColorClass = 'text-blue-700';
                             pillBgColorClass = 'bg-blue-200';
                         }
 
-                        // Only display busId if it exists and hasn't been displayed for this station already
                         if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
                             busIdDisplayHtml = `<div class="bus-id-display">
                                                     <span class="material-icons-outlined text-sm">directions_bus</span>
@@ -1055,8 +1191,7 @@
                     }
                 } else if (estimate.comeTime) {
                     timeDisplay = estimate.comeTime;
-                    timeColorClass = 'text-slate-700';
-                    pillBgColorClass = 'bg-slate-200';
+                    pillBgColorClass = 'bg-slate-200'; // Default background for comeTime
                 }
 
                 const stationCard = document.createElement('div');
@@ -1077,16 +1212,14 @@
                     </div>
                     <div class="station-content">
                         <div class="time-pill ${pillBgColorClass}">
-                            <p class="text-base font-bold ${timeColorClass}">${timeDisplay}</p>
+                            <p class="text-base font-bold">${timeDisplay}</p>
                         </div>
                         <div class="station-name">
                             <p class="text-base font-medium text-slate-800">${stationName}</p>
                         </div>
-                        ${busIdDisplayHtml} <!-- Insert the bus ID display here -->
-                    </div>
+                        ${busIdDisplayHtml} </div>
                 `;
 
-                // Add event listeners for right click
                 stationCard.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const stationData = {
@@ -1100,21 +1233,18 @@
                     showFavoriteButton(stationData, e.clientX, e.clientY);
                 });
 
-                // --- START: Improved Touch Event Listeners ---
                 let touchStartX, touchStartY;
                 let longPressTimer;
-                let isLongPress = false; // Flag to indicate if a long press has been detected and handled
+                let isLongPress = false; 
 
                 stationCard.addEventListener('touchstart', (e) => {
                     if (e.touches.length === 1) {
                         touchStartX = e.touches[0].clientX;
                         touchStartY = e.touches[0].clientY;
-                        isLongPress = false; // Reset flag for new touch
+                        isLongPress = false; 
 
                         longPressTimer = setTimeout(() => {
-                            isLongPress = true; // Mark as long press
-                            // Prevent default context menu, but only if it's a long press
-                            // This prevents both the context menu and potential scrolling if held long enough
+                            isLongPress = true;
                             e.preventDefault(); 
                             const stationData = {
                                 routeId: parseInt(e.currentTarget.dataset.routeId),
@@ -1125,32 +1255,28 @@
                                 destination: currentDirection === 1 ? currentRouteData.destination : currentRouteData.departure
                             };
                             showFavoriteButton(stationData, e.touches[0].clientX, e.touches[0].clientY);
-                        }, 700); // 700ms for long press
+                        }, 700);
                     }
                 });
 
                 stationCard.addEventListener('touchmove', (e) => {
-                    if (!longPressTimer) return; // If timer already cleared or not set, ignore
+                    if (!longPressTimer) return; 
 
                     const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
                     const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
 
-                    // If moved more than a 10px threshold, it's a scroll, cancel long press
                     if (deltaX > 10 || deltaY > 10) {
                         clearTimeout(longPressTimer);
-                        longPressTimer = null; // Clear timer reference
-                        isLongPress = false; // It's not a long press
+                        longPressTimer = null; 
+                        isLongPress = false; 
                     }
                 });
 
                 stationCard.addEventListener('touchend', (e) => {
-                    if (longPressTimer) { // If timer is still active (not cleared by touchmove)
+                    if (longPressTimer) { 
                         clearTimeout(longPressTimer);
-                        longPressTimer = null; // Clear timer reference
+                        longPressTimer = null; 
                     }
-                    // If it was a long press, the action has already been taken (showFavoriteButton).
-                    // If it was a short tap, no default action is defined for station cards, so nothing happens.
-                    // No need to call e.preventDefault() here unless we want to prevent a click.
                 });
 
                 stationCard.addEventListener('touchcancel', (e) => {
@@ -1160,12 +1286,10 @@
                     }
                     isLongPress = false;
                 });
-                // --- END: Improved Touch Event Listeners ---
 
                 return stationCard;
             }
 
-            // Displays estimated arrival times for stations
             function displayEstimateTimes(data, direction) {
                 errorMessageDiv.style.display = 'none';
 
@@ -1186,13 +1310,15 @@
                     fragment.appendChild(card);
                 });
 
-                stationListDiv.innerHTML = ''; // Clear previous content
+                stationListDiv.innerHTML = '';
                 stationListDiv.appendChild(fragment);
             }
             
-            // Loads bus data for a specific route
             async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
-                if (isInitialLoad) trackerLoading.style.display = 'block';
+                if (isInitialLoad) {
+                    trackerLoading.style.display = 'block';
+                    stationListDiv.innerHTML = '';
+                }
                 errorMessageDiv.style.display = 'none';
                 updateCountdownButton.disabled = true;
 
@@ -1206,7 +1332,7 @@
                     displayEstimateTimes(currentRouteData, currentDirection);
 
                     if (scrollToStationId) {
-                        await new Promise(resolve => setTimeout(resolve, 0)); 
+                        await new Promise(resolve => setTimeout(resolve, 100));
                         const targetStationCard = document.querySelector(`[data-station-id="${scrollToStationId}"]`);
                         if (targetStationCard) {
                             targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1221,11 +1347,10 @@
                 }
             }
 
-            // Navigates to the bus tracker page
             function navigateToTracker(routeId, routeName, routeDesc, pushState = true, scrollToStationId = null, direction = 1) {
                 currentRouteId = routeId;
                 currentRouteName = routeName;
-                currentDirection = direction; // Set direction
+                currentDirection = direction;
                 
                 showPage('busTrackerPage');
                 const url = `${window.location.pathname}?route=${routeId}`;
@@ -1243,81 +1368,209 @@
                 countdownTimer.reset();
             }
 
-            // Navigates back to the route selection page
             function navigateToSelection() {
                 showPage('routeSelectionPage');
                 currentRouteData = null;
                 currentRouteId = null;
                 currentRouteName = null;
-                // 重置搜尋狀態
                 routeSearchInput.value = ''; 
                 selectedCategoryPrefix = '';
                 categoryDisplay.textContent = '全部路線';
-                applySearch(''); // Clear search results and show initial prompt
+                applySearch('');
                 history.pushState({ page: 'selection' }, '', window.location.pathname);
-                clearInterval(countdownInterval);
                 hideFavoriteButton();
             }
 
             // --- PAGE 3: FAVORITE STATIONS ---
+            function createTimePillHtml(estimate) {
+                let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
+                let pillBgColorClass = 'bg-slate-200'; // Default background for time pill
 
-            // Displays the list of favorite stations
-            function displayFavoriteStations() {
+                if (estimate && estimate.etas && estimate.etas.length > 0) {
+                     const closestEta = estimate.etas.reduce((minEta, currentEta) => {
+                        const minTime = minEta.etaTime !== null ? minEta.etaTime : Infinity;
+                        const currentTime = currentEta.etaTime !== null ? currentEta.etaTime : Infinity;
+                        return currentTime < minTime ? currentEta : minEta;
+                    }, { etaTime: Infinity });
+
+                    if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
+                        if (closestEta.etaTime <= 1) {
+                            timeDisplay = '進站中';
+                            pillBgColorClass = 'bg-red-200';
+                        } else if (closestEta.etaTime <= 3) {
+                            timeDisplay = '即將到站';
+                            pillBgColorClass = 'bg-yellow-200'; // Note: Using yellow for favorites "即將到站"
+                        } else {
+                            timeDisplay = `${closestEta.etaTime} 分`;
+                            pillBgColorClass = 'bg-blue-200';
+                        }
+                    }
+                } else if (estimate && estimate.comeTime) {
+                    timeDisplay = estimate.comeTime;
+                    pillBgColorClass = 'bg-slate-200'; // Default background for comeTime
+                } else if (!estimate) {
+                    timeDisplay = '無資料';
+                }
+
+                // The text color is now determined by the CSS rule for the pillBgColorClass
+                return `<div class="time-pill px-3 py-1 ${pillBgColorClass}">
+                            <p>${timeDisplay}</p>
+                        </div>`;
+            }
+
+            async function displayFavoriteStations() {
                 loadFavorites();
                 favoriteListContainer.innerHTML = '';
 
                 if (favoriteStations.length === 0) {
                     noFavoritesMessage.classList.remove('hidden');
-                } else {
-                    noFavoritesMessage.classList.add('hidden');
-                    favoriteStations.forEach(fav => {
-                        const favCard = document.createElement('div');
-                        // Removed hover:shadow-xl hover:-translate-y-1 transition-all
-                        favCard.className = 'favorite-card-item flex items-center justify-between p-4 bg-white rounded-lg shadow-md cursor-pointer';
-                        
-                        const directionText = fav.destination ? `往 ${fav.destination}` : `方向 ${fav.direction}`;
-
-                        favCard.innerHTML = `
-                            <div class="flex-grow">
-                                <h3 class="font-bold text-lg text-slate-800">${fav.routeName} - ${fav.stationName}</h3>
-                                <p class="text-sm text-slate-500">${directionText}</p>
-                            </div>
-                            <button class="remove-favorite-btn flex-shrink-0 bg-red-100 text-red-600 p-2 rounded-full hover:bg-red-200 transition-colors ml-4"
-                                data-route-id="${fav.routeId}" data-station-id="${fav.stationId}" data-direction="${fav.direction}">
-                                <span class="material-icons-outlined">delete</span>
-                            </button>
-                        `;
-
-                        // Navigate on card click, but not on button click
-                        favCard.addEventListener('click', (e) => {
-                            if (!e.target.closest('.remove-favorite-btn')) {
-                                navigateToTracker(fav.routeId, fav.routeName, '', true, fav.stationId, fav.direction);
-                            }
-                        });
-                        favoriteListContainer.appendChild(favCard);
-                    });
-
-                    // Add event listeners for remove buttons
-                    favoriteListContainer.querySelectorAll('.remove-favorite-btn').forEach(button => {
-                        button.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            const cardToRemove = e.currentTarget.closest('.favorite-card-item');
-                            const stationData = {
-                                routeId: parseInt(e.currentTarget.dataset.routeId),
-                                stationId: e.currentTarget.dataset.stationId,
-                                direction: parseInt(e.currentTarget.dataset.direction)
-                            };
-                            
-                            toggleFavorite(stationData); // Update data model
-
-                            if (cardToRemove) cardToRemove.remove(); // Instantly remove from DOM
-                            
-                            if (favoriteListContainer.childElementCount === 0) {
-                                noFavoritesMessage.classList.remove('hidden');
-                            }
-                        });
-                    });
+                    return;
                 }
+
+                noFavoritesMessage.classList.add('hidden');
+
+                favoriteStations.forEach((fav, index) => {
+                    const favCard = document.createElement('div');
+                    favCard.className = 'favorite-card-item flex items-center p-3 bg-white rounded-lg shadow-md';
+                    favCard.draggable = true;
+                    favCard.dataset.index = index;
+
+                    const directionText = fav.destination ? `往 ${fav.destination}` : `方向 ${fav.direction}`;
+                    
+                    favCard.innerHTML = `
+                        <div class="drag-handle touch-none">
+                            <span class="material-icons-outlined">drag_indicator</span>
+                        </div>
+                        <div class="flex-grow ml-2 cursor-pointer">
+                            <h3 class="font-bold text-md text-slate-800">${fav.routeName}</h3>
+                            <p class="text-sm text-slate-600">${fav.stationName}</p>
+                            <p class="text-xs text-slate-400 mt-1">${directionText}</p>
+                        </div>
+                        <div class="favorite-time-display flex-shrink-0 w-28 text-right" 
+                             data-route-id="${fav.routeId}" 
+                             data-station-id="${fav.stationId}" 
+                             data-direction="${fav.direction}">
+                            <div class="loading-spinner h-6 w-6 border-2 ml-auto"></div>
+                        </div>
+                        <button class="remove-favorite-btn flex-shrink-0 bg-red-100 text-red-600 p-2 rounded-full hover:bg-red-200 transition-colors ml-2"
+                                data-route-id="${fav.routeId}" data-station-id="${fav.stationId}" data-direction="${fav.direction}">
+                            <span class="material-icons-outlined">delete_outline</span>
+                        </button>
+                    `;
+                    favoriteListContainer.appendChild(favCard);
+                });
+
+                addFavoriteCardEventListeners();
+
+                const routesToFetch = [...new Set(favoriteStations.map(f => f.routeId))];
+                if (routesToFetch.length === 0) return;
+
+                const promises = routesToFetch.map(routeId => 
+                    fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: "zh" })
+                );
+                
+                const results = await Promise.allSettled(promises);
+                const routeDataMap = new Map();
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled' && result.value.data.route) {
+                        const routeId = routesToFetch[index];
+                        routeDataMap.set(routeId, result.value.data.route);
+                    }
+                });
+
+                document.querySelectorAll('.favorite-time-display').forEach(div => {
+                    const { routeId, stationId, direction } = div.dataset;
+                    const routeData = routeDataMap.get(Number(routeId));
+                    let timeHtml = createTimePillHtml(null); // Default to "無資料" or "末班駛離"
+                    
+                    if (routeData) {
+                        const estimate = routeData.estimateTimes.edges.find(edge => 
+                            edge.node.id === stationId && edge.node.goBack === Number(direction)
+                        )?.node;
+                        timeHtml = createTimePillHtml(estimate);
+                    }
+                    div.innerHTML = timeHtml;
+                });
+            }
+
+            function addFavoriteCardEventListeners() {
+                favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
+                    const favData = favoriteStations[card.dataset.index];
+                    
+                    const contentArea = card.querySelector('.flex-grow');
+                    if(contentArea){
+                        contentArea.addEventListener('click', () => {
+                             navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
+                        });
+                    }
+                   
+                    const removeBtn = card.querySelector('.remove-favorite-btn');
+                    if(removeBtn){
+                        removeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            toggleFavorite(favData);
+                            displayFavoriteStations();
+                        });
+                    }
+                });
+
+                const cards = document.querySelectorAll('#favoriteListContainer .favorite-card-item');
+                cards.forEach(card => {
+                    card.addEventListener('dragstart', handleDragStart);
+                    card.addEventListener('dragend', handleDragEnd);
+                });
+                favoriteListContainer.addEventListener('dragover', handleDragOver);
+                favoriteListContainer.addEventListener('drop', handleDrop);
+            }
+
+            function handleDragStart(e) {
+                draggedItem = this;
+                setTimeout(() => {
+                    this.classList.add('dragging');
+                }, 0);
+            }
+
+            function handleDragEnd() {
+                this.classList.remove('dragging');
+                draggedItem = null;
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(favoriteListContainer, e.clientY);
+                if (afterElement == null) {
+                    favoriteListContainer.appendChild(draggedItem);
+                } else {
+                    favoriteListContainer.insertBefore(draggedItem, afterElement);
+                }
+            }
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.favorite-card-item:not(.dragging)')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
+                const newFavoritesArray = [];
+                newOrderedElements.forEach(elem => {
+                    newFavoritesArray.push(favoriteStations[elem.dataset.index]);
+                });
+                
+                favoriteStations = newFavoritesArray;
+                saveFavorites();
+                
+                displayFavoriteStations();
             }
 
             // --- Update Countdown Logic ---
@@ -1336,6 +1589,7 @@
                     this.updateDisplay();
                 },
                 update: async function() {
+                    this.reset(); 
                     const icon = this.updateButton.querySelector('.material-icons-outlined');
                     icon.classList.add('spin-update');
                     setTimeout(() => icon.classList.remove('spin-update'), 500);
@@ -1343,26 +1597,18 @@
                     if (currentRouteId) {
                         await loadBusData(currentRouteId, false);
                     }
-                    this.reset();
                 }
             };
 
-            // Function to calculate and apply padding for fixed keyboard and nav
             function adjustContentPadding() {
                 const mainNavHeight = mainNav.offsetHeight;
-                // Temporarily show the keyboard to measure its height accurately
                 filterKeyboardContainer.style.display = 'block';
                 const keyboardHeight = filterKeyboardContainer.offsetHeight;
-                // If the current page is not route selection, hide it again
                 if (!routeSelectionPage.classList.contains('active')) {
                     filterKeyboardContainer.style.display = 'none'; 
                 }
+                const totalFixedBottomHeight = mainNavHeight + keyboardHeight + 10; 
 
-                // Calculate total height needed for padding, add a small buffer
-                const totalFixedBottomHeight = mainNavHeight + keyboardHeight + 10; // 10px buffer
-
-                // Apply padding to the main content container of the route selection page
-                // This ensures content can scroll above the fixed keyboard and nav
                 const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
                 if (routeSelectionContainer) {
                     routeSelectionContainer.style.paddingBottom = `${totalFixedBottomHeight}px`;
@@ -1402,14 +1648,12 @@
                 countdownTimer.update();
             });
 
-            // Main Navigation Event Listener
             mainNav.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
 
                 const page = button.dataset.page;
                 if (page === 'dynamic') {
-                    // Always go to selection page from nav
                     navigateToSelection();
                 } else if (page === 'favorites') {
                     showPage('favoriteStationsPage');
@@ -1420,7 +1664,6 @@
                 }
             });
 
-            // Global click listener to hide the favorite action button if clicked outside
             document.addEventListener('click', (e) => {
                 if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
                     hideFavoriteButton();
@@ -1428,19 +1671,12 @@
             });
 
             // --- Initial Load Logic ---
-            loadFavorites(); // Load favorites on app start
-            await initRouteSelection(); // Always init routes first
+            loadFavorites();
+            applyInitialTheme();
+            await initRouteSelection();
 
-            // Call on initial load to set correct padding and match width
             adjustContentPadding();
-            matchKeyboardWidth();
-
-            // Call on window resize to adjust for orientation changes, dynamic keyboard height, and width matching
-            window.addEventListener('resize', () => {
-                adjustContentPadding();
-                matchKeyboardWidth();
-            });
-
+            window.addEventListener('resize', adjustContentPadding);
 
             const urlParams = new URLSearchParams(window.location.search);
             const routeIdFromUrl = urlParams.get('route');
@@ -1449,7 +1685,6 @@
             if (routeIdFromUrl) {
                 const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                 if (route) {
-                    // For direct URL load, default to direction 1
                     navigateToTracker(route.id, route.name, route.description, false, null, 1);
                 } else {
                     showPage('routeSelectionPage');
@@ -1467,7 +1702,6 @@
                 showPage('routeSelectionPage');
             }
 
-            // Start countdown interval
             countdownInterval = setInterval(() => {
                 if (busTrackerPage.classList.contains('active') && navigator.onLine) {
                     updateCountdownButton.style.display = "flex";
@@ -1493,8 +1727,7 @@
             });
 
             document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible' && navigator.onLine && busTrackerPage.classList.contains('active')) {
-                    console.log('Tab 變為可見，更新數據...');
+                if (document.visibilityState === 'visible' && busTrackerPage.classList.contains('active') && navigator.onLine) {
                     countdownTimer.update();
                 }
             });
