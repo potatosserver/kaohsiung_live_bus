@@ -310,7 +310,7 @@
 
         .station-icon-container {
             position: absolute;
-            left: -19px; 
+            left: -18px; /* Corrected from -19px for proper alignment */
             z-index: 1; 
             background-color: #f1f5f9; 
             border-radius: 50%; 
@@ -379,15 +379,58 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        /* Styles for Favorites Page Drag & Drop */
+        /* --- START: FAVORITES PAGE DRAG & SWIPE STYLES --- */
+        #favoriteListContainer .favorite-card-item {
+            position: relative;
+            overflow: hidden; /* Crucial for swipe-to-reveal */
+            touch-action: pan-y; /* Allow vertical scroll */
+        }
         #favoriteListContainer .favorite-card-item.dragging {
             opacity: 0.4;
             background: #e0f2fe;
             border: 2px dashed #3b82f6;
         }
 
-        #favoriteListContainer .favorite-card-item {
-            touch-action: none; 
+        .favorite-card-actions {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .favorite-card-actions .delete-action-btn {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            height: 100%;
+            width: 90px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: background-color 0.2s;
+        }
+        .favorite-card-actions .delete-action-btn:hover {
+            background-color: #dc2626; /* red-600 */
+        }
+        .favorite-card-actions .delete-action-btn .material-icons-outlined {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .favorite-card-content {
+            position: relative;
+            z-index: 1; /* Keep content above the action button */
+            display: flex;
+            align-items: center;
+            padding: 0.75rem; /* 12px */
+            background-color: #ffffff;
+            transition: transform 0.3s ease-out;
+            width: 100%;
         }
 
         .drag-handle {
@@ -395,10 +438,13 @@
             cursor: grab;
             padding: 8px;
             color: #94a3b8; 
+            touch-action: none; /* Prevent scrolling when dragging handle */
         }
         .drag-handle:active {
             cursor: grabbing;
         }
+        /* --- END: FAVORITES PAGE DRAG & SWIPE STYLES --- */
+
 
         /* --- START: DARK MODE STYLES --- */
         body.dark-mode {
@@ -484,12 +530,10 @@
         
         body.dark-mode .bus-id-display { background-color: #1e3a8a; color: #bfdbfe; }
         
-        /* Favorite Cards */
-        body.dark-mode .favorite-card-item { background-color: #1e293b; }
+        /* Favorite Cards Dark Mode */
         body.dark-mode .favorite-card-item.dragging { background: #0f172a; border-color: #60a5fa; }
         body.dark-mode .drag-handle { color: #64748b; }
-        body.dark-mode .remove-favorite-btn { background-color: #7f1d1d; color: #fecaca; }
-        body.dark-mode .remove-favorite-btn:hover { background-color: #991b1b; }
+        body.dark-mode .favorite-card-content { background-color: #1e293b; }
 
         /* Main Nav */
         body.dark-mode #mainNav {
@@ -796,7 +840,7 @@
             const toastContainer = document.getElementById('toastContainer');
             
             const darkModeToggle = document.getElementById('darkModeToggle');
-            const languageSelect = document.getElementById('languageSelect'); // New language select element
+            const languageSelect = document.getElementById('languageSelect');
 
             // --- STATE ---
             let allRoutes = [];
@@ -816,11 +860,12 @@
             let currentStationContext = null;
             let favoriteButtonHideTimeout;
             let draggedItem = null;
+            let swipedFavoriteCard = null;
 
             // Variables for swipe detection
             let touchStartX = 0;
             let touchEndX = 0;
-            const SWIPE_THRESHOLD = 50; // Minimum horizontal distance for a swipe
+            const SWIPE_THRESHOLD = 50; 
 
             // Translations object
             const translations = {
@@ -865,13 +910,14 @@
                     navFavorites: '最愛',
                     navSettings: '設定',
                     noData: '無資料',
-                    routeInfoNotFound: '找不到該路線的資訊，請確認路線代號是否正確。'
+                    routeInfoNotFound: '找不到該路線的資訊，請確認路線代號是否正確。',
+                    delete: '刪除'
                 },
                 en: {
                     routeSelectionTitle: 'Kaohsiung Bus Route Inquiry',
-                    routeSelectionSubtitle: 'Please use the keyboard below or type directly to search for routes',
+                    routeSelectionSubtitle: 'Use keyboard to find routes',
                     allRoutes: 'All Routes',
-                    routeSearchPlaceholder: 'Enter number from keyboard',
+                    routeSearchPlaceholder: 'Enter route no.',
                     loadingRoutes: 'Loading all routes...',
                     noMatchingRoutes: 'No matching routes found.',
                     mainLine: 'Main Line',
@@ -893,9 +939,9 @@
                     removeFavorite: 'Remove Favorite',
                     addFavorite: 'Add Favorite',
                     favoritesTitle: 'Favorite Stops',
-                    favoritesSubtitle: 'Long press and drag to reorder, click to view route details.',
+                    favoritesSubtitle: 'Drag to reorder, tap to view.',
                     noFavoritesYet: 'No favorite stops yet!',
-                    addFavoritesHint: 'On the bus tracker page, long press or right-click a stop to add it to favorites.',
+                    addFavoritesHint: 'Long-press a stop to add to favorites.',
                     settingsTitle: 'Settings',
                     settingsSubtitle: 'Adjust application settings.',
                     appearance: 'Appearance',
@@ -908,7 +954,8 @@
                     navFavorites: 'Favorites',
                     navSettings: 'Settings',
                     noData: 'No Data',
-                    routeInfoNotFound: 'Route information not found. Please check if the route number is correct.'
+                    routeInfoNotFound: 'Route information not found. Please check if the route number is correct.',
+                    delete: 'Delete'
                 }
             };
 
@@ -924,17 +971,16 @@
             ];
             
             const categoryDisplayMap = {
-                '紅': 'redLineShuttle', // 紅線接駁
-                '橘': 'orangeLineShuttle', // 橘線接駁
-                '黃': 'yellowLineShuttle', // 黃線接駁
-                '綠': 'greenLineShuttle', // 綠線接駁
-                '幹線': 'mainLineBus', // 幹線公車
-                'E': 'expressLineBus', // 快線公車
-                '小黃': 'busTaxiBus', // 公車小黃
-                '其他': 'otherRoutes' // 其他路線
+                '紅': 'redLineShuttle', 
+                '橘': 'orangeLineShuttle',
+                '黃': 'yellowLineShuttle',
+                '綠': 'greenLineShuttle',
+                '幹線': 'mainLineBus',
+                'E': 'expressLineBus',
+                '小黃': 'busTaxiBus',
+                '其他': 'otherRoutes'
             };
 
-            // Add translations for categoryDisplayMap values that are not direct i18n keys
             translations.zh.redLineShuttle = '紅線接駁';
             translations.zh.orangeLineShuttle = '橘線接駁';
             translations.zh.yellowLineShuttle = '黃線接駁';
@@ -951,7 +997,6 @@
             translations.en.expressLineBus = 'Express Line Bus';
             translations.en.busTaxiBus = 'Bus Taxi';
 
-            // Add specific category filter translations to the main translations object
             translations.zh.busTaxi = '公車小黃';
             translations.zh.redLine = '紅';
             translations.zh.orangeLine = '橘';
@@ -963,7 +1008,6 @@
             translations.en.orangeLine = 'Orange';
             translations.en.yellowLine = 'Yellow';
             translations.en.greenLine = 'Green';
-
 
             const GQL = {
                 QUERY_SIDE_ROUTES: `query QUERY_SIDE_ROUTES($lang: String!) {
@@ -1301,29 +1345,26 @@
                     if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
                         const filterVal = category.filterValue;
 
-                        if (filterVal === '其他') { // Other
+                        if (filterVal === '其他') {
                             filteredRoutes = allRoutes.filter(route =>
                                 route.name.toLowerCase().includes('joy') || 
                                 route.name.toLowerCase().includes('dashu blessing bus') ||
-                                route.name.toLowerCase().includes('大樹祈福') // Keep Chinese for safety
+                                route.name.toLowerCase().includes('大樹祈福')
                             );
-                        } else if (filterVal === 'E') { // Express
+                        } else if (filterVal === 'E') {
                             filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().startsWith('e'));
-                        } else if (filterVal === '小黃') { // Bus Taxi
+                        } else if (filterVal === '小黃') {
                             filteredRoutes = allRoutes.filter(route => route.opType === 9);
-                        } else if (filterVal === '幹線') { // Main Line
+                        } else if (filterVal === '幹線') {
                             const keyword = currentLang === 'en' ? 'main line' : '幹線';
                             filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
-                        } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) { // Colors
+                        } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) {
                             const keyword = translations[currentLang][category.i18nKey].toLowerCase();
-                            filteredRoutes = allRoutes.filter(route => {
-                                // For Chinese '黃', exclude '公車小黃'
-                                if (currentLang === 'zh' && filterVal === '黃') {
-                                    return route.name.includes(keyword) && route.opType !== 9;
-                                }
-                                // For English and other colors, a simple startswith is fine
-                                return route.name.toLowerCase().startsWith(keyword);
-                            });
+                             if (currentLang === 'zh' && filterVal === '黃') {
+                                filteredRoutes = allRoutes.filter(route => route.name.includes(keyword) && route.opType !== 9);
+                            } else {
+                                filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
+                            }
                         }
 
                         remainingSearchTerm = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
@@ -1357,7 +1398,6 @@
 
                 if (type === 'category') {
                     let searchPrefix;
-                    // Find the category object to get the i18nKey
                     const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
                     if(categoryObj && translations[currentLang][categoryObj.i18nKey]){
                          searchPrefix = translations[currentLang][categoryObj.i18nKey];
@@ -1691,6 +1731,7 @@
             }
 
             async function displayFavoriteStations() {
+                closeSwipedFavorite();
                 loadFavorites();
                 favoriteListContainer.innerHTML = '';
 
@@ -1705,31 +1746,34 @@
 
                 favoriteStations.forEach((fav, index) => {
                     const favCard = document.createElement('div');
-                    favCard.className = 'favorite-card-item flex items-center p-3 bg-white rounded-lg shadow-md';
-                    favCard.draggable = true;
+                    favCard.className = 'favorite-card-item bg-white rounded-lg shadow-md';
                     favCard.dataset.index = index;
 
                     const directionText = fav.destination ? `${translations[currentLang].goDirection} ${fav.destination}` : `${translations[currentLang].direction} ${fav.direction}`;
                     
                     favCard.innerHTML = `
-                        <div class="drag-handle touch-none">
-                            <span class="material-icons-outlined">drag_indicator</span>
+                        <div class="favorite-card-actions">
+                            <button class="delete-action-btn">
+                                <span class="material-icons-outlined">delete</span>
+                                <span data-i18n="delete">${translations[currentLang].delete}</span>
+                            </button>
                         </div>
-                        <div class="flex-grow ml-2 cursor-pointer">
-                            <h3 class="font-bold text-md text-slate-800">${fav.routeName}</h3>
-                            <p class="text-sm text-slate-600">${fav.stationName}</p>
-                            <p class="text-xs text-slate-400 mt-1">${directionText}</p>
+                        <div class="favorite-card-content" draggable="true">
+                            <div class="drag-handle">
+                                <span class="material-icons-outlined">drag_indicator</span>
+                            </div>
+                            <div class="flex-grow ml-2 cursor-pointer card-tap-area">
+                                <h3 class="font-bold text-md text-slate-800">${fav.routeName}</h3>
+                                <p class="text-sm text-slate-600">${fav.stationName}</p>
+                                <p class="text-xs text-slate-400 mt-1">${directionText}</p>
+                            </div>
+                            <div class="favorite-time-display flex-shrink-0 w-28 text-right" 
+                                data-route-id="${fav.routeId}" 
+                                data-station-id="${fav.stationId}" 
+                                data-direction="${fav.direction}">
+                                <div class="loading-spinner h-6 w-6 border-2 ml-auto"></div>
+                            </div>
                         </div>
-                        <div class="favorite-time-display flex-shrink-0 w-28 text-right" 
-                             data-route-id="${fav.routeId}" 
-                             data-station-id="${fav.stationId}" 
-                             data-direction="${fav.direction}">
-                            <div class="loading-spinner h-6 w-6 border-2 ml-auto"></div>
-                        </div>
-                        <button class="remove-favorite-btn flex-shrink-0 bg-red-100 text-red-600 p-2 rounded-full hover:bg-red-200 transition-colors ml-2"
-                                data-route-id="${fav.routeId}" data-station-id="${fav.stationId}" data-direction="${fav.direction}">
-                            <span class="material-icons-outlined">delete_outline</span>
-                        </button>
                     `;
                     favoriteListContainer.appendChild(favCard);
                 });
@@ -1767,41 +1811,95 @@
                 });
             }
 
+            function closeSwipedFavorite() {
+                if (swipedFavoriteCard) {
+                    swipedFavoriteCard.querySelector('.favorite-card-content').style.transform = 'translateX(0px)';
+                    swipedFavoriteCard.classList.remove('swiped');
+                    swipedFavoriteCard = null;
+                }
+            }
+
             function addFavoriteCardEventListeners() {
+                document.body.addEventListener('click', (e) => {
+                    if (swipedFavoriteCard && !swipedFavoriteCard.contains(e.target)) {
+                        closeSwipedFavorite();
+                    }
+                }, true);
+
                 favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                     const favData = favoriteStations[card.dataset.index];
-                    
-                    const contentArea = card.querySelector('.flex-grow');
-                    if(contentArea){
-                        contentArea.addEventListener('click', () => {
-                             navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
-                        });
-                    }
-                   
-                    const removeBtn = card.querySelector('.remove-favorite-btn');
-                    if(removeBtn){
-                        removeBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            toggleFavorite(favData);
-                            displayFavoriteStations();
-                        });
-                    }
+                    const content = card.querySelector('.favorite-card-content');
+                    const deleteBtn = card.querySelector('.delete-action-btn');
+                    const tapArea = card.querySelector('.card-tap-area');
+                    const dragHandle = card.querySelector('.drag-handle');
+
+                    tapArea.addEventListener('click', () => {
+                        if (card.classList.contains('swiped')) {
+                            closeSwipedFavorite();
+                            return;
+                        }
+                        navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
+                    });
+                
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        toggleFavorite(favData);
+                        displayFavoriteStations(); 
+                    });
+
+                    content.addEventListener('dragstart', (e) => {
+                        if (dragHandle.contains(e.target)) {
+                            handleDragStart.call(card, e);
+                        } else {
+                            e.preventDefault();
+                        }
+                    });
+                    content.addEventListener('dragend', handleDragEnd.bind(card));
+
+                    let startX = 0, currentX = 0;
+                    const maxSwipe = 90;
+
+                    content.addEventListener('touchstart', (e) => {
+                        if (dragHandle.contains(e.target)) return;
+                        if (swipedFavoriteCard && swipedFavoriteCard !== card) {
+                            closeSwipedFavorite();
+                        }
+                        startX = e.touches[0].clientX;
+                        content.style.transition = 'none';
+                    }, { passive: true });
+
+                    content.addEventListener('touchmove', (e) => {
+                        if (dragHandle.contains(e.target)) return;
+                        let deltaX = e.touches[0].clientX - startX;
+                        if (deltaX > 0) deltaX = 0;
+                        if (deltaX < -maxSwipe) deltaX = -maxSwipe;
+                        currentX = deltaX;
+                        content.style.transform = `translateX(${currentX}px)`;
+                    }, { passive: true });
+
+                    content.addEventListener('touchend', () => {
+                        if (dragHandle.contains(e.target)) return;
+                        content.style.transition = 'transform 0.3s ease-out';
+                        if (Math.abs(currentX) > SWIPE_THRESHOLD) {
+                            content.style.transform = `translateX(-${maxSwipe}px)`;
+                            swipedFavoriteCard = card;
+                            card.classList.add('swiped');
+                        } else {
+                            content.style.transform = 'translateX(0px)';
+                            if(swipedFavoriteCard === card) swipedFavoriteCard = null;
+                            card.classList.remove('swiped');
+                        }
+                        currentX = 0;
+                    });
                 });
 
-                const cards = document.querySelectorAll('#favoriteListContainer .favorite-card-item');
-                cards.forEach(card => {
-                    card.addEventListener('dragstart', handleDragStart);
-                    card.addEventListener('dragend', handleDragEnd);
-                });
                 favoriteListContainer.addEventListener('dragover', handleDragOver);
                 favoriteListContainer.addEventListener('drop', handleDrop);
             }
 
             function handleDragStart(e) {
                 draggedItem = this;
-                setTimeout(() => {
-                    this.classList.add('dragging');
-                }, 0);
+                setTimeout(() => this.classList.add('dragging'), 0);
             }
 
             function handleDragEnd() {
@@ -1812,6 +1910,7 @@
             function handleDragOver(e) {
                 e.preventDefault();
                 const afterElement = getDragAfterElement(favoriteListContainer, e.clientY);
+                const draggableContent = draggedItem.querySelector('.favorite-card-content');
                 if (afterElement == null) {
                     favoriteListContainer.appendChild(draggedItem);
                 } else {
@@ -1836,14 +1935,10 @@
             function handleDrop(e) {
                 e.preventDefault();
                 const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
-                const newFavoritesArray = [];
-                newOrderedElements.forEach(elem => {
-                    newFavoritesArray.push(favoriteStations[elem.dataset.index]);
-                });
+                const newFavoritesArray = newOrderedElements.map(elem => favoriteStations[elem.dataset.index]);
                 
                 favoriteStations = newFavoritesArray;
                 saveFavorites();
-                
                 displayFavoriteStations();
             }
 
@@ -1864,10 +1959,6 @@
                 },
                 update: async function() {
                     this.reset(); 
-                    const icon = this.updateButton.querySelector('.material-icons-outlined');
-                    icon.classList.add('spin-update');
-                    setTimeout(() => icon.classList.remove('spin-update'), 500);
-
                     if (currentRouteId) {
                         await loadBusData(currentRouteId, false);
                     }
@@ -1907,18 +1998,11 @@
 
             estimateTimesSection.addEventListener('touchend', () => {
                 if (touchEndX === 0) return;
-
                 const diffX = touchStartX - touchEndX;
-
                 if (Math.abs(diffX) > SWIPE_THRESHOLD) {
-                    if (diffX > 0) {
-                        handleDirectionToggle(2);
-                    } else {
-                        handleDirectionToggle(1);
-                    }
+                    handleDirectionToggle(diffX > 0 ? 2 : 1);
                 }
-                touchStartX = 0;
-                touchEndX = 0;
+                touchStartX = touchEndX = 0;
             });
 
             updateCountdownButton.addEventListener('click', () => {
@@ -1928,15 +2012,10 @@
             mainNav.addEventListener('click', (e) => {
                 const button = e.target.closest('button');
                 if (!button) return;
-
                 const page = button.dataset.page;
-                if (page === 'dynamic') {
-                    navigateToSelection();
-                } else if (page === 'favorites') {
-                    showPage('favoriteStationsPage');
-                } else if (page === 'settings') {
-                    showPage('settingsPage');
-                }
+                if (page === 'dynamic') navigateToSelection();
+                else if (page === 'favorites') showPage('favoriteStationsPage');
+                else if (page === 'settings') showPage('settingsPage');
             });
 
             document.addEventListener('click', (e) => {
@@ -1969,13 +2048,9 @@
                     showPage('routeSelectionPage');
                 }
             } else if (pageFromUrl) {
-                if (pageFromUrl === 'favorites') {
-                    showPage('favoriteStationsPage');
-                } else if (pageFromUrl === 'settings') {
-                    showPage('settingsPage');
-                } else {
-                    showPage('routeSelectionPage');
-                }
+                if (pageFromUrl === 'favorites') showPage('favoriteStationsPage');
+                else if (pageFromUrl === 'settings') showPage('settingsPage');
+                else showPage('routeSelectionPage');
             } else {
                 showPage('routeSelectionPage');
             }
