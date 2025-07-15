@@ -42,7 +42,8 @@
 
         /* Animation for direction change */
         #estimateTimesSection {
-            overflow-x: hidden;
+            position: relative;
+            overflow: hidden;
         }
         @keyframes slide-out-left {
             from { transform: translateX(0); opacity: 1; }
@@ -281,12 +282,23 @@
         }
 
         /* Styles for the station list in bus tracker page */
-        #stationList {
-            position: relative; 
-            padding-left: 20px; 
+        .station-list-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            scroll-padding-top: 1rem;
         }
 
-        #stationList::before {
+        #stationListGoContent, #stationListBackContent {
+            position: relative; 
+            padding-left: 20px; 
+            padding-bottom: 20px; /* Add some padding at the bottom */
+        }
+
+        #stationListGoContent::before, #stationListBackContent::before {
             content: '';
             position: absolute;
             left: 21px; 
@@ -295,6 +307,11 @@
             width: 2px;
             background-color: #cbd5e1; 
             z-index: 0; 
+        }
+        
+        body.dark-mode #stationListGoContent::before,
+        body.dark-mode #stationListBackContent::before {
+             background-color: #475569;
         }
 
         .station-item {
@@ -516,7 +533,6 @@
         body.dark-mode .direction-button.bg-blue-500 { background-color: #60a5fa; color: #1e293b; }
         
         /* Station List */
-        body.dark-mode #stationList::before { background-color: #475569; }
         body.dark-mode .station-icon-container { background-color: #0f172a; }
         body.dark-mode .station-dot { background-color: #60a5fa; }
         body.dark-mode .station-content { background-color: #1e293b; }
@@ -677,16 +693,19 @@
                     <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2" data-i18n="backDirection">返程</button>
                 </div>
             </div>
-            <div id="estimateTimesSection" class="flex-grow overflow-y-auto pb-[80px]" style="scroll-padding-top: 1rem; touch-action: pan-y;">
+            <div id="estimateTimesSection" class="flex-grow pb-[80px] relative overflow-hidden" style="touch-action: pan-y;">
                 <div id="trackerLoading" class="text-center py-20 hidden">
                     <div class="loading-spinner mx-auto"></div>
                     <p class="mt-4 text-slate-600 text-sm" data-i18n="loadingBusData">正在載入路線動態...</p>
                 </div>
-                
-                <div id="stationList" class="space-y-3">
-                    </div>
+                <div id="stationListGo" class="station-list-container hidden">
+                    <div id="stationListGoContent" class="space-y-3"></div>
+                </div>
+                <div id="stationListBack" class="station-list-container hidden">
+                    <div id="stationListBackContent" class="space-y-3"></div>
+                </div>
             </div>
-            </div>
+        </div>
     </div>
 
     <div id="favoriteStationsPage" class="page">
@@ -824,7 +843,10 @@
             const trackerLoading = document.getElementById('trackerLoading');
             const routeTitle = document.getElementById('routeTitle');
             const routeDescription = document.getElementById('routeDescription');
-            const stationListDiv = document.getElementById('stationList');
+            const stationListGo = document.getElementById('stationListGo');
+            const stationListBack = document.getElementById('stationListBack');
+            const stationListGoContent = document.getElementById('stationListGoContent');
+            const stationListBackContent = document.getElementById('stationListBackContent');
             const errorMessageDiv = document.getElementById('errorMessage');
             const errorMessageText = document.getElementById('errorMessageText');
             const goDirectionButton = document.getElementById('goDirectionButton');
@@ -863,9 +885,10 @@
             let swipedFavoriteCard = null;
 
             // Variables for swipe detection
-            let touchStartX = 0;
-            let touchEndX = 0;
+            let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
             const SWIPE_THRESHOLD = 50; 
+
+            let isAnimatingDirection = false;
 
             // Translations object
             const translations = {
@@ -1447,35 +1470,38 @@
             }
             
             function handleDirectionToggle(newDirection) {
-                const directionToSet = newDirection;
-                if (!directionToSet || directionToSet === currentDirection || !currentRouteData) {
+                if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                     return;
                 }
 
-                const stationList = document.getElementById('stationList');
-                if (stationList.classList.contains('animating')) {
-                    return;
-                }
-                stationList.classList.add('animating');
+                isAnimatingDirection = true;
 
-                const slideOutClass = directionToSet > currentDirection ? 'slide-out-left' : 'slide-out-right';
-                const slideInClass = directionToSet > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
+                const outgoingList = (currentDirection === 1) ? stationListGo : stationListBack;
+                const incomingList = (newDirection === 1) ? stationListGo : stationListBack;
+                
+                const slideOutClass = newDirection > currentDirection ? 'slide-out-left' : 'slide-out-right';
+                const slideInClass = newDirection > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
 
-                stationList.classList.add(slideOutClass);
+                // Prepare incoming list
+                incomingList.classList.remove('hidden');
+                // Ensure classes are clean before adding new ones
+                outgoingList.className = 'station-list-container';
+                incomingList.className = 'station-list-container';
 
-                stationList.addEventListener('animationend', function onSlideOutEnd() {
-                    currentDirection = directionToSet;
-                    updateDirectionButtons();
-                    displayEstimateTimes(currentRouteData, currentDirection);
+                // Animate
+                outgoingList.classList.add(slideOutClass);
+                incomingList.classList.add(slideInClass);
+                
+                currentDirection = newDirection;
+                updateDirectionButtons();
 
-                    stationList.classList.remove(slideOutClass);
-                    stationList.classList.add(slideInClass);
-                    
-                    stationList.addEventListener('animationend', function onSlideInEnd() {
-                        stationList.classList.remove(slideInClass, 'animating');
-                    }, { once: true });
-
-                }, { once: true });
+                setTimeout(() => {
+                    outgoingList.classList.add('hidden');
+                    // Clean up classes
+                    outgoingList.classList.remove(slideOutClass);
+                    incomingList.classList.remove(slideInClass);
+                    isAnimatingDirection = false;
+                }, 300); // Animation duration
             }
 
             function createStationCard(estimate, stationName, displayedBusIds) {
@@ -1611,14 +1637,13 @@
                 return stationCard;
             }
 
-            function displayEstimateTimes(data, direction) {
-                errorMessageDiv.style.display = 'none';
-
+            function displayEstimateTimes(data, direction, targetElement) {
+                targetElement.innerHTML = '';
                 const stationMap = new Map(data.stations.edges.map(edge => [edge.node.id, edge.node.name]));
                 const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
 
                 if (!data || !data.estimateTimes || !data.estimateTimes.edges.length || filteredEstimates.length === 0) {
-                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
+                    targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                     return;
                 }
 
@@ -1631,14 +1656,21 @@
                     fragment.appendChild(card);
                 });
 
-                stationListDiv.innerHTML = '';
-                stationListDiv.appendChild(fragment);
+                targetElement.appendChild(fragment);
+            }
+
+            function renderAllDirections(data) {
+                displayEstimateTimes(data, 1, stationListGoContent);
+                displayEstimateTimes(data, 2, stationListBackContent);
             }
             
             async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
                 if (isInitialLoad) {
                     trackerLoading.style.display = 'block';
-                    stationListDiv.innerHTML = '';
+                    stationListGoContent.innerHTML = '';
+                    stationListBackContent.innerHTML = '';
+                    stationListGo.classList.add('hidden');
+                    stationListBack.classList.add('hidden');
                 }
                 errorMessageDiv.style.display = 'none';
                 updateCountdownButton.disabled = true;
@@ -1649,12 +1681,26 @@
                     if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                     
                     currentRouteData = result.data.route;
+                    
+                    renderAllDirections(currentRouteData);
+                    
                     updateDirectionButtons();
-                    displayEstimateTimes(currentRouteData, currentDirection);
+
+                    // Set initial visibility and clean up animation classes
+                    stationListGo.className = 'station-list-container';
+                    stationListBack.className = 'station-list-container';
+                    if (currentDirection === 1) {
+                        stationListGo.classList.remove('hidden');
+                        stationListBack.classList.add('hidden');
+                    } else {
+                        stationListGo.classList.add('hidden');
+                        stationListBack.classList.remove('hidden');
+                    }
 
                     if (scrollToStationId) {
                         await new Promise(resolve => setTimeout(resolve, 100));
-                        const targetStationCard = document.querySelector(`[data-station-id="${scrollToStationId}"]`);
+                        const targetContainer = currentDirection === 1 ? stationListGo : stationListBack;
+                        const targetStationCard = targetContainer.querySelector(`[data-station-id="${scrollToStationId}"]`);
                         if (targetStationCard) {
                             targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
@@ -1988,21 +2034,35 @@
             
             const estimateTimesSection = document.getElementById('estimateTimesSection');
             estimateTimesSection.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
                 touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
                 touchEndX = 0;
-            });
+                touchEndY = 0;
+            }, { passive: true });
 
             estimateTimesSection.addEventListener('touchmove', (e) => {
+                if (e.touches.length !== 1) return;
                 touchEndX = e.touches[0].clientX;
-            });
+                touchEndY = e.touches[0].clientY;
+            }, { passive: true });
 
             estimateTimesSection.addEventListener('touchend', () => {
-                if (touchEndX === 0) return;
+                if (touchEndX === 0) return; // No move
+                
                 const diffX = touchStartX - touchEndX;
-                if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+                const diffY = touchStartY - touchEndY;
+
+                // Only trigger if the swipe is predominantly horizontal and exceeds the threshold
+                if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > Math.abs(diffY)) {
                     handleDirectionToggle(diffX > 0 ? 2 : 1);
                 }
-                touchStartX = touchEndX = 0;
+                
+                // Reset all touch coordinates
+                touchStartX = 0;
+                touchStartY = 0;
+                touchEndX = 0;
+                touchEndY = 0;
             });
 
             updateCountdownButton.addEventListener('click', () => {
