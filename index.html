@@ -535,14 +535,14 @@
     <div id="routeSelectionPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-800">高雄市公車路線查詢</h1>
-                <p class="text-slate-500 mt-2">請使用下方鍵盤或直接輸入以查詢路線</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="routeSelectionTitle">高雄市公車路線查詢</h1>
+                <p class="text-slate-500 mt-2" data-i18n="routeSelectionSubtitle">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
             
             <div id="searchBarStickyWrapper" class="sticky top-0 z-10 bg-transparent py-2">
                 <div id="searchBarContainer" class="flex items-center gap-2 bg-white border-2 border-slate-300 rounded-xl shadow-sm py-1 px-2 mx-auto max-w-sm md:max-w-4xl">
                     <div class="flex-shrink-0 pl-3 pr-2">
-                        <span id="categoryDisplay" class="font-semibold text-blue-600">全部路線</span>
+                        <span id="categoryDisplay" class="font-semibold text-blue-600" data-i18n="allRoutes">全部路線</span>
                     </div>
                     
                     <div class="w-px bg-slate-300 self-stretch my-2"></div>
@@ -558,38 +558,38 @@
 
             <div id="initialLoading" class="text-center py-20">
                 <div class="loading-spinner mx-auto"></div>
-                <p class="mt-4 text-slate-600">正在載入所有路線...</p>
+                <p class="mt-4 text-slate-600" data-i18n="loadingRoutes">正在載入所有路線...</p>
             </div>
             
             <div id="routeListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 max-w-sm md:max-w-4xl mx-auto">
                 </div>
-             <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden">找不到相符的路線。</p>
+             <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="noMatchingRoutes">找不到相符的路線。</p>
         </div>
 
         <div id="filterKeyboardContainer" class="fixed bottom-[70px] left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
             <div class="container mx-auto max-w-4xl">
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
                     <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md">紅</button>
-                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md">幹線</button>
+                    <button data-filter="幹線" data-type="category" class="p-3 bg-white rounded-lg shadow-md" data-i18n="mainLine">幹線</button>
                     <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md">1</button>
                     <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md">2</button>
                     <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md">3</button>
                     
                     <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md">橘</button>
-                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md">快線</button>
+                    <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md" data-i18n="expressLine">快線</button>
                     <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md">4</button>
                     <button data-filter="5" data-type="number" class="p-3 bg-white rounded-lg shadow-md">5</button>
                     <button data-filter="6" data-type="number" class="p-3 bg-white rounded-lg shadow-md">6</button>
 
                     <button data-filter="黃" data-type="category" class="p-3 text-black font-bold bg-yellow-400 rounded-lg shadow-md">黃</button>
-                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md bus-taxi-button"><span class="bus-text">公車</span><span class="taxi-text">小黃</span></button>
+                    <button data-filter="小黃" data-type="category" class="bg-white rounded-lg shadow-md bus-taxi-button"><span class="bus-text" data-i18n="bus">公車</span><span class="taxi-text" data-i18n="taxi">小黃</span></button>
                     <button data-filter="7" data-type="number" class="p-3 bg-white rounded-lg shadow-md">7</button>
                     <button data-filter="8" data-type="number" class="p-3 bg-white rounded-lg shadow-md">8</button>
                     <button data-filter="9" data-type="number" class="p-3 bg-white rounded-lg shadow-md">9</button>
 
                     <button data-filter="綠" data-type="category" class="p-3 text-black font-bold bg-green-500 rounded-lg shadow-md">綠</button>
-                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md">其他</button>
-                    <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md">重設</button>
+                    <button data-filter="其他" data-type="category" class="p-3 bg-white rounded-lg shadow-md" data-i18n="otherRoutes">其他</button>
+                    <button data-filter="reset" data-type="action" class="p-3 bg-white rounded-lg shadow-md" data-i18n="reset">重設</button>
                     <button data-filter="0" data-type="number" class="p-3 bg-white rounded-lg shadow-md">0</button>
                     <button data-filter="backspace" data-type="action" class="p-3 bg-white text-slate-800 rounded-lg shadow-md flex justify-center items-center">
                         <span class="material-icons-outlined">backspace</span>
@@ -618,19 +618,19 @@
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
 
                 <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
-                    <strong class="font-bold">錯誤!</strong>
+                    <strong class="font-bold" data-i18n="errorTitle">錯誤!</strong>
                     <span class="block sm:inline" id="errorMessageText"></span>
                 </div>
 
                 <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
-                    <button id="goDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="1">去程</button>
-                    <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2">返程</button>
+                    <button id="goDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="1" data-i18n="goDirection">去程</button>
+                    <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2" data-i18n="backDirection">返程</button>
                 </div>
             </div>
             <div id="estimateTimesSection" class="flex-grow overflow-y-auto pb-[80px]" style="scroll-padding-top: 1rem; touch-action: pan-y;">
                 <div id="trackerLoading" class="text-center py-20 hidden">
                     <div class="loading-spinner mx-auto"></div>
-                    <p class="mt-4 text-slate-600 text-sm">正在載入路線動態...</p>
+                    <p class="mt-4 text-slate-600 text-sm" data-i18n="loadingBusData">正在載入路線動態...</p>
                 </div>
                 
                 <div id="stationList" class="space-y-3">
@@ -642,14 +642,14 @@
     <div id="favoriteStationsPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-800">常用站牌</h1>
-                <p class="text-slate-500 mt-2">長按並拖動以排序，點擊可查看路線詳情。</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h1>
+                <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">長按並拖動以排序，點擊可查看路線詳情。</p>
             </header>
             <div id="favoriteListContainer" class="space-y-3">
             </div>
             <div id="noFavoritesMessage" class="text-center py-20 text-slate-500 hidden">
-                <p>還沒有常用站牌喔！</p>
-                <p class="mt-2 text-sm">在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。</p>
+                <p data-i18n="noFavoritesYet">還沒有常用站牌喔！</p>
+                <p class="mt-2 text-sm" data-i18n="addFavoritesHint">在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。</p>
             </div>
         </div>
     </div>
@@ -657,21 +657,21 @@
     <div id="settingsPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-800">設定</h1>
-                <p class="text-slate-500 mt-2">調整應用程式設定。</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="settingsTitle">設定</h1>
+                <p class="text-slate-500 mt-2" data-i18n="settingsSubtitle">調整應用程式設定。</p>
             </header>
             
             <div class="space-y-6">
                 <!-- Appearance Settings Card -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
-                        <h2 class="text-lg font-semibold text-slate-700">外觀</h2>
+                        <h2 class="text-lg font-semibold text-slate-700" data-i18n="appearance">外觀</h2>
                     </div>
                     <div class="p-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <span class="material-icons-outlined text-slate-500 mr-3">dark_mode</span>
-                                <span class="text-slate-600">深色模式</span>
+                                <span class="text-slate-600" data-i18n="darkMode">深色模式</span>
                             </div>
                             <!-- Material Style Toggle Switch -->
                             <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer">
@@ -682,16 +682,35 @@
                     </div>
                 </div>
 
+                <!-- Language Settings Card -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h2 class="text-lg font-semibold text-slate-700" data-i18n="languageSettings">語言設定</h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">language</span>
+                                <span class="text-slate-600" data-i18n="selectLanguage">選擇語言</span>
+                            </div>
+                            <select id="languageSelect" class="bg-slate-100 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-slate-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option value="zh">繁體中文</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- About Card -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
-                        <h2 class="text-lg font-semibold text-slate-700">關於</h2>
+                        <h2 class="text-lg font-semibold text-slate-700" data-i18n="about">關於</h2>
                     </div>
                     <div class="p-4">
                         <a href="https://github.com/potatosserver/kaohsiung_live_bus" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors -m-2">
                             <div class="flex items-center">
                                 <svg class="w-6 h-6 mr-3 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
-                                <span>GitHub 原始碼</span>
+                                <span data-i18n="githubSource">GitHub 原始碼</span>
                             </div>
                             <span class="material-icons-outlined text-slate-400">open_in_new</span>
                         </a>
@@ -704,7 +723,7 @@
 
     <button id="updateCountdown" style="display:none;">
         <span class="material-icons-outlined">autorenew</span>
-        <span id="updateCountdownText">30秒後更新</span>
+        <span id="updateCountdownText" data-i18n="updateCountdown">30秒後更新</span>
     </button>
 
     <button id="favoriteActionButton" class="hidden">
@@ -717,13 +736,13 @@
     <div id="mainNav">
         <button id="navDynamic" data-page="dynamic" class="active-nav">
             <span class="material-icons-outlined">directions_bus</span>
-            <span>動態</span>
+            <span data-i18n="navDynamic">動態</span>
         </button>
         <button id="navFavorites" data-page="favorites">
-            <span class="material-icons-outlined">favorite</span> <span>最愛</span> </button>
+            <span class="material-icons-outlined">favorite</span> <span data-i18n="navFavorites">最愛</span> </button>
         <button id="navSettings" data-page="settings">
             <span class="material-icons-outlined">settings</span>
-            <span>設定</span>
+            <span data-i18n="navSettings">設定</span>
         </button>
     </div>
 
@@ -771,6 +790,7 @@
             const toastContainer = document.getElementById('toastContainer');
             
             const darkModeToggle = document.getElementById('darkModeToggle');
+            const languageSelect = document.getElementById('languageSelect'); // New language select element
 
             // --- STATE ---
             let allRoutes = [];
@@ -779,7 +799,8 @@
             let currentRouteId = null;
             let currentRouteName = null;
             let countdownInterval = null;
-            let currentLang = localStorage.getItem("lang") || "zh";
+            let currentLang = localStorage.getItem("lang") || "zh"; // Initialize currentLang
+
             let activePage = 'dynamic';
             let selectedCategoryPrefix = '';
 
@@ -794,27 +815,147 @@
             let touchEndX = 0;
             const SWIPE_THRESHOLD = 50; // Minimum horizontal distance for a swipe
 
+            // Translations object
+            const translations = {
+                zh: {
+                    routeSelectionTitle: '高雄市公車路線查詢',
+                    routeSelectionSubtitle: '請使用下方鍵盤或直接輸入以查詢路線',
+                    allRoutes: '全部路線',
+                    routeSearchPlaceholder: '請由鍵盤輸入號碼',
+                    loadingRoutes: '正在載入所有路線...',
+                    noMatchingRoutes: '找不到相符的路線。',
+                    mainLine: '幹線',
+                    expressLine: '快線',
+                    bus: '公車',
+                    taxi: '小黃',
+                    otherRoutes: '其他',
+                    reset: '重設',
+                    errorTitle: '錯誤!',
+                    goDirection: '去程',
+                    backDirection: '返程',
+                    loadingBusData: '正在載入路線動態...',
+                    noBusDataForDirection: '此方向目前沒有班次資訊。',
+                    lastBusDeparted: '末班駛離',
+                    approaching: '進站中',
+                    arrivingSoon: '即將到站',
+                    minutes: '分',
+                    unknownStation: '未知站點',
+                    removeFavorite: '移除最愛',
+                    addFavorite: '加入最愛',
+                    favoritesTitle: '常用站牌',
+                    favoritesSubtitle: '長按並拖動以排序，點擊可查看路線詳情。',
+                    noFavoritesYet: '還沒有常用站牌喔！',
+                    addFavoritesHint: '在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。',
+                    settingsTitle: '設定',
+                    settingsSubtitle: '調整應用程式設定。',
+                    appearance: '外觀',
+                    darkMode: '深色模式',
+                    languageSettings: '語言設定',
+                    selectLanguage: '選擇語言',
+                    githubSource: 'GitHub 原始碼',
+                    updateCountdown: '秒後更新',
+                    navDynamic: '動態',
+                    navFavorites: '最愛',
+                    navSettings: '設定',
+                    noData: '無資料',
+                    routeInfoNotFound: '找不到該路線的資訊，請確認路線代號是否正確。'
+                },
+                en: {
+                    routeSelectionTitle: 'Kaohsiung Bus Route Inquiry',
+                    routeSelectionSubtitle: 'Please use the keyboard below or type directly to search for routes',
+                    allRoutes: 'All Routes',
+                    routeSearchPlaceholder: 'Enter number from keyboard',
+                    loadingRoutes: 'Loading all routes...',
+                    noMatchingRoutes: 'No matching routes found.',
+                    mainLine: 'Main Line',
+                    expressLine: 'Express',
+                    bus: 'Bus',
+                    taxi: 'Taxi',
+                    otherRoutes: 'Other',
+                    reset: 'Reset',
+                    errorTitle: 'Error!',
+                    goDirection: 'To Destination',
+                    backDirection: 'To Origin',
+                    loadingBusData: 'Loading bus data...',
+                    noBusDataForDirection: 'No bus information available for this direction.',
+                    lastBusDeparted: 'Last bus departed',
+                    approaching: 'Approaching',
+                    arrivingSoon: 'Arriving Soon',
+                    minutes: 'min',
+                    unknownStation: 'Unknown Station',
+                    removeFavorite: 'Remove Favorite',
+                    addFavorite: 'Add Favorite',
+                    favoritesTitle: 'Favorite Stops',
+                    favoritesSubtitle: 'Long press and drag to reorder, click to view route details.',
+                    noFavoritesYet: 'No favorite stops yet!',
+                    addFavoritesHint: 'On the bus tracker page, long press or right-click a stop to add it to favorites.',
+                    settingsTitle: 'Settings',
+                    settingsSubtitle: 'Adjust application settings.',
+                    appearance: 'Appearance',
+                    darkMode: 'Dark Mode',
+                    languageSettings: 'Language Settings',
+                    selectLanguage: 'Select Language',
+                    githubSource: 'GitHub Source Code',
+                    updateCountdown: 's to update',
+                    navDynamic: 'Dynamic',
+                    navFavorites: 'Favorites',
+                    navSettings: 'Settings',
+                    noData: 'No Data',
+                    routeInfoNotFound: 'Route information not found. Please check if the route number is correct.'
+                }
+            };
+
             const categoryFilters = [
-                { prefix: '公車小黃', filterValue: '小黃' },
-                { prefix: '紅', filterValue: '紅' },
-                { prefix: '橘', filterValue: '橘' },
-                { prefix: '黃', filterValue: '黃' },
-                { prefix: '綠', filterValue: '綠' },
-                { prefix: '其他', filterValue: '其他' },
-                { prefix: '幹線', filterValue: '幹線' },
-                { prefix: '快線', filterValue: 'E' }
+                { prefix: '公車小黃', filterValue: '小黃', i18nKey: 'busTaxi' },
+                { prefix: '紅', filterValue: '紅', i18nKey: 'redLine' },
+                { prefix: '橘', filterValue: '橘', i18nKey: 'orangeLine' },
+                { prefix: '黃', filterValue: '黃', i18nKey: 'yellowLine' },
+                { prefix: '綠', filterValue: '綠', i18nKey: 'greenLine' },
+                { prefix: '其他', filterValue: '其他', i18nKey: 'otherRoutes' },
+                { prefix: '幹線', filterValue: '幹線', i18nKey: 'mainLine' },
+                { prefix: '快線', filterValue: 'E', i18nKey: 'expressLine' }
             ];
             
             const categoryDisplayMap = {
-                '紅': '紅線接駁',
-                '橘': '橘線接駁',
-                '黃': '黃線接駁',
-                '綠': '綠線接駁',
-                '幹線': '幹線公車',
-                'E': '快線公車',
-                '小黃': '公車小黃',
-                '其他': '其他路線'
+                '紅': 'redLineShuttle', // 紅線接駁
+                '橘': 'orangeLineShuttle', // 橘線接駁
+                '黃': 'yellowLineShuttle', // 黃線接駁
+                '綠': 'greenLineShuttle', // 綠線接駁
+                '幹線': 'mainLineBus', // 幹線公車
+                'E': 'expressLineBus', // 快線公車
+                '小黃': 'busTaxiBus', // 公車小黃
+                '其他': 'otherRoutes' // 其他路線
             };
+
+            // Add translations for categoryDisplayMap values that are not direct i18n keys
+            translations.zh.redLineShuttle = '紅線接駁';
+            translations.zh.orangeLineShuttle = '橘線接駁';
+            translations.zh.yellowLineShuttle = '黃線接駁';
+            translations.zh.greenLineShuttle = '綠線接駁';
+            translations.zh.mainLineBus = '幹線公車';
+            translations.zh.expressLineBus = '快線公車';
+            translations.zh.busTaxiBus = '公車小黃';
+
+            translations.en.redLineShuttle = 'Red Line Shuttle';
+            translations.en.orangeLineShuttle = 'Orange Line Shuttle';
+            translations.en.yellowLineShuttle = 'Yellow Line Shuttle';
+            translations.en.greenLineShuttle = 'Green Line Shuttle';
+            translations.en.mainLineBus = 'Main Line Bus';
+            translations.en.expressLineBus = 'Express Line Bus';
+            translations.en.busTaxiBus = 'Bus Taxi';
+
+            // Add specific category filter translations to the main translations object
+            translations.zh.busTaxi = '公車小黃';
+            translations.zh.redLine = '紅';
+            translations.zh.orangeLine = '橘';
+            translations.zh.yellowLine = '黃';
+            translations.zh.greenLine = '綠';
+
+            translations.en.busTaxi = 'Bus Taxi';
+            translations.en.redLine = 'Red';
+            translations.en.orangeLine = 'Orange';
+            translations.en.yellowLine = 'Yellow';
+            translations.en.greenLine = 'Green';
 
 
             const GQL = {
@@ -857,6 +998,75 @@
                 }
             });
 
+            // --- LANGUAGE LOGIC ---
+            function setLanguage(lang) {
+                currentLang = lang;
+                localStorage.setItem('lang', lang);
+                applyTranslations();
+                // Re-render pages that depend on language for content
+                if (activePage === 'dynamic') {
+                    // Re-initialize route selection to update category display and initial prompt
+                    initRouteSelection();
+                    // If on bus tracker page, reload data to update station names/directions
+                    if (busTrackerPage.classList.contains('active') && currentRouteId) {
+                        loadBusData(currentRouteId, false);
+                    }
+                } else if (activePage === 'favorites') {
+                    displayFavoriteStations();
+                }
+            }
+
+            function applyTranslations() {
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.dataset.i18n;
+                    if (translations[currentLang] && translations[currentLang][key]) {
+                        element.textContent = translations[currentLang][key];
+                    }
+                });
+
+                // Update placeholder text
+                routeSearchInput.placeholder = translations[currentLang].routeSearchPlaceholder;
+
+                // Update category display based on current language
+                if (selectedCategoryPrefix) {
+                    const categoryFilter = categoryFilters.find(cat => cat.prefix === selectedCategoryPrefix);
+                    if (categoryFilter && translations[currentLang][categoryDisplayMap[categoryFilter.filterValue]]) {
+                        categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[categoryFilter.filterValue]];
+                    } else {
+                        categoryDisplay.textContent = translations[currentLang].allRoutes;
+                    }
+                } else {
+                    categoryDisplay.textContent = translations[currentLang].allRoutes;
+                }
+
+                // Update keyboard category buttons
+                filterKeyboard.querySelectorAll('button[data-type="category"]').forEach(button => {
+                    const filterValue = button.dataset.filter;
+                    const categoryFilter = categoryFilters.find(cat => cat.filterValue === filterValue);
+                    if (categoryFilter && translations[currentLang][categoryFilter.i18nKey]) {
+                        // Special handling for '公車小黃' which has two spans
+                        if (filterValue === '小黃') {
+                            button.querySelector('.bus-text').textContent = translations[currentLang].bus;
+                            button.querySelector('.taxi-text').textContent = translations[currentLang].taxi;
+                        } else {
+                            button.textContent = translations[currentLang][categoryFilter.i18nKey];
+                        }
+                    }
+                });
+
+                // Update updateCountdownButton text
+                if (countdownTimer) {
+                    countdownTimer.updateDisplay();
+                }
+            }
+
+            languageSelect.addEventListener('change', (e) => {
+                setLanguage(e.target.value);
+            });
+
+            // Set initial language selection
+            languageSelect.value = currentLang;
+
             // --- UTILITY FUNCTIONS ---
             async function fetchAPI(query, variables) {
                 try {
@@ -865,7 +1075,7 @@
                         headers: HEADERS,
                         body: JSON.stringify({ query, variables })
                     });
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) throw new Error(`${translations[currentLang].errorTitle} HTTP error! status: ${response.status}`);
                     return await response.json();
                 } catch (error) {
                     console.error("API Fetch Error:", error);
@@ -923,7 +1133,7 @@
                 const isCurrentlyFavorite = isFavorite(routeId, stationId, direction);
 
                 favoriteActionIcon.textContent = isCurrentlyFavorite ? 'favorite' : 'favorite_border';
-                favoriteActionText.textContent = isCurrentlyFavorite ? '移除最愛' : '加入最愛';
+                favoriteActionText.textContent = isCurrentlyFavorite ? translations[currentLang].removeFavorite : translations[currentLang].addFavorite;
 
                 favoriteActionButton.classList.remove('hidden');
                 favoriteActionButton.classList.add('show');
@@ -1013,7 +1223,7 @@
             // --- PAGE 1: ROUTE SELECTION ---
             async function initRouteSelection() {
                 try {
-                    const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: "zh" });
+                    const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang }); // Use currentLang
                     allRoutes = data.data.routes.edges
                         .map(edge => edge.node)
                         .filter(route => route.id !== 0)
@@ -1022,14 +1232,14 @@
                     initialLoading.style.display = 'none';
                     displayInitialPrompt();
                 } catch (error) {
-                    initialLoading.innerHTML = '<p class="text-red-500">無法載入路線列表，請重新整理頁面。</p>';
+                    initialLoading.innerHTML = `<p class="text-red-500">${translations[currentLang].loadingRoutesError || '無法載入路線列表，請重新整理頁面。'}</p>`;
                 }
             }
 
             function displayInitialPrompt() {
                 routeListContainer.innerHTML = `
                     <div id="initialPrompt" class="text-center col-span-full py-10 text-slate-500">
-                        <p class="text-lg">請使用鍵盤或直接輸入開始搜尋路線。</p>
+                        <p class="text-lg">${translations[currentLang].routeSelectionSubtitle}</p>
                     </div>`;
                 noResultsMessage.style.display = 'none';
             }
@@ -1074,7 +1284,7 @@
                 let remainingSearchTerm = lowerCaseTerm;
 
                 for (const category of categoryFilters) {
-                    const lowerCasePrefix = category.prefix.toLowerCase();
+                    const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
                     if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
                         if (category.filterValue === '其他') {
                             filteredRoutes = filteredRoutes.filter(route =>
@@ -1129,15 +1339,19 @@
                 if (type === 'category') {
                     let searchPrefix;
                     if (value === '小黃') {
-                        searchPrefix = '公車小黃';
+                        searchPrefix = translations[currentLang].busTaxi;
                     } else if (value === 'E') {
-                        searchPrefix = '快線';
+                        searchPrefix = translations[currentLang].expressLine;
+                    } else if (value === '幹線') {
+                        searchPrefix = translations[currentLang].mainLine;
+                    } else if (value === '其他') {
+                        searchPrefix = translations[currentLang].otherRoutes;
                     } else {
-                        searchPrefix = button.textContent;
+                        searchPrefix = button.textContent; // For 紅, 橘, 黃, 綠
                     }
 
                     selectedCategoryPrefix = searchPrefix;
-                    categoryDisplay.textContent = categoryDisplayMap[value] || '全部路線';
+                    categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
                     routeSearchInput.value = '';
 
                 } else if (type === 'number') {
@@ -1147,7 +1361,7 @@
                     if (value === 'reset') {
                         selectedCategoryPrefix = '';
                         routeSearchInput.value = '';
-                        categoryDisplay.textContent = '全部路線';
+                        categoryDisplay.textContent = translations[currentLang].allRoutes;
                     } else if (value === 'backspace') {
                         routeSearchInput.value = routeSearchInput.value.slice(0, -1);
                     }
@@ -1161,8 +1375,8 @@
             function updateDirectionButtons() {
                 if (!currentRouteData) return;
 
-                goDirectionButton.textContent = `往 ${currentRouteData.destination}`;
-                backDirectionButton.textContent = `往 ${currentRouteData.departure}`;
+                goDirectionButton.textContent = `${translations[currentLang].goDirection} ${currentRouteData.destination}`;
+                backDirectionButton.textContent = `${translations[currentLang].backDirection} ${currentRouteData.departure}`;
 
                 if (currentDirection === 1) {
                     goDirectionButton.classList.add('bg-blue-500', 'text-white');
@@ -1214,7 +1428,7 @@
             }
 
             function createStationCard(estimate, stationName, displayedBusIds) {
-                let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
+                let timeDisplay = translations[currentLang].lastBusDeparted;
                 let busIdDisplayHtml = ''; 
                 let pillBgColorClass = 'bg-slate-200'; // Default background for time pill
 
@@ -1227,13 +1441,13 @@
 
                     if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
                         if (closestEta.etaTime <= 1) {
-                            timeDisplay = '進站中';
+                            timeDisplay = translations[currentLang].approaching;
                             pillBgColorClass = 'bg-red-200';
                         } else if (closestEta.etaTime <= 3) {
-                            timeDisplay = '即將到站';
+                            timeDisplay = translations[currentLang].arrivingSoon;
                             pillBgColorClass = 'bg-green-200';
                         } else {
-                            timeDisplay = `${closestEta.etaTime}分`;
+                            timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
                             pillBgColorClass = 'bg-blue-200';
                         }
 
@@ -1353,7 +1567,7 @@
                 const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
 
                 if (!data || !data.estimateTimes || !data.estimateTimes.edges.length || filteredEstimates.length === 0) {
-                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">此方向目前沒有班次資訊。</p>`;
+                    stationListDiv.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                     return;
                 }
 
@@ -1361,7 +1575,7 @@
                 const displayedBusIds = new Set();
 
                 filteredEstimates.forEach(({ node: estimate }) => {
-                    const stationName = stationMap.get(estimate.id) || `未知站點 (ID: ${estimate.id})`;
+                    const stationName = stationMap.get(estimate.id) || `${translations[currentLang].unknownStation} (ID: ${estimate.id})`;
                     const card = createStationCard(estimate, stationName, displayedBusIds);
                     fragment.appendChild(card);
                 });
@@ -1379,9 +1593,9 @@
                 updateCountdownButton.disabled = true;
 
                 try {
-                    const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: "zh" });
+                    const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang }); // Use currentLang
                     
-                    if (!result.data.route) throw new Error("找不到該路線的資訊，請確認路線代號是否正確。");
+                    if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                     
                     currentRouteData = result.data.route;
                     updateDirectionButtons();
@@ -1431,7 +1645,7 @@
                 currentRouteName = null;
                 routeSearchInput.value = ''; 
                 selectedCategoryPrefix = '';
-                categoryDisplay.textContent = '全部路線';
+                categoryDisplay.textContent = translations[currentLang].allRoutes; // Use translation
                 applySearch('');
                 history.pushState({ page: 'selection' }, '', window.location.pathname);
                 hideFavoriteButton();
@@ -1439,7 +1653,7 @@
 
             // --- PAGE 3: FAVORITE STATIONS ---
             function createTimePillHtml(estimate) {
-                let timeDisplay = '<span class="text-slate-400">末班駛離</span>';
+                let timeDisplay = translations[currentLang].lastBusDeparted;
                 let pillBgColorClass = 'bg-slate-200'; // Default background for time pill
 
                 if (estimate && estimate.etas && estimate.etas.length > 0) {
@@ -1451,13 +1665,13 @@
 
                     if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
                         if (closestEta.etaTime <= 1) {
-                            timeDisplay = '進站中';
+                            timeDisplay = translations[currentLang].approaching;
                             pillBgColorClass = 'bg-red-200';
                         } else if (closestEta.etaTime <= 3) {
-                            timeDisplay = '即將到站';
+                            timeDisplay = translations[currentLang].arrivingSoon;
                             pillBgColorClass = 'bg-yellow-200'; // Note: Using yellow for favorites "即將到站"
                         } else {
-                            timeDisplay = `${closestEta.etaTime} 分`;
+                            timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
                             pillBgColorClass = 'bg-blue-200';
                         }
                     }
@@ -1465,7 +1679,7 @@
                     timeDisplay = estimate.comeTime;
                     pillBgColorClass = 'bg-slate-200'; // Default background for comeTime
                 } else if (!estimate) {
-                    timeDisplay = '無資料';
+                    timeDisplay = translations[currentLang].noData;
                 }
 
                 // The text color is now determined by the CSS rule for the pillBgColorClass
@@ -1480,6 +1694,9 @@
 
                 if (favoriteStations.length === 0) {
                     noFavoritesMessage.classList.remove('hidden');
+                    // Update noFavoritesMessage content
+                    noFavoritesMessage.querySelector('p:nth-child(1)').textContent = translations[currentLang].noFavoritesYet;
+                    noFavoritesMessage.querySelector('p:nth-child(2)').textContent = translations[currentLang].addFavoritesHint;
                     return;
                 }
 
@@ -1491,7 +1708,7 @@
                     favCard.draggable = true;
                     favCard.dataset.index = index;
 
-                    const directionText = fav.destination ? `往 ${fav.destination}` : `方向 ${fav.direction}`;
+                    const directionText = fav.destination ? `${translations[currentLang].goDirection} ${fav.destination}` : `${translations[currentLang].direction} ${fav.direction}`;
                     
                     favCard.innerHTML = `
                         <div class="drag-handle touch-none">
@@ -1522,7 +1739,7 @@
                 if (routesToFetch.length === 0) return;
 
                 const promises = routesToFetch.map(routeId => 
-                    fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: "zh" })
+                    fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang }) // Use currentLang
                 );
                 
                 const results = await Promise.allSettled(promises);
@@ -1634,7 +1851,7 @@
                 remaining: 30,
                 updateButton: document.getElementById('updateCountdown'),
                 updateDisplay: function() {
-                    const text = `${this.remaining}秒後更新`;
+                    const text = `${this.remaining}${translations[currentLang].updateCountdown}`;
                     document.getElementById('updateCountdownText').textContent = text;
                 },
                 reset: function() {
@@ -1760,6 +1977,7 @@
             // --- Initial Load Logic ---
             loadFavorites();
             applyInitialTheme();
+            setLanguage(currentLang); // Apply translations immediately after loading currentLang
             await initRouteSelection();
 
             adjustContentPadding();
