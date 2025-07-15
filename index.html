@@ -527,6 +527,12 @@
         body.dark-mode .dark\:bg-slate-700 { background-color: #334155; }
         body.dark-mode .dark\:border-slate-600 { border-color: #475569; }
         body.dark-mode .dark\:peer-focus\:ring-blue-800:focus { --tw-ring-color: rgba(30, 64, 175, 0.5); }
+        /* Added styles for language select in dark mode */
+        body.dark-mode #languageSelect {
+            background-color: #334155; /* slate-700, adjusted for better contrast */
+            color: #e2e8f0; /* slate-200 */
+            border-color: #475569; /* slate-600 */
+        }
         /* --- END: DARK MODE STYLES --- */
     </style>
 </head>
@@ -799,7 +805,8 @@
             let currentRouteId = null;
             let currentRouteName = null;
             let countdownInterval = null;
-            let currentLang = localStorage.getItem("lang") || "zh"; // Initialize currentLang
+            let currentLang = localStorage.getItem("lang") || "zh";
+            let routeDataLang = null; 
 
             let activePage = 'dynamic';
             let selectedCategoryPrefix = '';
@@ -999,18 +1006,19 @@
             });
 
             // --- LANGUAGE LOGIC ---
-            function setLanguage(lang) {
+            async function setLanguage(lang) {
+                if (lang === currentLang) return; 
+
                 currentLang = lang;
                 localStorage.setItem('lang', lang);
                 applyTranslations();
-                // Re-render pages that depend on language for content
-                if (activePage === 'dynamic') {
-                    // Re-initialize route selection to update category display and initial prompt
-                    initRouteSelection();
-                    // If on bus tracker page, reload data to update station names/directions
-                    if (busTrackerPage.classList.contains('active') && currentRouteId) {
-                        loadBusData(currentRouteId, false);
-                    }
+
+                if (allRoutes.length > 0 && routeDataLang !== currentLang) {
+                    await initRouteSelection();
+                }
+
+                if (busTrackerPage.classList.contains('active') && currentRouteId) {
+                    loadBusData(currentRouteId, false);
                 } else if (activePage === 'favorites') {
                     displayFavoriteStations();
                 }
@@ -1024,10 +1032,8 @@
                     }
                 });
 
-                // Update placeholder text
                 routeSearchInput.placeholder = translations[currentLang].routeSearchPlaceholder;
 
-                // Update category display based on current language
                 if (selectedCategoryPrefix) {
                     const categoryFilter = categoryFilters.find(cat => cat.prefix === selectedCategoryPrefix);
                     if (categoryFilter && translations[currentLang][categoryDisplayMap[categoryFilter.filterValue]]) {
@@ -1039,12 +1045,10 @@
                     categoryDisplay.textContent = translations[currentLang].allRoutes;
                 }
 
-                // Update keyboard category buttons
                 filterKeyboard.querySelectorAll('button[data-type="category"]').forEach(button => {
                     const filterValue = button.dataset.filter;
                     const categoryFilter = categoryFilters.find(cat => cat.filterValue === filterValue);
                     if (categoryFilter && translations[currentLang][categoryFilter.i18nKey]) {
-                        // Special handling for '公車小黃' which has two spans
                         if (filterValue === '小黃') {
                             button.querySelector('.bus-text').textContent = translations[currentLang].bus;
                             button.querySelector('.taxi-text').textContent = translations[currentLang].taxi;
@@ -1054,17 +1058,15 @@
                     }
                 });
 
-                // Update updateCountdownButton text
                 if (countdownTimer) {
                     countdownTimer.updateDisplay();
                 }
             }
 
-            languageSelect.addEventListener('change', (e) => {
-                setLanguage(e.target.value);
+            languageSelect.addEventListener('change', async (e) => {
+                await setLanguage(e.target.value);
             });
 
-            // Set initial language selection
             languageSelect.value = currentLang;
 
             // --- UTILITY FUNCTIONS ---
@@ -1223,15 +1225,26 @@
             // --- PAGE 1: ROUTE SELECTION ---
             async function initRouteSelection() {
                 try {
-                    const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang }); // Use currentLang
+                    initialLoading.style.display = 'block';
+                    routeListContainer.innerHTML = '';
+
+                    const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang });
                     allRoutes = data.data.routes.edges
                         .map(edge => edge.node)
                         .filter(route => route.id !== 0)
                         .sort((a, b) => a.seq - b.seq);
                     
+                    routeDataLang = currentLang;
+
                     initialLoading.style.display = 'none';
-                    displayInitialPrompt();
+                    const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
+                    if (fullSearchTerm.trim()) {
+                        applySearch(fullSearchTerm);
+                    } else {
+                        displayInitialPrompt();
+                    }
                 } catch (error) {
+                    routeDataLang = null;
                     initialLoading.innerHTML = `<p class="text-red-500">${translations[currentLang].loadingRoutesError || '無法載入路線列表，請重新整理頁面。'}</p>`;
                 }
             }
@@ -1279,45 +1292,51 @@
                 }
 
                 let filteredRoutes = [...allRoutes];
-
                 let categoryMatched = false;
                 let remainingSearchTerm = lowerCaseTerm;
 
                 for (const category of categoryFilters) {
                     const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
+                    
                     if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
-                        if (category.filterValue === '其他') {
-                            filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().includes('joy') ||
-                                route.name.toLowerCase().includes('大樹祈福線')
+                        const filterVal = category.filterValue;
+
+                        if (filterVal === '其他') { // Other
+                            filteredRoutes = allRoutes.filter(route =>
+                                route.name.toLowerCase().includes('joy') || 
+                                route.name.toLowerCase().includes('dashu blessing bus') ||
+                                route.name.toLowerCase().includes('大樹祈福') // Keep Chinese for safety
                             );
-                        } else if (category.filterValue === 'E') {
-                            filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().startsWith('e')
-                            );
-                        } else if (category.filterValue === '小黃') {
-                            filteredRoutes = filteredRoutes.filter(route =>
-                                route.opType === 9
-                            );
-                        } else if (category.filterValue === '黃') {
-                            filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().includes('黃') && route.opType !== 9
-                            );
-                        } else {
-                            filteredRoutes = filteredRoutes.filter(route =>
-                                route.name.toLowerCase().includes(category.filterValue.toLowerCase())
-                            );
+                        } else if (filterVal === 'E') { // Express
+                            filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().startsWith('e'));
+                        } else if (filterVal === '小黃') { // Bus Taxi
+                            filteredRoutes = allRoutes.filter(route => route.opType === 9);
+                        } else if (filterVal === '幹線') { // Main Line
+                            const keyword = currentLang === 'en' ? 'main line' : '幹線';
+                            filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
+                        } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) { // Colors
+                            const keyword = translations[currentLang][category.i18nKey].toLowerCase();
+                            filteredRoutes = allRoutes.filter(route => {
+                                // For Chinese '黃', exclude '公車小黃'
+                                if (currentLang === 'zh' && filterVal === '黃') {
+                                    return route.name.includes(keyword) && route.opType !== 9;
+                                }
+                                // For English and other colors, a simple startswith is fine
+                                return route.name.toLowerCase().startsWith(keyword);
+                            });
                         }
 
                         remainingSearchTerm = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
                         categoryMatched = true;
-                        break;
+                        break; 
                     }
                 }
-
+                
                 if (remainingSearchTerm) {
-                    filteredRoutes = filteredRoutes.filter(route =>
-                        route.name.toLowerCase().includes(remainingSearchTerm)
+                    const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
+                    filteredRoutes = finalFilterTarget.filter(route =>
+                        route.name.toLowerCase().includes(remainingSearchTerm) ||
+                        (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
                     );
                 }
                 
@@ -1338,18 +1357,14 @@
 
                 if (type === 'category') {
                     let searchPrefix;
-                    if (value === '小黃') {
-                        searchPrefix = translations[currentLang].busTaxi;
-                    } else if (value === 'E') {
-                        searchPrefix = translations[currentLang].expressLine;
-                    } else if (value === '幹線') {
-                        searchPrefix = translations[currentLang].mainLine;
-                    } else if (value === '其他') {
-                        searchPrefix = translations[currentLang].otherRoutes;
+                    // Find the category object to get the i18nKey
+                    const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
+                    if(categoryObj && translations[currentLang][categoryObj.i18nKey]){
+                         searchPrefix = translations[currentLang][categoryObj.i18nKey];
                     } else {
-                        searchPrefix = button.textContent; // For 紅, 橘, 黃, 綠
+                         searchPrefix = button.textContent;
                     }
-
+                    
                     selectedCategoryPrefix = searchPrefix;
                     categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
                     routeSearchInput.value = '';
@@ -1398,7 +1413,6 @@
                 }
 
                 const stationList = document.getElementById('stationList');
-                // Use a generic 'animating' class to prevent multiple triggers
                 if (stationList.classList.contains('animating')) {
                     return;
                 }
@@ -1410,16 +1424,13 @@
                 stationList.classList.add(slideOutClass);
 
                 stationList.addEventListener('animationend', function onSlideOutEnd() {
-                    // Update state and DOM content
                     currentDirection = directionToSet;
                     updateDirectionButtons();
                     displayEstimateTimes(currentRouteData, currentDirection);
 
-                    // Clean up old animation class and add the new one
                     stationList.classList.remove(slideOutClass);
                     stationList.classList.add(slideInClass);
                     
-                    // Set up the cleanup for the 'in' animation
                     stationList.addEventListener('animationend', function onSlideInEnd() {
                         stationList.classList.remove(slideInClass, 'animating');
                     }, { once: true });
@@ -1430,7 +1441,7 @@
             function createStationCard(estimate, stationName, displayedBusIds) {
                 let timeDisplay = translations[currentLang].lastBusDeparted;
                 let busIdDisplayHtml = ''; 
-                let pillBgColorClass = 'bg-slate-200'; // Default background for time pill
+                let pillBgColorClass = 'bg-slate-200';
 
                 if (estimate.etas && estimate.etas.length > 0) {
                     const closestEta = estimate.etas.reduce((minEta, currentEta) => {
@@ -1461,7 +1472,7 @@
                     }
                 } else if (estimate.comeTime) {
                     timeDisplay = estimate.comeTime;
-                    pillBgColorClass = 'bg-slate-200'; // Default background for comeTime
+                    pillBgColorClass = 'bg-slate-200';
                 }
 
                 const stationCard = document.createElement('div');
@@ -1593,7 +1604,7 @@
                 updateCountdownButton.disabled = true;
 
                 try {
-                    const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang }); // Use currentLang
+                    const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
                     
                     if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                     
@@ -1623,14 +1634,7 @@
                 currentDirection = direction;
                 
                 showPage('busTrackerPage');
-                const url = `${window.location.pathname}?route=${routeId}`;
-                const state = { page: 'tracker', routeId: routeId, stationId: scrollToStationId, direction: direction };
-                if (pushState) {
-                    history.pushState(state, '', url);
-                } else {
-                    history.replaceState(state, '', url);
-                }
-
+                
                 routeTitle.textContent = routeName;
                 routeDescription.textContent = ''; 
                 
@@ -1645,16 +1649,15 @@
                 currentRouteName = null;
                 routeSearchInput.value = ''; 
                 selectedCategoryPrefix = '';
-                categoryDisplay.textContent = translations[currentLang].allRoutes; // Use translation
+                categoryDisplay.textContent = translations[currentLang].allRoutes;
                 applySearch('');
-                history.pushState({ page: 'selection' }, '', window.location.pathname);
                 hideFavoriteButton();
             }
 
             // --- PAGE 3: FAVORITE STATIONS ---
             function createTimePillHtml(estimate) {
                 let timeDisplay = translations[currentLang].lastBusDeparted;
-                let pillBgColorClass = 'bg-slate-200'; // Default background for time pill
+                let pillBgColorClass = 'bg-slate-200';
 
                 if (estimate && estimate.etas && estimate.etas.length > 0) {
                      const closestEta = estimate.etas.reduce((minEta, currentEta) => {
@@ -1669,7 +1672,7 @@
                             pillBgColorClass = 'bg-red-200';
                         } else if (closestEta.etaTime <= 3) {
                             timeDisplay = translations[currentLang].arrivingSoon;
-                            pillBgColorClass = 'bg-yellow-200'; // Note: Using yellow for favorites "即將到站"
+                            pillBgColorClass = 'bg-yellow-200';
                         } else {
                             timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
                             pillBgColorClass = 'bg-blue-200';
@@ -1677,12 +1680,11 @@
                     }
                 } else if (estimate && estimate.comeTime) {
                     timeDisplay = estimate.comeTime;
-                    pillBgColorClass = 'bg-slate-200'; // Default background for comeTime
+                    pillBgColorClass = 'bg-slate-200';
                 } else if (!estimate) {
                     timeDisplay = translations[currentLang].noData;
                 }
 
-                // The text color is now determined by the CSS rule for the pillBgColorClass
                 return `<div class="time-pill px-3 py-1 ${pillBgColorClass}">
                             <p>${timeDisplay}</p>
                         </div>`;
@@ -1694,7 +1696,6 @@
 
                 if (favoriteStations.length === 0) {
                     noFavoritesMessage.classList.remove('hidden');
-                    // Update noFavoritesMessage content
                     noFavoritesMessage.querySelector('p:nth-child(1)').textContent = translations[currentLang].noFavoritesYet;
                     noFavoritesMessage.querySelector('p:nth-child(2)').textContent = translations[currentLang].addFavoritesHint;
                     return;
@@ -1739,7 +1740,7 @@
                 if (routesToFetch.length === 0) return;
 
                 const promises = routesToFetch.map(routeId => 
-                    fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang }) // Use currentLang
+                    fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
                 );
                 
                 const results = await Promise.allSettled(promises);
@@ -1754,7 +1755,7 @@
                 document.querySelectorAll('.favorite-time-display').forEach(div => {
                     const { routeId, stationId, direction } = div.dataset;
                     const routeData = routeDataMap.get(Number(routeId));
-                    let timeHtml = createTimePillHtml(null); // Default to "無資料" or "末班駛離"
+                    let timeHtml = createTimePillHtml(null);
                     
                     if (routeData) {
                         const estimate = routeData.estimateTimes.edges.find(edge => 
@@ -1894,11 +1895,10 @@
             goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
             backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
             
-            // Swipe event listeners for estimateTimesSection
             const estimateTimesSection = document.getElementById('estimateTimesSection');
             estimateTimesSection.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
-                touchEndX = 0; // Reset end position
+                touchEndX = 0;
             });
 
             estimateTimesSection.addEventListener('touchmove', (e) => {
@@ -1906,46 +1906,19 @@
             });
 
             estimateTimesSection.addEventListener('touchend', () => {
-                if (touchEndX === 0) return; // No movement or just a tap
+                if (touchEndX === 0) return;
 
                 const diffX = touchStartX - touchEndX;
 
                 if (Math.abs(diffX) > SWIPE_THRESHOLD) {
                     if (diffX > 0) {
-                        // Swiped left (from right to left) - switch to back direction
                         handleDirectionToggle(2);
                     } else {
-                        // Swiped right (from left to right) - switch to go direction
                         handleDirectionToggle(1);
                     }
                 }
-                touchStartX = 0; // Reset for next swipe
+                touchStartX = 0;
                 touchEndX = 0;
-            });
-
-
-            window.addEventListener('popstate', (event) => {
-                const state = event.state || {};
-                const urlParams = new URLSearchParams(window.location.search);
-                const routeIdFromUrl = urlParams.get('route');
-                const pageFromUrl = urlParams.get('page');
-                const stationIdFromState = state.stationId;
-                const directionFromState = state.direction;
-
-                if (routeIdFromUrl) {
-                    const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
-                    if (route) {
-                        navigateToTracker(route.id, route.name, route.description, false, stationIdFromState, directionFromState);
-                    } else {
-                        navigateToSelection();
-                    }
-                } else if (pageFromUrl === 'favorites') {
-                    showPage('favoriteStationsPage');
-                } else if (pageFromUrl === 'settings') {
-                    showPage('settingsPage');
-                } else {
-                    navigateToSelection();
-                }
             });
 
             updateCountdownButton.addEventListener('click', () => {
@@ -1961,10 +1934,8 @@
                     navigateToSelection();
                 } else if (page === 'favorites') {
                     showPage('favoriteStationsPage');
-                    history.pushState({ page: 'favorites' }, '', `${window.location.pathname}?page=favorites`);
                 } else if (page === 'settings') {
                     showPage('settingsPage');
-                    history.pushState({ page: 'settings' }, '', `${window.location.pathname}?page=settings`);
                 }
             });
 
@@ -1977,7 +1948,10 @@
             // --- Initial Load Logic ---
             loadFavorites();
             applyInitialTheme();
-            setLanguage(currentLang); // Apply translations immediately after loading currentLang
+            currentLang = localStorage.getItem("lang") || "zh";
+            languageSelect.value = currentLang;
+            applyTranslations(); 
+
             await initRouteSelection();
 
             adjustContentPadding();
@@ -1993,7 +1967,6 @@
                     navigateToTracker(route.id, route.name, route.description, false, null, 1);
                 } else {
                     showPage('routeSelectionPage');
-                    history.replaceState({ page: 'selection' }, '', window.location.pathname);
                 }
             } else if (pageFromUrl) {
                 if (pageFromUrl === 'favorites') {
