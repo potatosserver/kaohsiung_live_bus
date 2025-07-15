@@ -39,6 +39,32 @@
         .page.active {
             display: block;
         }
+
+        /* Animation for direction change */
+        #estimateTimesSection {
+            overflow-x: hidden;
+        }
+        @keyframes slide-out-left {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-100%); opacity: 0; }
+        }
+        @keyframes slide-in-from-right {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slide-out-right {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        @keyframes slide-in-from-left {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .slide-out-left { animation: slide-out-left 0.3s ease-out forwards; }
+        .slide-in-from-right { animation: slide-in-from-right 0.3s ease-in forwards; }
+        .slide-out-right { animation: slide-out-right 0.3s ease-out forwards; }
+        .slide-in-from-left { animation: slide-in-from-left 0.3s ease-in forwards; }
+
         /* Custom scrollbar - Hidden but scrollable */
         ::-webkit-scrollbar {
             width: 0px; /* For vertical scrollbar */
@@ -601,7 +627,7 @@
                     <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2">返程</button>
                 </div>
             </div>
-            <div id="estimateTimesSection" class="flex-grow overflow-y-auto pb-[80px]" style="scroll-padding-top: 1rem;">
+            <div id="estimateTimesSection" class="flex-grow overflow-y-auto pb-[80px]" style="scroll-padding-top: 1rem; touch-action: pan-y;">
                 <div id="trackerLoading" class="text-center py-20 hidden">
                     <div class="loading-spinner mx-auto"></div>
                     <p class="mt-4 text-slate-600 text-sm">正在載入路線動態...</p>
@@ -762,6 +788,11 @@
             let currentStationContext = null;
             let favoriteButtonHideTimeout;
             let draggedItem = null;
+
+            // Variables for swipe detection
+            let touchStartX = 0;
+            let touchEndX = 0;
+            const SWIPE_THRESHOLD = 50; // Minimum horizontal distance for a swipe
 
             const categoryFilters = [
                 { prefix: '公車小黃', filterValue: '小黃' },
@@ -1146,15 +1177,40 @@
                 }
             }
             
-            function handleDirectionToggle(event) {
-                const newDirection = parseInt(event.currentTarget.dataset.direction);
-                if (newDirection !== currentDirection) {
-                    currentDirection = newDirection;
-                    updateDirectionButtons();
-                    if (currentRouteData) {
-                        displayEstimateTimes(currentRouteData, currentDirection);
-                    }
+            function handleDirectionToggle(newDirection) {
+                const directionToSet = newDirection;
+                if (!directionToSet || directionToSet === currentDirection || !currentRouteData) {
+                    return;
                 }
+
+                const stationList = document.getElementById('stationList');
+                // Use a generic 'animating' class to prevent multiple triggers
+                if (stationList.classList.contains('animating')) {
+                    return;
+                }
+                stationList.classList.add('animating');
+
+                const slideOutClass = directionToSet > currentDirection ? 'slide-out-left' : 'slide-out-right';
+                const slideInClass = directionToSet > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
+
+                stationList.classList.add(slideOutClass);
+
+                stationList.addEventListener('animationend', function onSlideOutEnd() {
+                    // Update state and DOM content
+                    currentDirection = directionToSet;
+                    updateDirectionButtons();
+                    displayEstimateTimes(currentRouteData, currentDirection);
+
+                    // Clean up old animation class and add the new one
+                    stationList.classList.remove(slideOutClass);
+                    stationList.classList.add(slideInClass);
+                    
+                    // Set up the cleanup for the 'in' animation
+                    stationList.addEventListener('animationend', function onSlideInEnd() {
+                        stationList.classList.remove(slideInClass, 'animating');
+                    }, { once: true });
+
+                }, { once: true });
             }
 
             function createStationCard(estimate, stationName, displayedBusIds) {
@@ -1617,9 +1673,40 @@
 
             // --- Event Listeners ---
             backButton.addEventListener('click', navigateToSelection);
-            goDirectionButton.addEventListener('click', handleDirectionToggle);
-            backDirectionButton.addEventListener('click', handleDirectionToggle);
             
+            goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
+            backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
+            
+            // Swipe event listeners for estimateTimesSection
+            const estimateTimesSection = document.getElementById('estimateTimesSection');
+            estimateTimesSection.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchEndX = 0; // Reset end position
+            });
+
+            estimateTimesSection.addEventListener('touchmove', (e) => {
+                touchEndX = e.touches[0].clientX;
+            });
+
+            estimateTimesSection.addEventListener('touchend', () => {
+                if (touchEndX === 0) return; // No movement or just a tap
+
+                const diffX = touchStartX - touchEndX;
+
+                if (Math.abs(diffX) > SWIPE_THRESHOLD) {
+                    if (diffX > 0) {
+                        // Swiped left (from right to left) - switch to back direction
+                        handleDirectionToggle(2);
+                    } else {
+                        // Swiped right (from left to right) - switch to go direction
+                        handleDirectionToggle(1);
+                    }
+                }
+                touchStartX = 0; // Reset for next swipe
+                touchEndX = 0;
+            });
+
+
             window.addEventListener('popstate', (event) => {
                 const state = event.state || {};
                 const urlParams = new URLSearchParams(window.location.search);
