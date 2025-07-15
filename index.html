@@ -105,13 +105,13 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 0.4rem 0.2rem; 
+            padding: 0.4rem 0.2rem;
         }
 
         /* Force line break for "公車" and "小黃" on narrow screens */
         .bus-taxi-button .bus-text,
         .bus-taxi-button .taxi-text {
-            display: block; 
+            display: block;
         }
 
         @media (min-width: 768px) {
@@ -130,10 +130,10 @@
         #updateCountdown {
             white-space: nowrap;
             position: fixed;
-            bottom: 70px; 
+            bottom: 70px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1001; 
+            z-index: 1001;
             padding: 8px 16px;
             background-color: #e0f2fe; /* Light blue */
             color: #333;
@@ -148,11 +148,11 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            cursor: pointer; 
+            cursor: pointer;
         }
 
         #updateCountdown:hover {
-            background-color: #bfdbfe; 
+            background-color: #bfdbfe;
             box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
 
@@ -169,26 +169,26 @@
         .spin-update {
             animation: spin-180 0.5s ease forwards;
         }
-        
+
         /* Styles for the keyboard to make buttons square on narrow screens */
-        @media (max-width: 767px) { 
+        @media (max-width: 767px) {
             #filterKeyboard {
                 gap: 4px !important;
-                max-width: 384px; 
+                max-width: 384px;
                 margin-left: auto;
                 margin-right: auto;
             }
 
             #filterKeyboard > button {
-                aspect-ratio: 1 / 1; 
-                padding: 0; 
+                aspect-ratio: 1 / 1;
+                padding: 0;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
-            
+
             #filterKeyboard .bus-taxi-button {
-                padding: 4px; 
+                padding: 4px;
                 line-height: 1.1;
             }
         }
@@ -200,7 +200,7 @@
             left: 0;
             right: 0;
             background-color: #ffffff;
-            border-top: 1px solid #e2e8f0; 
+            border-top: 1px solid #e2e8f0;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
             z-index: 1000;
             display: flex;
@@ -215,21 +215,21 @@
             flex-grow: 1;
             padding: 4px 4px;
             font-size: 0.8rem;
-            color: #64748b; 
+            color: #64748b;
             background-color: transparent;
             border: none;
             cursor: pointer;
             transition: color 0.2s, background-color 0.2s;
         }
         #mainNav button .material-icons-outlined {
-            font-size: 28px; 
+            font-size: 28px;
             margin-bottom: 4px;
         }
         #mainNav button:hover {
-            color: #3b82f6; 
+            color: #3b82f6;
         }
         #mainNav button.active-nav {
-            color: #3b82f6; 
+            color: #3b82f6;
             font-weight: 600;
         }
 
@@ -237,13 +237,13 @@
         #favoriteActionButton {
             position: fixed;
             padding: 8px 16px;
-            background-color: #1d4ed8; 
+            background-color: #1d4ed8;
             color: white;
             border-radius: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             font-size: 0.9em;
             cursor: pointer;
-            z-index: 2000; 
+            z-index: 2000;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -258,13 +258,13 @@
             transform: translateY(0);
         }
         #favoriteActionButton:hover {
-            background-color: #2563eb; 
+            background-color: #2563eb;
         }
 
         /* Styles for toast messages */
         .toast-message {
             position: fixed;
-            bottom: 80px; 
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0, 0, 0, 0.7);
@@ -293,22 +293,22 @@
         }
 
         #stationListGoContent, #stationListBackContent {
-            position: relative; 
-            padding-left: 20px; 
-            padding-bottom: 20px; /* Add some padding at the bottom */
+            position: relative;
+            padding-left: 20px;
+            padding-bottom: 90px; /* Increased padding to ensure the last item is not obscured by the bottom nav bar */
         }
 
         #stationListGoContent::before, #stationListBackContent::before {
             content: '';
             position: absolute;
-            left: 21px; 
+            left: 21px;
             top: 0;
             bottom: 0;
             width: 2px;
-            background-color: #cbd5e1; 
-            z-index: 0; 
+            background-color: #cbd5e1;
+            z-index: 0;
         }
-        
+
         body.dark-mode #stationListGoContent::before,
         body.dark-mode #stationListBackContent::before {
              background-color: #475569;
@@ -328,20 +328,20 @@
         .station-icon-container {
             position: absolute;
             left: -18px; /* Corrected from -19px for proper alignment */
-            z-index: 1; 
-            background-color: #f1f5f9; 
-            border-radius: 50%; 
+            z-index: 1;
+            background-color: #f1f5f9;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px; 
+            width: 40px;
             height: 40px;
         }
 
         .station-dot {
             width: 12px;
             height: 12px;
-            background-color: #3b82f6; 
+            background-color: #3b82f6;
             border-radius: 50%;
         }
 
@@ -355,15 +355,15 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px; 
+            gap: 10px;
         }
 
         .station-content .time-pill, .favorite-time-display .time-pill {
-            flex-shrink: 0; 
+            flex-shrink: 0;
             min-width: 90px;
             text-align: center;
             padding: 6px 8px;
-            border-radius: 9999px; 
+            border-radius: 9999px;
             font-weight: 700;
             font-size: 0.9em;
         }
@@ -377,18 +377,18 @@
 
 
         .station-content .station-name {
-            flex-grow: 1; 
+            flex-grow: 1;
             font-weight: 500;
             color: #1e293b;
         }
 
         .station-content .bus-id-display {
-            flex-shrink: 0; 
+            flex-shrink: 0;
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background-color: #dbeafe; 
-            color: #1e40af; 
+            background-color: #dbeafe;
+            color: #1e40af;
             font-size: 0.75em;
             font-weight: 600;
             padding: 2px 8px;
@@ -451,10 +451,10 @@
         }
 
         .drag-handle {
-            cursor: move; 
+            cursor: move;
             cursor: grab;
             padding: 8px;
-            color: #94a3b8; 
+            color: #94a3b8;
             touch-action: none; /* Prevent scrolling when dragging handle */
         }
         .drag-handle:active {
@@ -531,21 +531,21 @@
         body.dark-mode .direction-toggle-group { border-color: #60a5fa; }
         body.dark-mode .direction-button { background-color: transparent; color: #60a5fa; }
         body.dark-mode .direction-button.bg-blue-500 { background-color: #60a5fa; color: #1e293b; }
-        
+
         /* Station List */
         body.dark-mode .station-icon-container { background-color: #0f172a; }
         body.dark-mode .station-dot { background-color: #60a5fa; }
         body.dark-mode .station-content { background-color: #1e293b; }
-        
+
         /* Unified Time Pills for Dark Mode */
         body.dark-mode .time-pill.bg-slate-200 { background-color: #334155; color: #cbd5e1; }
         body.dark-mode .time-pill.bg-red-200 { background-color: #991b1b; color: #fecaca; }
         body.dark-mode .time-pill.bg-green-200 { background-color: #166534; color: #dcfce7; }
         body.dark-mode .time-pill.bg-blue-200 { background-color: #1e40af; color: #dbeafe; }
         body.dark-mode .favorite-time-display .time-pill.bg-yellow-200 { background-color: #854d0e; color: #fef9c3; }
-        
+
         body.dark-mode .bus-id-display { background-color: #1e3a8a; color: #bfdbfe; }
-        
+
         /* Favorite Cards Dark Mode */
         body.dark-mode .favorite-card-item.dragging { background: #0f172a; border-color: #60a5fa; }
         body.dark-mode .drag-handle { color: #64748b; }
@@ -559,7 +559,7 @@
         body.dark-mode #mainNav button { color: #94a3b8; }
         body.dark-mode #mainNav button:hover { color: #93c5fd; }
         body.dark-mode #mainNav button.active-nav { color: #93c5fd; }
-        
+
         /* Update Countdown & Error Message */
         body.dark-mode #updateCountdown {
             background-color: #e8def8;
@@ -604,15 +604,15 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="routeSelectionTitle">高雄市公車路線查詢</h1>
                 <p class="text-slate-500 mt-2" data-i18n="routeSelectionSubtitle">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
-            
+
             <div id="searchBarStickyWrapper" class="sticky top-0 z-10 bg-transparent py-2">
                 <div id="searchBarContainer" class="flex items-center gap-2 bg-white border-2 border-slate-300 rounded-xl shadow-sm py-1 px-2 mx-auto max-w-sm md:max-w-4xl">
                     <div class="flex-shrink-0 pl-3 pr-2">
                         <span id="categoryDisplay" class="font-semibold text-blue-600" data-i18n="allRoutes">全部路線</span>
                     </div>
-                    
+
                     <div class="w-px bg-slate-300 self-stretch my-2"></div>
-                
+
                     <div class="relative flex-grow">
                         <input type="text" id="routeSearchInput" placeholder="請由鍵盤輸入號碼" class="w-full py-2 px-3 text-lg bg-transparent border-none focus:outline-none focus:ring-0 text-left" readonly>
                         <svg class="w-6 h-6 text-slate-400 absolute top-1/2 right-3 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -626,7 +626,7 @@
                 <div class="loading-spinner mx-auto"></div>
                 <p class="mt-4 text-slate-600" data-i18n="loadingRoutes">正在載入所有路線...</p>
             </div>
-            
+
             <div id="routeListContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 max-w-sm md:max-w-4xl mx-auto">
                 </div>
              <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="noMatchingRoutes">找不到相符的路線。</p>
@@ -640,7 +640,7 @@
                     <button data-filter="1" data-type="number" class="p-3 bg-white rounded-lg shadow-md">1</button>
                     <button data-filter="2" data-type="number" class="p-3 bg-white rounded-lg shadow-md">2</button>
                     <button data-filter="3" data-type="number" class="p-3 bg-white rounded-lg shadow-md">3</button>
-                    
+
                     <button data-filter="橘" data-type="category" class="p-3 text-black font-bold bg-orange-500 rounded-lg shadow-md">橘</button>
                     <button data-filter="E" data-type="category" class="p-3 bg-white rounded-lg shadow-md" data-i18n="expressLine">快線</button>
                     <button data-filter="4" data-type="number" class="p-3 bg-white rounded-lg shadow-md">4</button>
@@ -667,11 +667,11 @@
 
     <div id="busTrackerPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
-            
+
             <div class="flex-shrink-0">
                 <header class="flex items-center justify-between mb-4">
                     </header>
-                
+
                 <div class="flex items-center justify-center mb-2">
                     <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-full transition-colors flex items-center justify-center mr-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -679,7 +679,7 @@
                         </svg>
                     </button>
                     <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
-                    <div class="w-9 h-9 mr-2"></div> 
+                    <div class="w-9 h-9 mr-2"></div>
                 </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
 
@@ -693,7 +693,7 @@
                     <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2" data-i18n="backDirection">返程</button>
                 </div>
             </div>
-            <div id="estimateTimesSection" class="flex-grow pb-[80px] relative overflow-hidden" style="touch-action: pan-y;">
+            <div id="estimateTimesSection" class="flex-grow relative overflow-hidden" style="touch-action: pan-y;">
                 <div id="trackerLoading" class="text-center py-20 hidden">
                     <div class="loading-spinner mx-auto"></div>
                     <p class="mt-4 text-slate-600 text-sm" data-i18n="loadingBusData">正在載入路線動態...</p>
@@ -729,7 +729,7 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="settingsTitle">設定</h1>
                 <p class="text-slate-500 mt-2" data-i18n="settingsSubtitle">調整應用程式設定。</p>
             </header>
-            
+
             <div class="space-y-6">
                 <!-- Appearance Settings Card -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -830,7 +830,7 @@
             const busTrackerPage = document.getElementById('busTrackerPage');
             const favoriteStationsPage = document.getElementById('favoriteStationsPage');
             const settingsPage = document.getElementById('settingsPage');
-            
+
             const routeSearchInput = document.getElementById('routeSearchInput');
             const categoryDisplay = document.getElementById('categoryDisplay');
             const routeListContainer = document.getElementById('routeListContainer');
@@ -838,7 +838,7 @@
             const noResultsMessage = document.getElementById('noResultsMessage');
             const filterKeyboard = document.getElementById('filterKeyboard');
             const filterKeyboardContainer = document.getElementById('filterKeyboardContainer');
-            
+
             const backButton = document.getElementById('backButton');
             const trackerLoading = document.getElementById('trackerLoading');
             const routeTitle = document.getElementById('routeTitle');
@@ -860,7 +860,7 @@
             const favoriteActionIcon = document.getElementById('favoriteActionIcon');
             const favoriteActionText = document.getElementById('favoriteActionText');
             const toastContainer = document.getElementById('toastContainer');
-            
+
             const darkModeToggle = document.getElementById('darkModeToggle');
             const languageSelect = document.getElementById('languageSelect');
 
@@ -872,7 +872,7 @@
             let currentRouteName = null;
             let countdownInterval = null;
             let currentLang = localStorage.getItem("lang") || "zh";
-            let routeDataLang = null; 
+            let routeDataLang = null;
 
             let activePage = 'dynamic';
             let selectedCategoryPrefix = '';
@@ -886,7 +886,7 @@
 
             // Variables for swipe detection
             let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
-            const SWIPE_THRESHOLD = 50; 
+            const SWIPE_THRESHOLD = 50;
 
             let isAnimatingDirection = false;
 
@@ -992,9 +992,9 @@
                 { prefix: '幹線', filterValue: '幹線', i18nKey: 'mainLine' },
                 { prefix: '快線', filterValue: 'E', i18nKey: 'expressLine' }
             ];
-            
+
             const categoryDisplayMap = {
-                '紅': 'redLineShuttle', 
+                '紅': 'redLineShuttle',
                 '橘': 'orangeLineShuttle',
                 '黃': 'yellowLineShuttle',
                 '綠': 'greenLineShuttle',
@@ -1074,7 +1074,7 @@
 
             // --- LANGUAGE LOGIC ---
             async function setLanguage(lang) {
-                if (lang === currentLang) return; 
+                if (lang === currentLang) return;
 
                 currentLang = lang;
                 localStorage.setItem('lang', lang);
@@ -1151,7 +1151,7 @@
                     throw error;
                 }
             }
-            
+
             function loadFavorites() {
                 try {
                     const favorites = localStorage.getItem('favoriteStations');
@@ -1188,7 +1188,7 @@
                     favoriteStations.push({ routeId, routeName, stationId, stationName, direction, destination });
                 }
                 saveFavorites();
-                
+
                 if (busTrackerPage.classList.contains('active') && currentRouteId) {
                     loadBusData(currentRouteId, false);
                 }
@@ -1300,7 +1300,7 @@
                         .map(edge => edge.node)
                         .filter(route => route.id !== 0)
                         .sort((a, b) => a.seq - b.seq);
-                    
+
                     routeDataLang = currentLang;
 
                     initialLoading.style.display = 'none';
@@ -1331,14 +1331,14 @@
                 } else {
                     noResultsMessage.style.display = 'none';
                 }
-                
+
                 routes.forEach(route => {
                     const card = document.createElement('div');
                     card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent';
                     card.dataset.routeId = route.id;
                     card.dataset.routeName = route.name;
                     card.dataset.routeDesc = route.description;
-                    
+
                     card.innerHTML = `
                         <h3 class="font-bold text-lg text-slate-800">${route.name}</h3>
                         <p class="text-sm text-slate-500">${route.description}</p>
@@ -1352,7 +1352,7 @@
 
             function applySearch(searchTerm) {
                 const lowerCaseTerm = searchTerm.toLowerCase().trim();
-                
+
                 if (!lowerCaseTerm) {
                     displayInitialPrompt();
                     return;
@@ -1364,13 +1364,13 @@
 
                 for (const category of categoryFilters) {
                     const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
-                    
+
                     if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
                         const filterVal = category.filterValue;
 
                         if (filterVal === '其他') {
                             filteredRoutes = allRoutes.filter(route =>
-                                route.name.toLowerCase().includes('joy') || 
+                                route.name.toLowerCase().includes('joy') ||
                                 route.name.toLowerCase().includes('dashu blessing bus') ||
                                 route.name.toLowerCase().includes('大樹祈福')
                             );
@@ -1392,10 +1392,10 @@
 
                         remainingSearchTerm = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
                         categoryMatched = true;
-                        break; 
+                        break;
                     }
                 }
-                
+
                 if (remainingSearchTerm) {
                     const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
                     filteredRoutes = finalFilterTarget.filter(route =>
@@ -1403,7 +1403,7 @@
                         (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
                     );
                 }
-                
+
                 displayRoutes(filteredRoutes);
             }
 
@@ -1427,7 +1427,7 @@
                     } else {
                          searchPrefix = button.textContent;
                     }
-                    
+
                     selectedCategoryPrefix = searchPrefix;
                     categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
                     routeSearchInput.value = '';
@@ -1444,7 +1444,7 @@
                         routeSearchInput.value = routeSearchInput.value.slice(0, -1);
                     }
                 }
-                
+
                 const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                 applySearch(fullSearchTerm);
             });
@@ -1468,7 +1468,7 @@
                     goDirectionButton.classList.remove('bg-blue-500', 'text-white');
                 }
             }
-            
+
             function handleDirectionToggle(newDirection) {
                 if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                     return;
@@ -1478,7 +1478,7 @@
 
                 const outgoingList = (currentDirection === 1) ? stationListGo : stationListBack;
                 const incomingList = (newDirection === 1) ? stationListGo : stationListBack;
-                
+
                 const slideOutClass = newDirection > currentDirection ? 'slide-out-left' : 'slide-out-right';
                 const slideInClass = newDirection > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
 
@@ -1491,7 +1491,7 @@
                 // Animate
                 outgoingList.classList.add(slideOutClass);
                 incomingList.classList.add(slideInClass);
-                
+
                 currentDirection = newDirection;
                 updateDirectionButtons();
 
@@ -1506,7 +1506,7 @@
 
             function createStationCard(estimate, stationName, displayedBusIds) {
                 let timeDisplay = translations[currentLang].lastBusDeparted;
-                let busIdDisplayHtml = ''; 
+                let busIdDisplayHtml = '';
                 let pillBgColorClass = 'bg-slate-200';
 
                 if (estimate.etas && estimate.etas.length > 0) {
@@ -1549,8 +1549,8 @@
                 stationCard.dataset.routeName = currentRouteName;
 
                 const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, currentDirection);
-                const iconHtml = isCurrentlyFavorite 
-                    ? '<span class="material-icons-outlined text-red-500">favorite</span>' 
+                const iconHtml = isCurrentlyFavorite
+                    ? '<span class="material-icons-outlined text-red-500">favorite</span>'
                     : '<div class="station-dot"></div>';
 
                 stationCard.innerHTML = `
@@ -1582,17 +1582,17 @@
 
                 let touchStartX, touchStartY;
                 let longPressTimer;
-                let isLongPress = false; 
+                let isLongPress = false;
 
                 stationCard.addEventListener('touchstart', (e) => {
                     if (e.touches.length === 1) {
                         touchStartX = e.touches[0].clientX;
                         touchStartY = e.touches[0].clientY;
-                        isLongPress = false; 
+                        isLongPress = false;
 
                         longPressTimer = setTimeout(() => {
                             isLongPress = true;
-                            e.preventDefault(); 
+                            e.preventDefault();
                             const stationData = {
                                 routeId: parseInt(e.currentTarget.dataset.routeId),
                                 routeName: e.currentTarget.dataset.routeName,
@@ -1607,22 +1607,22 @@
                 });
 
                 stationCard.addEventListener('touchmove', (e) => {
-                    if (!longPressTimer) return; 
+                    if (!longPressTimer) return;
 
                     const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
                     const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
 
                     if (deltaX > 10 || deltaY > 10) {
                         clearTimeout(longPressTimer);
-                        longPressTimer = null; 
-                        isLongPress = false; 
+                        longPressTimer = null;
+                        isLongPress = false;
                     }
                 });
 
                 stationCard.addEventListener('touchend', (e) => {
-                    if (longPressTimer) { 
+                    if (longPressTimer) {
                         clearTimeout(longPressTimer);
-                        longPressTimer = null; 
+                        longPressTimer = null;
                     }
                 });
 
@@ -1663,7 +1663,7 @@
                 displayEstimateTimes(data, 1, stationListGoContent);
                 displayEstimateTimes(data, 2, stationListBackContent);
             }
-            
+
             async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
                 if (isInitialLoad) {
                     trackerLoading.style.display = 'block';
@@ -1677,13 +1677,13 @@
 
                 try {
                     const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
-                    
+
                     if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
-                    
+
                     currentRouteData = result.data.route;
-                    
+
                     renderAllDirections(currentRouteData);
-                    
+
                     updateDirectionButtons();
 
                     // Set initial visibility and clean up animation classes
@@ -1718,12 +1718,12 @@
                 currentRouteId = routeId;
                 currentRouteName = routeName;
                 currentDirection = direction;
-                
+
                 showPage('busTrackerPage');
-                
+
                 routeTitle.textContent = routeName;
-                routeDescription.textContent = ''; 
-                
+                routeDescription.textContent = '';
+
                 loadBusData(currentRouteId, true, scrollToStationId);
                 countdownTimer.reset();
             }
@@ -1733,7 +1733,7 @@
                 currentRouteData = null;
                 currentRouteId = null;
                 currentRouteName = null;
-                routeSearchInput.value = ''; 
+                routeSearchInput.value = '';
                 selectedCategoryPrefix = '';
                 categoryDisplay.textContent = translations[currentLang].allRoutes;
                 applySearch('');
@@ -1796,7 +1796,7 @@
                     favCard.dataset.index = index;
 
                     const directionText = fav.destination ? `${translations[currentLang].goDirection} ${fav.destination}` : `${translations[currentLang].direction} ${fav.direction}`;
-                    
+
                     favCard.innerHTML = `
                         <div class="favorite-card-actions">
                             <button class="delete-action-btn">
@@ -1813,9 +1813,9 @@
                                 <p class="text-sm text-slate-600">${fav.stationName}</p>
                                 <p class="text-xs text-slate-400 mt-1">${directionText}</p>
                             </div>
-                            <div class="favorite-time-display flex-shrink-0 w-28 text-right" 
-                                data-route-id="${fav.routeId}" 
-                                data-station-id="${fav.stationId}" 
+                            <div class="favorite-time-display flex-shrink-0 w-28 text-right"
+                                data-route-id="${fav.routeId}"
+                                data-station-id="${fav.stationId}"
                                 data-direction="${fav.direction}">
                                 <div class="loading-spinner h-6 w-6 border-2 ml-auto"></div>
                             </div>
@@ -1829,10 +1829,10 @@
                 const routesToFetch = [...new Set(favoriteStations.map(f => f.routeId))];
                 if (routesToFetch.length === 0) return;
 
-                const promises = routesToFetch.map(routeId => 
+                const promises = routesToFetch.map(routeId =>
                     fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
                 );
-                
+
                 const results = await Promise.allSettled(promises);
                 const routeDataMap = new Map();
                 results.forEach((result, index) => {
@@ -1846,9 +1846,9 @@
                     const { routeId, stationId, direction } = div.dataset;
                     const routeData = routeDataMap.get(Number(routeId));
                     let timeHtml = createTimePillHtml(null);
-                    
+
                     if (routeData) {
-                        const estimate = routeData.estimateTimes.edges.find(edge => 
+                        const estimate = routeData.estimateTimes.edges.find(edge =>
                             edge.node.id === stationId && edge.node.goBack === Number(direction)
                         )?.node;
                         timeHtml = createTimePillHtml(estimate);
@@ -1886,11 +1886,11 @@
                         }
                         navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                     });
-                
+
                     deleteBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         toggleFavorite(favData);
-                        displayFavoriteStations(); 
+                        displayFavoriteStations();
                     });
 
                     content.addEventListener('dragstart', (e) => {
@@ -1982,7 +1982,7 @@
                 e.preventDefault();
                 const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                 const newFavoritesArray = newOrderedElements.map(elem => favoriteStations[elem.dataset.index]);
-                
+
                 favoriteStations = newFavoritesArray;
                 saveFavorites();
                 displayFavoriteStations();
@@ -2004,7 +2004,7 @@
                     this.updateDisplay();
                 },
                 update: async function() {
-                    this.reset(); 
+                    this.reset();
                     if (currentRouteId) {
                         await loadBusData(currentRouteId, false);
                     }
@@ -2016,9 +2016,9 @@
                 filterKeyboardContainer.style.display = 'block';
                 const keyboardHeight = filterKeyboardContainer.offsetHeight;
                 if (!routeSelectionPage.classList.contains('active')) {
-                    filterKeyboardContainer.style.display = 'none'; 
+                    filterKeyboardContainer.style.display = 'none';
                 }
-                const totalFixedBottomHeight = mainNavHeight + keyboardHeight + 10; 
+                const totalFixedBottomHeight = mainNavHeight + keyboardHeight + 10;
 
                 const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
                 if (routeSelectionContainer) {
@@ -2028,10 +2028,10 @@
 
             // --- Event Listeners ---
             backButton.addEventListener('click', navigateToSelection);
-            
+
             goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
             backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
-            
+
             const estimateTimesSection = document.getElementById('estimateTimesSection');
             estimateTimesSection.addEventListener('touchstart', (e) => {
                 if (e.touches.length !== 1) return;
@@ -2049,7 +2049,7 @@
 
             estimateTimesSection.addEventListener('touchend', () => {
                 if (touchEndX === 0) return; // No move
-                
+
                 const diffX = touchStartX - touchEndX;
                 const diffY = touchStartY - touchEndY;
 
@@ -2057,7 +2057,7 @@
                 if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > Math.abs(diffY)) {
                     handleDirectionToggle(diffX > 0 ? 2 : 1);
                 }
-                
+
                 // Reset all touch coordinates
                 touchStartX = 0;
                 touchStartY = 0;
@@ -2089,7 +2089,7 @@
             applyInitialTheme();
             currentLang = localStorage.getItem("lang") || "zh";
             languageSelect.value = currentLang;
-            applyTranslations(); 
+            applyTranslations();
 
             await initRouteSelection();
 
