@@ -701,10 +701,10 @@
             border-color: #334155; /* slate-700 */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
         }
-        body.dark-mode #homePage .weather-card h2 {
+        body.dark-mode #homePage .weather-card-inner h2 {
             color: #e2e8f0; /* slate-200 */
         }
-        body.dark-mode #homePage .weather-card p {
+        body.dark-mode #homePage .weather-card-inner p {
             color: #cbd5e1; /* slate-300 */
         }
         body.dark-mode #homePage .weather-detail-grid .detail-item {
@@ -1389,6 +1389,18 @@
             };
 
             // --- DARK MODE LOGIC ---
+            function updateMrtIframeSrc() {
+                const mrtIframe = document.getElementById('mrtIframe');
+                const isDarkMode = body.classList.contains('dark-mode');
+                const darkSrc = 'https://krtc.pages.dev/?mode=dark';
+                const lightSrc = 'https://krtc.pages.dev/';
+
+                const newSrc = isDarkMode ? darkSrc : lightSrc;
+                if (mrtIframe.src !== newSrc) {
+                    mrtIframe.src = newSrc;
+                }
+            }
+
             function applyInitialTheme() {
                 const isDarkMode = localStorage.getItem('darkMode') === 'true';
                 darkModeToggle.checked = isDarkMode;
@@ -1397,6 +1409,7 @@
                 } else {
                     body.classList.remove('dark-mode');
                 }
+                updateMrtIframeSrc();
             }
 
             darkModeToggle.addEventListener('change', () => {
@@ -1407,6 +1420,7 @@
                     body.classList.remove('dark-mode');
                     localStorage.setItem('darkMode', 'false');
                 }
+                updateMrtIframeSrc();
             });
 
             // --- LANGUAGE LOGIC ---
@@ -1415,19 +1429,32 @@
 
                 currentLang = lang;
                 localStorage.setItem('lang', lang);
+
+                // 1. Update static UI text
                 applyTranslations();
 
-                if (allRoutes.length > 0 && routeDataLang !== currentLang) {
-                    await initRouteSelection();
-                }
+                // 2. Mark ALL language-dependent data as stale to force re-fetch/re-render
+                routeDataLang = null;
+                weatherDataLoaded = false;
+                announcementsDataLoaded = false;
 
-                if (busTrackerPage.classList.contains('active') && currentRouteId) {
-                    loadBusData(currentRouteId, false);
-                } else if (activePage === 'favorites') {
-                    displayFavoriteStations();
-                } else if (activePage === 'home') {
-                    fetchWeather();
-                    fetchAnnouncements();
+                // 3. Refresh data for the current active page
+                switch (activePage) {
+                    case 'routeSelectionPage':
+                        await initRouteSelection();
+                        break;
+                    case 'busTrackerPage':
+                        if (currentRouteId) {
+                            await loadBusData(currentRouteId, true); // Use true to show loading spinner
+                        }
+                        break;
+                    case 'favoriteStationsPage':
+                        await displayFavoriteStations();
+                        break;
+                    case 'homePage':
+                        await fetchWeather();
+                        await fetchAnnouncements();
+                        break;
                 }
             }
 
