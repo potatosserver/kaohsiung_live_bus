@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -13,7 +14,6 @@
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             background-color: #f1f5f9;
             color: #1e293b;
-            /* Padding bottom will be handled dynamically by JS for specific pages */
             user-select: none; /* 鎖定文字選取 */
             -webkit-user-select: none; /* For Safari */
             -moz-user-select: none; /* For Firefox */
@@ -88,12 +88,12 @@
         }
         /* Ensure the body has enough padding at the bottom for the fixed keyboard */
         /* This will be set dynamically by JavaScript */
-        #routeSelectionPage .container {
-            padding-bottom: 20px; /* Default, will be overridden by JS */
+        #routeSelectionPage .container, #mrtPage .container, #homePage .container {
+            padding-bottom: 90px;
         }
         @media (min-width: 768px) {
-            #routeSelectionPage .container {
-                padding-bottom: 30px; /* Default, will be overridden by JS */
+            #routeSelectionPage .container, #mrtPage .container, #homePage .container {
+                padding-bottom: 100px;
             }
         }
 
@@ -339,6 +339,10 @@
             height: 40px;
         }
 
+        body.dark-mode .station-icon-container {
+            background-color: #0f172a;
+        }
+
         .station-dot {
             width: 12px;
             height: 12px;
@@ -357,6 +361,10 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+        }
+
+        body.dark-mode .station-content {
+            background-color: #1e293b;
         }
 
         .station-content .time-pill, .favorite-time-display .time-pill {
@@ -383,6 +391,10 @@
             color: #1e293b;
         }
 
+        body.dark-mode .station-content .station-name {
+            color: #e2e8f0;
+        }
+
         .station-content .bus-id-display {
             flex-shrink: 0;
             display: inline-flex;
@@ -397,10 +409,14 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        /* --- START: FAVORITES PAGE DRAG & SWIPE STYLES --- */
+        body.dark-mode .bus-id-display {
+            background-color: #1e3a8a;
+            color: #bfdbfe;
+        }
+
+        /* --- START: FAVORITES PAGE DRAG STYLES --- */
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            overflow: hidden; /* Crucial for swipe-to-reveal */
             touch-action: pan-y; /* Allow vertical scroll */
         }
         #favoriteListContainer .favorite-card-item.dragging {
@@ -409,46 +425,15 @@
             border: 2px dashed #3b82f6;
         }
 
-        .favorite-card-actions {
-            position: absolute;
-            top: 0;
-            right: 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-        }
-
-        .favorite-card-actions .delete-action-btn {
-            background-color: #ef4444; /* red-500 */
-            color: white;
-            height: 100%;
-            width: 90px;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            transition: background-color 0.2s;
-        }
-        .favorite-card-actions .delete-action-btn:hover {
-            background-color: #dc2626; /* red-600 */
-        }
-        .favorite-card-actions .delete-action-btn .material-icons-outlined {
-            font-size: 28px;
-            margin-bottom: 4px;
-        }
-
         .favorite-card-content {
             position: relative;
-            z-index: 1; /* Keep content above the action button */
             display: flex;
             align-items: center;
             padding: 0.75rem; /* 12px */
             background-color: #ffffff;
             transition: transform 0.3s ease-out;
             width: 100%;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
         }
 
         .drag-handle {
@@ -461,8 +446,126 @@
         .drag-handle:active {
             cursor: grabbing;
         }
-        /* --- END: FAVORITES PAGE DRAG & SWIPE STYLES --- */
+        /* --- END: FAVORITES PAGE DRAG STYLES --- */
 
+        /* --- START: HOME(WEATHER) PAGE STYLES --- */
+        #homePage .weather-card {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #bfdbfe;
+        }
+        body.dark-mode #homePage .weather-card {
+            background-color: #1e293b; /* slate-800 */
+            border-color: #334155; /* slate-700 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        #homePage .weather-card h1 {
+            color: #334155;
+        }
+        body.dark-mode #homePage .weather-card h1 {
+            color: #e2e8f0; /* slate-200 */
+        }
+        #homePage .weather-card p {
+            color: #64748b;
+        }
+        body.dark-mode #homePage .weather-card p {
+            color: #cbd5e1; /* slate-300 */
+        }
+        #homePage .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        #homePage .weather-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        #homePage .detail-item {
+            background-color: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+        }
+        body.dark-mode #homePage .weather-detail-grid .detail-item {
+            background-color: #0f172a; /* slate-900 */
+            border-color: #334155; /* slate-700 */
+        }
+        #homePage .detail-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        body.dark-mode #homePage .detail-label {
+            color: #94a3b8; /* slate-400 */
+        }
+        #homePage .detail-value {
+            color: #2d3748;
+            margin-top: 0.25rem;
+        }
+        body.dark-mode #homePage .detail-value {
+            color: #e2e8f0; /* slate-200 */
+        }
+        #homePage #temperature {
+            color: #1e3a8a; /* blue-800 */
+        }
+        body.dark-mode #homePage #temperature {
+            color: #93c5fd; /* blue-300 */
+        }
+        #homePage #weather-description {
+            color: #4b5563; /* gray-700 */
+        }
+        body.dark-mode #homePage #weather-description {
+            color: #cbd5e1; /* slate-300 */
+        }
+        body.dark-mode #homePage #error-message {
+            color: #f87171; /* red-400 */
+        }
+        /* --- END: HOME(WEATHER) PAGE STYLES --- */
+
+        /* Styles for the shared outer frame for weather and announcements */
+        .weather-announcement-frame {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 100%;
+            margin: 20px auto;
+            border: 1px solid #bfdbfe;
+        }
+        body.dark-mode .weather-announcement-frame {
+            background-color: #1e293b;
+            border-color: #334155;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        .weather-announcement-frame .weather-card-inner,
+        .weather-announcement-frame .message-announcement-card-inner {
+            padding: 0;
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        .weather-announcement-frame .message-announcement-card {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        body.dark-mode .weather-announcement-frame .message-announcement-card {
+            border-top-color: #334155;
+        }
 
         /* --- START: DARK MODE STYLES --- */
         body.dark-mode {
@@ -545,8 +648,6 @@
         body.dark-mode .time-pill.bg-blue-200 { background-color: #1e40af; color: #dbeafe; }
         body.dark-mode .favorite-time-display .time-pill.bg-yellow-200 { background-color: #854d0e; color: #fef9c3; }
 
-        body.dark-mode .bus-id-display { background-color: #1e3a8a; color: #bfdbfe; }
-
         /* Favorite Cards Dark Mode */
         body.dark-mode .favorite-card-item.dragging { background: #0f172a; border-color: #60a5fa; }
         body.dark-mode .drag-handle { color: #64748b; }
@@ -593,6 +694,60 @@
             background-color: #334155; /* slate-700, adjusted for better contrast */
             color: #e2e8f0; /* slate-200 */
             border-color: #475569; /* slate-600 */
+        }
+
+        /* Home(Weather) Page Dark Mode */
+        body.dark-mode #homePage .weather-card {
+            background-color: #1e293b; /* slate-800 */
+            border-color: #334155; /* slate-700 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        body.dark-mode #homePage .weather-card h1 {
+            color: #e2e8f0; /* slate-200 */
+        }
+        body.dark-mode #homePage .weather-card p {
+            color: #cbd5e1; /* slate-300 */
+        }
+        body.dark-mode #homePage .weather-detail-grid .detail-item {
+            background-color: #0f172a; /* slate-900 */
+            border-color: #334155; /* slate-700 */
+        }
+        body.dark-mode #homePage .weather-detail-grid .detail-label {
+            color: #94a3b8; /* slate-400 */
+        }
+        body.dark-mode #homePage .weather-detail-grid .detail-value {
+            color: #e2e8f0; /* slate-200 */
+        }
+        body.dark-mode #homePage #temperature {
+            color: #93c5fd; /* blue-300 */
+        }
+        body.dark-mode #homePage #weather-description {
+            color: #cbd5e1; /* slate-300 */
+        }
+        body.dark-mode #homePage #error-message {
+            color: #f87171; /* red-400 */
+        }
+
+        /* Dark mode for new message announcement section */
+        body.dark-mode .message-announcement-card {
+            background-color: #1e293b; /* slate-800 */
+            border-color: #334155; /* slate-700 */
+        }
+        body.dark-mode .message-announcement-card h2 {
+            color: #e2e8f0; /* slate-200 */
+        }
+        body.dark-mode .message-announcement-card .text-slate-600 {
+            color: #94a3b8; /* slate-400 */
+        }
+        body.dark-mode .message-announcement-card .announcement-item {
+            background-color: #0f172a; /* slate-900 */
+            border-color: #334155; /* slate-700 */
+        }
+        body.dark-mode .message-announcement-card .announcement-item h3 {
+            color: #e2e8f0; /* slate-200 */
+        }
+        body.dark-mode .message-announcement-card .announcement-item p {
+            color: #cbd5e1; /* slate-300 */
         }
         /* --- END: DARK MODE STYLES --- */
     </style>
@@ -713,13 +868,70 @@
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h1>
-                <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">長按並拖動以排序，點擊可查看路線詳情。</p>
+                <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。</p>
             </header>
             <div id="favoriteListContainer" class="space-y-3">
             </div>
             <div id="noFavoritesMessage" class="text-center py-20 text-slate-500 hidden">
                 <p data-i18n="noFavoritesYet">還沒有常用站牌喔！</p>
                 <p class="mt-2 text-sm" data-i18n="addFavoritesHint">在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="mrtPage" class="page">
+        <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
+            <div class="flex-grow relative -mx-4 -mb-4 md:-mx-6 md:-mb-6">
+                <iframe src="https://krtc.pages.dev/" id="mrtIframe" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="homePage" class="page">
+        <div class="container mx-auto p-4 md:p-6 max-w-4xl">
+            <div class="weather-announcement-frame">
+                <div class="weather-card-inner">
+                    <h1 class="text-4xl font-bold text-gray-800 mb-4" data-i18n="weatherTitle">高雄天氣</h1>
+                    <p class="text-lg text-gray-600 mb-6" id="current-date"></p>
+
+                    <div id="weatherLoading" class="loading-spinner"></div>
+                    <div id="weatherErrorMessage" class="text-red-500 text-center hidden" data-i18n="weatherLoadError">無法載入天氣資料，請稍後再試。</div>
+
+                    <div id="weatherInfo" class="hidden">
+                        <div class="flex items-center justify-center mb-6">
+                            <span id="weather-icon" class="text-6xl mr-4"></span>
+                            <p class="text-5xl font-extrabold text-blue-600" id="temperature"></p>
+                            <span class="text-3xl text-blue-600 ml-1">°C</span>
+                        </div>
+                        <p class="text-2xl text-gray-700 font-semibold mb-4" id="weather-description"></p>
+
+                        <div class="weather-detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label" data-i18n="apparentTemperature">體感溫度</div>
+                                <div class="detail-value" id="apparent-temperature"></div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label" data-i18n="relativeHumidity">相對濕度</div>
+                                <div class="detail-value" id="relative-humidity"></div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label" data-i18n="windSpeed">風速</div>
+                                <div class="detail-value" id="wind-speed"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-announcement-card message-announcement-card-inner bg-blue-50 rounded-lg shadow-md p-4 md:p-6 border border-blue-200">
+                    <h2 class="text-xl md:text-2xl font-bold text-slate-800 mb-4" data-i18n="announcementTitle">訊息公告</h2>
+                    <div id="announcementContent">
+                        <div id="announcementLoading" class="text-center py-4">
+                            <div class="loading-spinner mx-auto"></div>
+                            <p class="mt-2 text-slate-600" data-i18n="loadingAnnouncements">正在載入訊息公告...</p>
+                        </div>
+                        <p id="noAnnouncementsMessage" class="text-center py-4 text-slate-500 hidden" data-i18n="noAnnouncements">目前沒有任何訊息通知喔</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -732,7 +944,6 @@
             </header>
 
             <div class="space-y-6">
-                <!-- Appearance Settings Card -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="appearance">外觀</h2>
@@ -743,7 +954,6 @@
                                 <span class="material-icons-outlined text-slate-500 mr-3">dark_mode</span>
                                 <span class="text-slate-600" data-i18n="darkMode">深色模式</span>
                             </div>
-                            <!-- Material Style Toggle Switch -->
                             <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="darkModeToggle" class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
@@ -752,7 +962,6 @@
                     </div>
                 </div>
 
-                <!-- Language Settings Card -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="languageSettings">語言設定</h2>
@@ -771,7 +980,6 @@
                     </div>
                 </div>
 
-                <!-- About Card -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="about">關於</h2>
@@ -804,12 +1012,22 @@
     <div id="toastContainer" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[2000] flex flex-col items-center space-y-2"></div>
 
     <div id="mainNav">
-        <button id="navDynamic" data-page="dynamic" class="active-nav">
+        <button id="navHome" data-page="home">
+            <span class="material-icons-outlined">home</span>
+            <span data-i18n="navHome">首頁</span>
+        </button>
+        <button id="navDynamic" data-page="dynamic">
             <span class="material-icons-outlined">directions_bus</span>
             <span data-i18n="navDynamic">動態</span>
         </button>
         <button id="navFavorites" data-page="favorites">
-            <span class="material-icons-outlined">favorite</span> <span data-i18n="navFavorites">最愛</span> </button>
+            <span class="material-icons-outlined">favorite</span>
+            <span data-i18n="navFavorites">最愛</span>
+         </button>
+        <button id="navMrt" data-page="mrt">
+            <span class="material-icons-outlined">tram</span>
+            <span data-i18n="navMrt">捷運</span>
+        </button>
         <button id="navSettings" data-page="settings">
             <span class="material-icons-outlined">settings</span>
             <span data-i18n="navSettings">設定</span>
@@ -830,6 +1048,8 @@
             const routeSelectionPage = document.getElementById('routeSelectionPage');
             const busTrackerPage = document.getElementById('busTrackerPage');
             const favoriteStationsPage = document.getElementById('favoriteStationsPage');
+            const mrtPage = document.getElementById('mrtPage');
+            const homePage = document.getElementById('homePage');
             const settingsPage = document.getElementById('settingsPage');
 
             const routeSearchInput = document.getElementById('routeSearchInput');
@@ -865,6 +1085,22 @@
             const darkModeToggle = document.getElementById('darkModeToggle');
             const languageSelect = document.getElementById('languageSelect');
 
+            const weatherLoadingElement = document.getElementById('weatherLoading');
+            const weatherErrorMessageElement = document.getElementById('weatherErrorMessage');
+            const weatherInfoElement = document.getElementById('weatherInfo');
+            const temperatureElement = document.getElementById('temperature');
+            const weatherDescriptionElement = document.getElementById('weather-description');
+            const weatherIconElement = document.getElementById('weather-icon');
+            const apparentTemperatureElement = document.getElementById('apparent-temperature');
+            const relativeHumidityElement = document.getElementById('relative-humidity');
+            const windSpeedElement = document.getElementById('wind-speed');
+            const currentDateElement = document.getElementById('current-date');
+
+            const announcementContent = document.getElementById('announcementContent');
+            const announcementLoading = document.getElementById('announcementLoading');
+            const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+
+
             // --- STATE ---
             let allRoutes = [];
             let currentRouteData = null;
@@ -883,13 +1119,12 @@
             let currentStationContext = null;
             let favoriteButtonHideTimeout;
             let draggedItem = null;
-            let swipedFavoriteCard = null;
-
-            // Variables for swipe detection
-            let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
-            const SWIPE_THRESHOLD = 50;
 
             let isAnimatingDirection = false;
+            let lastPage = null;
+
+            let weatherDataLoaded = false;
+            let announcementsDataLoaded = false;
 
             // Translations object
             const translations = {
@@ -919,7 +1154,7 @@
                     removeFavorite: '移除最愛',
                     addFavorite: '加入最愛',
                     favoritesTitle: '常用站牌',
-                    favoritesSubtitle: '長按並拖動以排序，點擊可查看路線詳情。',
+                    favoritesSubtitle: '點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。',
                     noFavoritesYet: '還沒有常用站牌喔！',
                     addFavoritesHint: '在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。',
                     settingsTitle: '設定',
@@ -930,12 +1165,51 @@
                     selectLanguage: '選擇語言',
                     githubSource: 'GitHub 原始碼',
                     updateCountdown: '秒後更新',
+                    navHome: '首頁',
                     navDynamic: '動態',
                     navFavorites: '最愛',
+                    navMrt: '捷運',
                     navSettings: '設定',
                     noData: '無資料',
                     routeInfoNotFound: '找不到該路線的資訊，請確認路線代號是否正確。',
-                    delete: '刪除'
+                    mrtTitle: '高雄捷運路網圖',
+                    weatherTitle: '高雄天氣',
+                    weatherLoadError: '無法載入天氣資料，請稍後再試。',
+                    apparentTemperature: '體感溫度',
+                    relativeHumidity: '相對濕度',
+                    windSpeed: '風速',
+                    weatherClear: '晴朗',
+                    weatherMostlyClear: '主要晴朗',
+                    weatherPartlyCloudy: '局部多雲',
+                    weatherOvercast: '多雲',
+                    weatherFog: '霧',
+                    weatherDepositingFog: '結霜霧',
+                    weatherDrizzleLight: '毛毛雨：小雨',
+                    weatherDrizzleModerate: '毛毛雨：中雨',
+                    weatherDrizzleDense: '毛毛雨：大雨',
+                    weatherFreezingDrizzleLight: '凍毛毛雨：小雨',
+                    weatherFreezingDrizzleDense: '凍毛毛雨：大雨',
+                    weatherRainLight: '小雨',
+                    weatherRainModerate: '中雨',
+                    weatherRainHeavy: '大雨',
+                    weatherFreezingRainLight: '凍雨：小雨',
+                    weatherFreezingRainHeavy: '凍雨：大雨',
+                    weatherSnowLight: '小雪',
+                    weatherSnowModerate: '中雪',
+                    weatherSnowHeavy: '大雪',
+                    weatherSnowGrains: '雪粒',
+                    weatherRainShowersLight: '陣雨：小雨',
+                    weatherRainShowersModerate: '陣雨：中雨',
+                    weatherRainShowersHeavy: '陣雨：大雨',
+                    weatherSnowShowersLight: '陣雪：小雪',
+                    weatherSnowShowersHeavy: '陣雪：大雪',
+                    weatherThunderstorm: '雷暴',
+                    weatherThunderstormHailLight: '雷暴伴隨小冰雹',
+                    weatherThunderstormHailHeavy: '雷暴伴隨大冰雹',
+                    weatherUnknown: '未知天氣',
+                    announcementTitle: '訊息公告',
+                    loadingAnnouncements: '正在載入訊息公告...',
+                    noAnnouncements: '目前沒有任何訊息通知喔'
                 },
                 en: {
                     routeSelectionTitle: 'Kaohsiung Bus Route Inquiry',
@@ -963,9 +1237,9 @@
                     removeFavorite: 'Remove Favorite',
                     addFavorite: 'Add Favorite',
                     favoritesTitle: 'Favorite Stops',
-                    favoritesSubtitle: 'Drag to reorder, tap to view.',
+                    favoritesSubtitle: 'Tap to view details, long-press or right-click to remove, drag to reorder.',
                     noFavoritesYet: 'No favorite stops yet!',
-                    addFavoritesHint: 'Long-press a stop to add to favorites.',
+                    addFavoritesHint: 'On the dynamic route page, long-press or right-click a stop to add it to favorites.',
                     settingsTitle: 'Settings',
                     settingsSubtitle: 'Adjust application settings.',
                     appearance: 'Appearance',
@@ -974,12 +1248,51 @@
                     selectLanguage: 'Select Language',
                     githubSource: 'GitHub Source Code',
                     updateCountdown: 's to update',
+                    navHome: 'Home',
                     navDynamic: 'Dynamic',
                     navFavorites: 'Favorites',
+                    navMrt: 'MRT',
                     navSettings: 'Settings',
                     noData: 'No Data',
                     routeInfoNotFound: 'Route information not found. Please check if the route number is correct.',
-                    delete: 'Delete'
+                    mrtTitle: 'Kaohsiung MRT Map',
+                    weatherTitle: 'Kaohsiung Weather',
+                    weatherLoadError: 'Failed to load weather data, please try again later.',
+                    apparentTemperature: 'Apparent Temp',
+                    relativeHumidity: 'Humidity',
+                    windSpeed: 'Wind Speed',
+                    weatherClear: 'Clear',
+                    weatherMostlyClear: 'Mostly Clear',
+                    weatherPartlyCloudy: 'Partly Cloudy',
+                    weatherOvercast: 'Overcast',
+                    weatherFog: 'Fog',
+                    weatherDepositingFog: 'Depositing Fog',
+                    weatherDrizzleLight: 'Light Drizzle',
+                    weatherDrizzleModerate: 'Moderate Drizzle',
+                    weatherDrizzleDense: 'Dense Drizzle',
+                    weatherFreezingDrizzleLight: 'Light Freezing Drizzle',
+                    weatherFreezingDrizzleDense: 'Dense Freezing Drizzle',
+                    weatherRainLight: 'Light Rain',
+                    weatherRainModerate: 'Moderate Rain',
+                    weatherRainHeavy: 'Heavy Rain',
+                    weatherFreezingRainLight: 'Light Freezing Rain',
+                    weatherFreezingRainHeavy: 'Heavy Freezing Rain',
+                    weatherSnowLight: 'Light Snow',
+                    weatherSnowModerate: 'Moderate Snow',
+                    weatherSnowHeavy: 'Heavy Snow',
+                    weatherSnowGrains: 'Snow Grains',
+                    weatherRainShowersLight: 'Light Rain Showers',
+                    weatherRainShowersModerate: 'Moderate Rain Showers',
+                    weatherRainShowersHeavy: 'Heavy Rain Showers',
+                    weatherSnowShowersLight: 'Light Snow Showers',
+                    weatherSnowShowersHeavy: 'Heavy Snow Showers',
+                    weatherThunderstorm: 'Thunderstorm',
+                    weatherThunderstormHailLight: 'Thunderstorm with Light Hail',
+                    weatherThunderstormHailHeavy: 'Thunderstorm with Heavy Hail',
+                    weatherUnknown: 'Unknown Weather',
+                    announcementTitle: 'Message Announcements',
+                    loadingAnnouncements: 'Loading announcements...',
+                    noAnnouncements: 'Currently no message notifications.'
                 }
             };
 
@@ -1049,6 +1362,22 @@
                         estimateTimes { edges { node { id, goBack, comeTime, etas { busId, etaTime } } } }
                         stations { edges { ivrNo, node { id, name } } }
                     }
+                }`,
+                QUERY_CLOGS: `query QUERY_CLOGS($routeId: Int!) {
+                    clogMessages(xno: $routeId) {
+                        edges {
+                            node {
+                                id, title, description
+                            }
+                        }
+                    }
+                    abnormalMessages(xno: $routeId) {
+                        edges {
+                            node {
+                                id, type, title, description
+                            }
+                        }
+                    }
                 }`
             };
 
@@ -1089,6 +1418,9 @@
                     loadBusData(currentRouteId, false);
                 } else if (activePage === 'favorites') {
                     displayFavoriteStations();
+                } else if (activePage === 'home') {
+                    fetchWeather();
+                    fetchAnnouncements();
                 }
             }
 
@@ -1194,40 +1526,38 @@
                     loadBusData(currentRouteId, false);
                 }
             }
-
-            function showFavoriteButton(stationData, clientX, clientY) {
-                clearTimeout(favoriteButtonHideTimeout);
-
-                currentStationContext = stationData;
-                const { routeId, stationId, direction } = stationData;
-                const isCurrentlyFavorite = isFavorite(routeId, stationId, direction);
-
-                favoriteActionIcon.textContent = isCurrentlyFavorite ? 'favorite' : 'favorite_border';
-                favoriteActionText.textContent = isCurrentlyFavorite ? translations[currentLang].removeFavorite : translations[currentLang].addFavorite;
-
+            
+            function positionAndShowActionButton(clientX, clientY) {
                 favoriteActionButton.classList.remove('hidden');
                 favoriteActionButton.classList.add('show');
-
                 const buttonWidth = favoriteActionButton.offsetWidth;
                 const buttonHeight = favoriteActionButton.offsetHeight;
-
-                let left = clientX;
-                let top = clientY;
-
+                let left = clientX; let top = clientY;
                 if (left + buttonWidth > window.innerWidth - 10) left = window.innerWidth - buttonWidth - 10;
                 if (top + buttonHeight > window.innerHeight - 10) top = window.innerHeight - buttonHeight - 10;
-                if (left < 10) left = 10;
-                if (top < 10) top = 10;
-
+                if (left < 10) left = 10; if (top < 10) top = 10;
                 favoriteActionButton.style.left = `${left}px`;
                 favoriteActionButton.style.top = `${top}px`;
-
-                favoriteButtonHideTimeout = setTimeout(() => {
-                    favoriteActionButton.classList.remove('show');
-                    favoriteActionButton.addEventListener('transitionend', () => {
-                        favoriteActionButton.classList.add('hidden');
-                    }, { once: true });
-                }, 3000);
+                favoriteButtonHideTimeout = setTimeout(() => { hideFavoriteButton(); }, 4000);
+            }
+            
+            // MODIFIED: Unified "Add/Remove" button logic
+            function showFavoriteButton(stationData, clientX, clientY) {
+                clearTimeout(favoriteButtonHideTimeout);
+                currentStationContext = { ...stationData, action: 'toggle' };
+                const isCurrentlyFavorite = isFavorite(stationData.routeId, stationData.stationId, stationData.direction);
+                favoriteActionIcon.textContent = 'favorite_border'; 
+                favoriteActionText.textContent = isCurrentlyFavorite ? translations[currentLang].removeFavorite : translations[currentLang].addFavorite;
+                positionAndShowActionButton(clientX, clientY);
+            }
+            
+            // MODIFIED: Unified "Remove" button logic for Favorites page
+            function showRemoveFavoriteButton(stationData, clientX, clientY) {
+                clearTimeout(favoriteButtonHideTimeout);
+                currentStationContext = { ...stationData, action: 'remove' };
+                favoriteActionIcon.textContent = 'favorite_border';
+                favoriteActionText.textContent = translations[currentLang].removeFavorite;
+                positionAndShowActionButton(clientX, clientY);
             }
 
             function hideFavoriteButton() {
@@ -1242,14 +1572,36 @@
                 if (currentStationContext) {
                     toggleFavorite(currentStationContext);
                     hideFavoriteButton();
+
+                    if (currentStationContext.action === 'remove' && activePage === 'favoriteStationsPage') {
+                        displayFavoriteStations();
+                    }
                 }
             });
 
-            // --- PAGE MANAGEMENT ---
-            function showPage(pageId) {
+            // --- PAGE MANAGEMENT & HISTORY LOGIC ---
+            function showPage(pageId, pushState = true) {
+                if (activePage === pageId) return;
+
+                lastPage = activePage;
+                activePage = pageId;
+
                 const pages = document.querySelectorAll('.page');
                 pages.forEach(page => page.classList.remove('active'));
-                document.getElementById(pageId).classList.add('active');
+                const newPage = document.getElementById(pageId);
+                if (newPage) {
+                    newPage.classList.add('active');
+                } else {
+                    console.error(`Page with ID "${pageId}" not found.`);
+                    document.getElementById('homePage').classList.add('active');
+                    activePage = 'homePage';
+                }
+
+                if (pushState) {
+                    const state = { page: pageId };
+                    const url = `?page=${pageId.replace('Page', '')}`;
+                    history.pushState(state, '', url);
+                }
 
                 if (pageId === 'routeSelectionPage') {
                     filterKeyboardContainer.style.display = 'block';
@@ -1262,35 +1614,84 @@
                     } else {
                         updateCountdownButton.style.display = 'none';
                     }
-                    const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
-                    if (routeSelectionContainer) {
-                        routeSelectionContainer.style.paddingBottom = '';
-                    }
                 } else {
                     filterKeyboardContainer.style.display = 'none';
                     updateCountdownButton.style.display = 'none';
-                    const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
-                    if (routeSelectionContainer) {
-                        routeSelectionContainer.style.paddingBottom = '';
+                    const container = document.querySelector(`#${pageId} .container`);
+                    if(container) {
+                        container.style.paddingBottom = '90px';
                     }
                 }
 
                 document.querySelectorAll('#mainNav button').forEach(button => {
                     button.classList.remove('active-nav');
                 });
-                const navButtonId = pageId === 'routeSelectionPage' || pageId === 'busTrackerPage' ? 'dynamic' : pageId.replace('Page', '');
+
+                let navButtonId = pageId.replace('Page', '');
+                if (pageId === 'routeSelectionPage' || pageId === 'busTrackerPage') {
+                    navButtonId = 'dynamic';
+                }
                 const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
                 if (navButton) {
                     navButton.classList.add('active-nav');
                 }
-                activePage = navButtonId;
 
                 if (pageId === 'favoriteStationsPage') {
                     displayFavoriteStations();
+                } else if (pageId === 'homePage') {
+                    if (!weatherDataLoaded) {
+                        fetchWeather();
+                        weatherDataLoaded = true;
+                    }
+                    if (!announcementsDataLoaded) {
+                        fetchAnnouncements();
+                    }
                 }
             }
 
+            window.addEventListener('popstate', (event) => {
+                const fromPage = activePage;
+                const spokePages = ['routeSelectionPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
+
+                if (spokePages.includes(fromPage)) {
+                    showPage('homePage', true);
+                    return;
+                }
+
+                if (event.state && event.state.page) {
+                    const pageId = event.state.page;
+
+                    if (pageId === 'busTrackerPage') {
+                        const routeId = event.state.routeId;
+                        if (routeId) {
+                            const route = allRoutes.find(r => r.id.toString() === routeId.toString());
+                            if (route) {
+                                navigateToTracker(route.id, route.name, route.description, false);
+                            } else {
+                                showPage('routeSelectionPage', false);
+                            }
+                        } else {
+                             showPage('routeSelectionPage', false);
+                        }
+                    } else {
+                        showPage(pageId, false);
+                    }
+                } else {
+                    showPage('homePage', false);
+                }
+            });
+
+
             // --- PAGE 1: ROUTE SELECTION ---
+            function resetSearch() {
+                selectedCategoryPrefix = '';
+                routeSearchInput.value = '';
+                categoryDisplay.textContent = translations[currentLang].allRoutes;
+                if (allRoutes.length > 0) {
+                   applySearch('');
+                }
+            }
+
             async function initRouteSelection() {
                 try {
                     initialLoading.style.display = 'block';
@@ -1335,17 +1736,18 @@
 
                 routes.forEach(route => {
                     const card = document.createElement('div');
-                    card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent';
+                    card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors';
                     card.dataset.routeId = route.id;
                     card.dataset.routeName = route.name;
                     card.dataset.routeDesc = route.description;
 
                     card.innerHTML = `
-                        <h3 class="font-bold text-lg text-slate-800">${route.name}</h3>
-                        <p class="text-sm text-slate-500">${route.description}</p>
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-slate-200">${route.name}</h3>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${route.description || '&nbsp;'}</p>
                     `;
+
                     card.addEventListener('click', () => {
-                        navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc, true);
+                        navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc);
                     });
                     routeListContainer.appendChild(card);
                 });
@@ -1438,9 +1840,7 @@
 
                 } else if (type === 'action') {
                     if (value === 'reset') {
-                        selectedCategoryPrefix = '';
-                        routeSearchInput.value = '';
-                        categoryDisplay.textContent = translations[currentLang].allRoutes;
+                        resetSearch();
                     } else if (value === 'backspace') {
                         routeSearchInput.value = routeSearchInput.value.slice(0, -1);
                     }
@@ -1483,13 +1883,10 @@
                 const slideOutClass = newDirection > currentDirection ? 'slide-out-left' : 'slide-out-right';
                 const slideInClass = newDirection > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
 
-                // Prepare incoming list
                 incomingList.classList.remove('hidden');
-                // Ensure classes are clean before adding new ones
                 outgoingList.className = 'station-list-container';
                 incomingList.className = 'station-list-container';
 
-                // Animate
                 outgoingList.classList.add(slideOutClass);
                 incomingList.classList.add(slideInClass);
 
@@ -1498,11 +1895,10 @@
 
                 setTimeout(() => {
                     outgoingList.classList.add('hidden');
-                    // Clean up classes
                     outgoingList.classList.remove(slideOutClass);
                     incomingList.classList.remove(slideInClass);
                     isAnimatingDirection = false;
-                }, 300); // Animation duration
+                }, 300);
             }
 
             function createStationCard(estimate, stationName, displayedBusIds) {
@@ -1581,18 +1977,13 @@
                     showFavoriteButton(stationData, e.clientX, e.clientY);
                 });
 
-                let touchStartX, touchStartY;
+                let touchStartPos;
                 let longPressTimer;
-                let isLongPress = false;
 
                 stationCard.addEventListener('touchstart', (e) => {
                     if (e.touches.length === 1) {
-                        touchStartX = e.touches[0].clientX;
-                        touchStartY = e.touches[0].clientY;
-                        isLongPress = false;
-
+                        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
                         longPressTimer = setTimeout(() => {
-                            isLongPress = true;
                             e.preventDefault();
                             const stationData = {
                                 routeId: parseInt(e.currentTarget.dataset.routeId),
@@ -1603,37 +1994,22 @@
                                 destination: currentDirection === 1 ? currentRouteData.destination : currentRouteData.departure
                             };
                             showFavoriteButton(stationData, e.touches[0].clientX, e.touches[0].clientY);
+                            longPressTimer = null;
                         }, 700);
                     }
-                });
+                }, {passive: false});
 
                 stationCard.addEventListener('touchmove', (e) => {
-                    if (!longPressTimer) return;
-
-                    const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
-                    const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-
+                    if (!longPressTimer || !touchStartPos) return;
+                    const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.x);
+                    const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.y);
                     if (deltaX > 10 || deltaY > 10) {
                         clearTimeout(longPressTimer);
-                        longPressTimer = null;
-                        isLongPress = false;
                     }
                 });
 
-                stationCard.addEventListener('touchend', (e) => {
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
-                        longPressTimer = null;
-                    }
-                });
-
-                stationCard.addEventListener('touchcancel', (e) => {
-                    if (longPressTimer) {
-                        clearTimeout(longPressTimer);
-                        longPressTimer = null;
-                    }
-                    isLongPress = false;
-                });
+                stationCard.addEventListener('touchend', () => clearTimeout(longPressTimer));
+                stationCard.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
 
                 return stationCard;
             }
@@ -1687,7 +2063,6 @@
 
                     updateDirectionButtons();
 
-                    // Set initial visibility and clean up animation classes
                     stationListGo.className = 'station-list-container';
                     stationListBack.className = 'station-list-container';
                     if (currentDirection === 1) {
@@ -1720,10 +2095,16 @@
                 currentRouteName = routeName;
                 currentDirection = direction;
 
-                showPage('busTrackerPage');
+                showPage('busTrackerPage', pushState);
+
+                if (pushState) {
+                     const state = { page: 'busTrackerPage', routeId: routeId };
+                     const url = `?page=tracker&route=${routeId}`;
+                     history.pushState(state, '', url);
+                }
 
                 routeTitle.textContent = routeName;
-                routeDescription.textContent = '';
+                routeDescription.textContent = routeDesc;
 
                 loadBusData(currentRouteId, true, scrollToStationId);
                 countdownTimer.reset();
@@ -1734,10 +2115,7 @@
                 currentRouteData = null;
                 currentRouteId = null;
                 currentRouteName = null;
-                routeSearchInput.value = '';
-                selectedCategoryPrefix = '';
-                categoryDisplay.textContent = translations[currentLang].allRoutes;
-                applySearch('');
+                resetSearch();
                 hideFavoriteButton();
             }
 
@@ -1778,14 +2156,11 @@
             }
 
             async function displayFavoriteStations() {
-                closeSwipedFavorite();
                 loadFavorites();
                 favoriteListContainer.innerHTML = '';
 
                 if (favoriteStations.length === 0) {
                     noFavoritesMessage.classList.remove('hidden');
-                    noFavoritesMessage.querySelector('p:nth-child(1)').textContent = translations[currentLang].noFavoritesYet;
-                    noFavoritesMessage.querySelector('p:nth-child(2)').textContent = translations[currentLang].addFavoritesHint;
                     return;
                 }
 
@@ -1799,12 +2174,6 @@
                     const directionText = fav.destination ? `${translations[currentLang].goDirection} ${fav.destination}` : `${translations[currentLang].direction} ${fav.direction}`;
 
                     favCard.innerHTML = `
-                        <div class="favorite-card-actions">
-                            <button class="delete-action-btn">
-                                <span class="material-icons-outlined">delete</span>
-                                <span data-i18n="delete">${translations[currentLang].delete}</span>
-                            </button>
-                        </div>
                         <div class="favorite-card-content" draggable="true">
                             <div class="drag-handle">
                                 <span class="material-icons-outlined">drag_indicator</span>
@@ -1857,92 +2226,59 @@
                     div.innerHTML = timeHtml;
                 });
             }
-
-            function closeSwipedFavorite() {
-                if (swipedFavoriteCard) {
-                    swipedFavoriteCard.querySelector('.favorite-card-content').style.transform = 'translateX(0px)';
-                    swipedFavoriteCard.classList.remove('swiped');
-                    swipedFavoriteCard = null;
-                }
-            }
-
+            
             function addFavoriteCardEventListeners() {
-                document.body.addEventListener('click', (e) => {
-                    if (swipedFavoriteCard && !swipedFavoriteCard.contains(e.target)) {
-                        closeSwipedFavorite();
-                    }
-                }, true);
-
                 favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
-                    const favData = favoriteStations[card.dataset.index];
+                    const favData = favoriteStations[parseInt(card.dataset.index)];
                     const content = card.querySelector('.favorite-card-content');
-                    const deleteBtn = card.querySelector('.delete-action-btn');
                     const tapArea = card.querySelector('.card-tap-area');
                     const dragHandle = card.querySelector('.drag-handle');
+                    let favLongPressTimer;
+                    let isDragging = false;
 
                     tapArea.addEventListener('click', () => {
-                        if (card.classList.contains('swiped')) {
-                            closeSwipedFavorite();
-                            return;
+                         if (!isDragging) {
+                            navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                         }
-                        navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                     });
 
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        toggleFavorite(favData);
-                        displayFavoriteStations();
+                    card.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        showRemoveFavoriteButton(favData, e.clientX, e.clientY);
                     });
+
+                    card.addEventListener('touchstart', (e) => {
+                        if (dragHandle.contains(e.target)) return;
+                        favLongPressTimer = setTimeout(() => {
+                            e.preventDefault();
+                            showRemoveFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
+                            favLongPressTimer = null;
+                        }, 700);
+                    }, { passive: false });
+
+                    card.addEventListener('touchmove', () => clearTimeout(favLongPressTimer));
+                    card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
+                    card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
 
                     content.addEventListener('dragstart', (e) => {
                         if (dragHandle.contains(e.target)) {
+                            isDragging = true;
                             handleDragStart.call(card, e);
                         } else {
                             e.preventDefault();
                         }
                     });
-                    content.addEventListener('dragend', handleDragEnd.bind(card));
 
-                    let startX = 0, currentX = 0;
-                    const maxSwipe = 90;
-
-                    content.addEventListener('touchstart', (e) => {
-                        if (dragHandle.contains(e.target)) return;
-                        if (swipedFavoriteCard && swipedFavoriteCard !== card) {
-                            closeSwipedFavorite();
-                        }
-                        startX = e.touches[0].clientX;
-                        content.style.transition = 'none';
-                    }, { passive: true });
-
-                    content.addEventListener('touchmove', (e) => {
-                        if (dragHandle.contains(e.target)) return;
-                        let deltaX = e.touches[0].clientX - startX;
-                        if (deltaX > 0) deltaX = 0;
-                        if (deltaX < -maxSwipe) deltaX = -maxSwipe;
-                        currentX = deltaX;
-                        content.style.transform = `translateX(${currentX}px)`;
-                    }, { passive: true });
-
-                    content.addEventListener('touchend', () => {
-                        if (dragHandle.contains(e.target)) return;
-                        content.style.transition = 'transform 0.3s ease-out';
-                        if (Math.abs(currentX) > SWIPE_THRESHOLD) {
-                            content.style.transform = `translateX(-${maxSwipe}px)`;
-                            swipedFavoriteCard = card;
-                            card.classList.add('swiped');
-                        } else {
-                            content.style.transform = 'translateX(0px)';
-                            if(swipedFavoriteCard === card) swipedFavoriteCard = null;
-                            card.classList.remove('swiped');
-                        }
-                        currentX = 0;
+                    content.addEventListener('dragend', () => {
+                        handleDragEnd.call(card);
+                        setTimeout(() => isDragging = false, 100);
                     });
                 });
 
                 favoriteListContainer.addEventListener('dragover', handleDragOver);
                 favoriteListContainer.addEventListener('drop', handleDrop);
             }
+
 
             function handleDragStart(e) {
                 draggedItem = this;
@@ -1957,7 +2293,6 @@
             function handleDragOver(e) {
                 e.preventDefault();
                 const afterElement = getDragAfterElement(favoriteListContainer, e.clientY);
-                const draggableContent = draggedItem.querySelector('.favorite-card-content');
                 if (afterElement == null) {
                     favoriteListContainer.appendChild(draggedItem);
                 } else {
@@ -1982,12 +2317,243 @@
             function handleDrop(e) {
                 e.preventDefault();
                 const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
-                const newFavoritesArray = newOrderedElements.map(elem => favoriteStations[elem.dataset.index]);
+                const newFavoritesArray = newOrderedElements.map(elem => favoriteStations[parseInt(elem.dataset.index)]);
 
                 favoriteStations = newFavoritesArray;
                 saveFavorites();
                 displayFavoriteStations();
             }
+
+            // --- PAGE 5: HOME (WEATHER) ---
+            const getWeatherDescription = (code) => {
+                switch (code) {
+                    case 0: return translations[currentLang].weatherClear;
+                    case 1: return translations[currentLang].weatherMostlyClear;
+                    case 2: return translations[currentLang].weatherPartlyCloudy;
+                    case 3: return translations[currentLang].weatherOvercast;
+                    case 45: return translations[currentLang].weatherFog;
+                    case 48: return translations[currentLang].weatherDepositingFog;
+                    case 51: return translations[currentLang].weatherDrizzleLight;
+                    case 53: return translations[currentLang].weatherDrizzleModerate;
+                    case 55: return translations[currentLang].weatherDrizzleDense;
+                    case 56: return translations[currentLang].weatherFreezingDrizzleLight;
+                    case 57: return translations[currentLang].weatherFreezingDrizzleDense;
+                    case 61: return translations[currentLang].weatherRainLight;
+                    case 63: return translations[currentLang].weatherRainModerate;
+                    case 65: return translations[currentLang].weatherRainHeavy;
+                    case 66: return translations[currentLang].weatherFreezingRainLight;
+                    case 67: return translations[currentLang].weatherFreezingRainHeavy;
+                    case 71: return translations[currentLang].weatherSnowLight;
+                    case 73: return translations[currentLang].weatherSnowModerate;
+                    case 75: return translations[currentLang].weatherSnowHeavy;
+                    case 77: return translations[currentLang].weatherSnowGrains;
+                    case 80: return translations[currentLang].weatherRainShowersLight;
+                    case 81: return translations[currentLang].weatherRainShowersModerate;
+                    case 82: return translations[currentLang].weatherRainShowersHeavy;
+                    case 85: return translations[currentLang].weatherSnowShowersLight;
+                    case 86: return translations[currentLang].weatherSnowShowersHeavy;
+                    case 95: return translations[currentLang].weatherThunderstorm;
+                    case 96: return translations[currentLang].weatherThunderstormHailLight;
+                    case 99: return translations[currentLang].weatherThunderstormHailHeavy;
+                    default: return translations[currentLang].weatherUnknown;
+                }
+            };
+
+            const getWeatherIcon = (code, isDay) => {
+                switch (code) {
+                    case 0: return isDay ? "☀️" : "🌙";
+                    case 1: return isDay ? "🌤️" : "☁️";
+                    case 2: return isDay ? "⛅" : "☁️";
+                    case 3: return "☁️";
+                    case 45: return "🌫️";
+                    case 48: return "🌫️";
+                    case 51: return "🌧️";
+                    case 53: return "🌧️";
+                    case 55: return "🌧️";
+                    case 56: return "🌨️";
+                    case 57: return "🌨️";
+                    case 61: return "🌧️";
+                    case 63: return "🌧️";
+                    case 65: return "☔";
+                    case 66: return "🧊🌧️";
+                    case 67: return "🧊🌧️";
+                    case 71: return "❄️";
+                    case 73: return "❄️";
+                    case 75: return "❄️";
+                    case 77: return "🌨️";
+                    case 80: return "⛈️";
+                    case 81: return "⛈️";
+                    case 82: return "⛈️";
+                    case 85: return "🌨️";
+                    case 86: return "🌨️";
+                    case 95: return "⚡";
+                    case 96: return "⚡";
+                    case 99: return "⚡";
+                    default: return "❓";
+                }
+            };
+
+            const fetchWeather = async () => {
+                weatherLoadingElement.classList.remove('hidden');
+                weatherErrorMessageElement.classList.add('hidden');
+                weatherInfoElement.classList.add('hidden');
+
+                const today = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+                currentDateElement.textContent = today.toLocaleDateString(currentLang === 'zh' ? 'zh-TW' : 'en-US', options);
+
+                const latitude = 22.6273;
+                const longitude = 120.3014;
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m&timezone=Asia%2FTaipei&forecast_days=1`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP 錯誤! 狀態: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    const current = data.current;
+                    if (current) {
+                        temperatureElement.textContent = current.temperature_2m;
+                        apparentTemperatureElement.textContent = `${current.apparent_temperature}°C`;
+                        relativeHumidityElement.textContent = `${current.relative_humidity_2m}%`;
+                        windSpeedElement.textContent = `${current.wind_speed_10m} km/h`;
+
+                        const weatherCode = current.weather_code;
+                        const isDay = current.is_day;
+                        const weatherDescription = getWeatherDescription(weatherCode);
+                        const weatherIcon = getWeatherIcon(weatherCode, isDay);
+
+                        weatherDescriptionElement.textContent = weatherDescription;
+                        weatherIconElement.textContent = weatherIcon;
+
+                        weatherInfoElement.classList.remove('hidden');
+                    } else {
+                        throw new Error(translations[currentLang].weatherLoadError);
+                    }
+                } catch (error) {
+                    console.error("取得天氣資料時發生錯誤:", error);
+                    weatherErrorMessageElement.textContent = translations[currentLang].weatherLoadError;
+                    weatherErrorMessageElement.classList.remove('hidden');
+                } finally {
+                    weatherLoadingElement.classList.add('hidden');
+                }
+            };
+
+            // --- 訊息公告邏輯 ---
+            async function fetchAnnouncements() {
+                loadFavorites();
+                if (favoriteStations.length === 0) {
+                    announcementLoading.classList.add('hidden');
+                    noAnnouncementsMessage.classList.remove('hidden');
+                    announcementContent.innerHTML = '';
+                    announcementContent.appendChild(noAnnouncementsMessage);
+                    announcementsDataLoaded = true;
+                    return;
+                }
+
+                announcementLoading.classList.remove('hidden');
+                noAnnouncementsMessage.classList.add('hidden');
+                announcementContent.innerHTML = '';
+
+
+                const uniqueRouteIds = [...new Set(favoriteStations.map(fav => fav.routeId))];
+                let allMessages = [];
+
+                try {
+                    const promises = uniqueRouteIds.map(routeId =>
+                        fetchAPI(GQL.QUERY_CLOGS, { routeId: parseInt(routeId) })
+                    );
+                    const results = await Promise.allSettled(promises);
+
+                    results.forEach((result, index) => {
+                        if (result.status === 'fulfilled' && result.value.data) {
+                            const routeId = uniqueRouteIds[index];
+                            const favRoute = favoriteStations.find(fav => fav.routeId === routeId);
+                            const routeName = favRoute ? favRoute.routeName : `Route ${routeId}`;
+
+
+                            const clogMessages = result.value.data.clogMessages?.edges || [];
+                            const abnormalMessages = result.value.data.abnormalMessages?.edges || [];
+
+                            clogMessages.forEach(edge => {
+                                allMessages.push({
+                                    type: 'clog',
+                                    routeId: routeId,
+                                    routeName: routeName,
+                                    id: edge.node.id,
+                                    title: edge.node.title,
+                                    description: edge.node.description
+                                });
+                            });
+
+                            abnormalMessages.forEach(edge => {
+                                allMessages.push({
+                                    type: 'abnormal',
+                                    routeId: routeId,
+                                    routeName: routeName,
+                                    id: edge.node.id,
+                                    title: edge.node.title,
+                                    description: edge.node.description
+                                });
+                            });
+                        } else if (result.status === 'rejected') {
+                            console.error(`Failed to fetch announcements for routeId: ${uniqueRouteIds[index]}`, result.reason);
+                        }
+                    });
+
+                    const groupedMessages = new Map();
+                    allMessages.forEach(msg => {
+                        const key = `${msg.title}|||${msg.description}`;
+                        if (groupedMessages.has(key)) {
+                            const existingEntry = groupedMessages.get(key);
+                            if (!existingEntry.routeNames.includes(msg.routeName)) {
+                                existingEntry.routeNames.push(msg.routeName);
+                            }
+                        } else {
+                            groupedMessages.set(key, {
+                                title: msg.title,
+                                description: msg.description,
+                                routeNames: [msg.routeName]
+                            });
+                        }
+                    });
+
+                    renderAnnouncements(Array.from(groupedMessages.values()));
+
+                } catch (error) {
+                    console.error("取得訊息公告時發生錯誤:", error);
+                    announcementContent.innerHTML = `<p class="text-center py-4 text-red-500">${translations[currentLang].weatherLoadError}</p>`;
+                } finally {
+                    announcementLoading.classList.add('hidden');
+                    announcementsDataLoaded = true;
+                }
+            }
+
+            function renderAnnouncements(messages) {
+                announcementContent.innerHTML = '';
+                if (messages.length === 0) {
+                    noAnnouncementsMessage.classList.remove('hidden');
+                    announcementContent.appendChild(noAnnouncementsMessage);
+                } else {
+                    messages.forEach(msg => {
+                        const messageCard = document.createElement('div');
+                        messageCard.className = 'announcement-item bg-blue-100 dark:bg-slate-700 p-3 rounded-lg shadow-sm mb-3 border border-blue-200 dark:border-slate-600';
+
+                        const routeNamesHtml = msg.routeNames.map(name =>
+                            `<span class="inline-block px-2 py-0.5 rounded bg-blue-200 text-blue-800 font-medium text-xs dark:bg-blue-800 dark:text-blue-200">${name}</span>`
+                        ).join(' ');
+
+                        messageCard.innerHTML = `
+                            <h3 class="font-semibold text-slate-800 dark:text-slate-200">${routeNamesHtml} - ${msg.title}</h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${msg.description}</p>
+                        `;
+                        announcementContent.appendChild(messageCard);
+                    });
+                }
+            }
+
 
             // --- Update Countdown Logic ---
             let countdownTimer = {
@@ -2006,7 +2572,7 @@
                 },
                 update: async function() {
                     this.reset();
-                    if (currentRouteId) {
+                    if (busTrackerPage.classList.contains('active') && currentRouteId) {
                         await loadBusData(currentRouteId, false);
                     }
                 }
@@ -2028,7 +2594,8 @@
             }
 
             // --- Event Listeners ---
-            backButton.addEventListener('click', navigateToSelection);
+            backButton.addEventListener('click', () => history.back());
+
 
             goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
             backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
@@ -2049,17 +2616,15 @@
             }, { passive: true });
 
             estimateTimesSection.addEventListener('touchend', () => {
-                if (touchEndX === 0) return; // No move
+                if (touchEndX === 0) return;
 
                 const diffX = touchStartX - touchEndX;
                 const diffY = touchStartY - touchEndY;
 
-                // Only trigger if the swipe is predominantly horizontal and exceeds the threshold
-                if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(diffX) > Math.abs(diffY)) {
+                if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
                     handleDirectionToggle(diffX > 0 ? 2 : 1);
                 }
 
-                // Reset all touch coordinates
                 touchStartX = 0;
                 touchStartY = 0;
                 touchEndX = 0;
@@ -2074,10 +2639,17 @@
                 const button = e.target.closest('button');
                 if (!button) return;
                 const page = button.dataset.page;
-                if (page === 'dynamic') navigateToSelection();
+
+                if (page === 'dynamic') {
+                    resetSearch();
+                    showPage('routeSelectionPage');
+                }
                 else if (page === 'favorites') showPage('favoriteStationsPage');
+                else if (page === 'mrt') showPage('mrtPage');
+                else if (page === 'home') showPage('homePage');
                 else if (page === 'settings') showPage('settingsPage');
             });
+
 
             document.addEventListener('click', (e) => {
                 if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
@@ -2098,23 +2670,36 @@
             window.addEventListener('resize', adjustContentPadding);
 
             const urlParams = new URLSearchParams(window.location.search);
+            let pageFromUrl = urlParams.get('page');
             const routeIdFromUrl = urlParams.get('route');
-            const pageFromUrl = urlParams.get('page');
 
-            if (routeIdFromUrl) {
-                const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
-                if (route) {
-                    navigateToTracker(route.id, route.name, route.description, false, null, 1);
-                } else {
-                    showPage('routeSelectionPage');
+            let initialPage = 'homePage';
+
+            if(pageFromUrl) {
+                switch(pageFromUrl) {
+                    case 'dynamic': initialPage = 'routeSelectionPage'; break;
+                    case 'tracker':
+                        if (routeIdFromUrl) {
+                            const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
+                            if (route) {
+                                setTimeout(() => navigateToTracker(route.id, route.name, route.description, false), 0);
+                                initialPage = 'busTrackerPage';
+                            } else {
+                                initialPage = 'routeSelectionPage';
+                            }
+                        } else {
+                            initialPage = 'routeSelectionPage';
+                        }
+                        break;
+                    case 'favorites': initialPage = 'favoriteStationsPage'; break;
+                    case 'mrt': initialPage = 'mrtPage'; break;
+                    case 'settings': initialPage = 'settingsPage'; break;
+                    case 'home': initialPage = 'homePage'; break;
                 }
-            } else if (pageFromUrl) {
-                if (pageFromUrl === 'favorites') showPage('favoriteStationsPage');
-                else if (pageFromUrl === 'settings') showPage('settingsPage');
-                else showPage('routeSelectionPage');
-            } else {
-                showPage('routeSelectionPage');
             }
+
+            showPage(initialPage, false);
+            history.replaceState({ page: initialPage }, '', window.location.href);
 
             countdownInterval = setInterval(() => {
                 if (busTrackerPage.classList.contains('active') && navigator.onLine) {
