@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -464,10 +463,10 @@
             border-color: #334155; /* slate-700 */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
         }
-        #homePage .weather-card h1 {
+        #homePage .weather-card h2 {
             color: #334155;
         }
-        body.dark-mode #homePage .weather-card h1 {
+        body.dark-mode #homePage .weather-card h2 {
             color: #e2e8f0; /* slate-200 */
         }
         #homePage .weather-card p {
@@ -487,8 +486,8 @@
         }
         #homePage .weather-detail-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.5rem;
             margin-top: 1.5rem;
         }
         #homePage .detail-item {
@@ -538,7 +537,7 @@
             background-color: #ffffff;
             border-radius: 1.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 2.5rem;
+            padding: 1.5rem;
             max-width: 500px;
             width: 100%;
             margin: 20px auto;
@@ -559,8 +558,8 @@
         }
 
         .weather-announcement-frame .message-announcement-card {
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
             border-top: 1px solid #e2e8f0;
         }
         body.dark-mode .weather-announcement-frame .message-announcement-card {
@@ -702,7 +701,7 @@
             border-color: #334155; /* slate-700 */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
         }
-        body.dark-mode #homePage .weather-card h1 {
+        body.dark-mode #homePage .weather-card h2 {
             color: #e2e8f0; /* slate-200 */
         }
         body.dark-mode #homePage .weather-card p {
@@ -889,21 +888,25 @@
 
     <div id="homePage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
+            <header class="text-center mb-4">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-800" data-i18n="appTitle">高雄公車 App</h1>
+                <p class="text-slate-500 mt-1" data-i18n="appSubtitle">您的即時公車夥伴</p>
+            </header>
             <div class="weather-announcement-frame">
                 <div class="weather-card-inner">
-                    <h1 class="text-4xl font-bold text-gray-800 mb-4" data-i18n="weatherTitle">高雄天氣</h1>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2" data-i18n="weatherTitle">高雄天氣</h2>
                     <p class="text-lg text-gray-600 mb-6" id="current-date"></p>
 
                     <div id="weatherLoading" class="loading-spinner"></div>
                     <div id="weatherErrorMessage" class="text-red-500 text-center hidden" data-i18n="weatherLoadError">無法載入天氣資料，請稍後再試。</div>
 
                     <div id="weatherInfo" class="hidden">
-                        <div class="flex items-center justify-center mb-6">
-                            <span id="weather-icon" class="text-6xl mr-4"></span>
-                            <p class="text-5xl font-extrabold text-blue-600" id="temperature"></p>
-                            <span class="text-3xl text-blue-600 ml-1">°C</span>
+                        <div class="flex items-center justify-center mb-4">
+                            <span id="weather-icon" class="text-5xl mr-3"></span>
+                            <p class="text-4xl font-extrabold text-blue-600" id="temperature"></p>
+                            <span class="text-2xl text-blue-600 ml-1">°C</span>
                         </div>
-                        <p class="text-2xl text-gray-700 font-semibold mb-4" id="weather-description"></p>
+                        <p class="text-xl text-gray-700 font-semibold mb-4" id="weather-description"></p>
 
                         <div class="weather-detail-grid">
                             <div class="detail-item">
@@ -1129,6 +1132,8 @@
             // Translations object
             const translations = {
                 zh: {
+                    appTitle: '高雄公車 App',
+                    appSubtitle: '您的即時公車夥伴',
                     routeSelectionTitle: '高雄市公車路線查詢',
                     routeSelectionSubtitle: '請使用下方鍵盤或直接輸入以查詢路線',
                     allRoutes: '全部路線',
@@ -1212,6 +1217,8 @@
                     noAnnouncements: '目前沒有任何訊息通知喔'
                 },
                 en: {
+                    appTitle: 'Kaohsiung Bus App',
+                    appSubtitle: 'Your real-time bus partner',
                     routeSelectionTitle: 'Kaohsiung Bus Route Inquiry',
                     routeSelectionSubtitle: 'Use keyboard to find routes',
                     allRoutes: 'All Routes',
@@ -1519,6 +1526,7 @@
                     favoriteStations.splice(index, 1);
                 } else {
                     favoriteStations.push({ routeId, routeName, stationId, stationName, direction, destination });
+                    announcementsDataLoaded = false;
                 }
                 saveFavorites();
 
