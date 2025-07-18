@@ -1526,8 +1526,9 @@
                     favoriteStations.splice(index, 1);
                 } else {
                     favoriteStations.push({ routeId, routeName, stationId, stationName, direction, destination });
-                    announcementsDataLoaded = false;
                 }
+                
+                announcementsDataLoaded = false;
                 saveFavorites();
 
                 if (busTrackerPage.classList.contains('active') && currentRouteId) {
