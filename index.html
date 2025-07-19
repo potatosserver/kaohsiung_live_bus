@@ -416,7 +416,7 @@
             color: #bfdbfe;
         }
 
-        /* --- START: FAVORITES PAGE DRAG STYLES --- */
+        /* --- START: FAVORITES PAGE STYLES --- */
         #favoriteListContainer .favorite-card-item {
             position: relative;
             touch-action: pan-y; /* Allow vertical scroll */
@@ -448,7 +448,193 @@
         .drag-handle:active {
             cursor: grabbing;
         }
-        /* --- END: FAVORITES PAGE DRAG STYLES --- */
+
+        #favoriteGroupTabsContainer {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        #favoriteGroupTabsContainer::-webkit-scrollbar {
+            display: none;
+        }
+        .group-tab {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            margin: 0 4px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        .group-tab[draggable="true"] {
+            cursor: move;
+            cursor: grab;
+        }
+        .group-tab[draggable="true"]:active {
+            cursor: grabbing;
+        }
+        .group-tab.active {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 600;
+        }
+        .group-tab.manage-btn {
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+        }
+        body.dark-mode .group-tab {
+            background-color: #334155;
+            color: #cbd5e1;
+        }
+        body.dark-mode .group-tab.active {
+            background-color: #60a5fa;
+            color: #1e293b;
+        }
+        body.dark-mode .group-tab.manage-btn {
+            background-color: #1e293b;
+            border: 1px solid #475569;
+        }
+        /* --- END: FAVORITES PAGE STYLES --- */
+
+        /* --- START: MODAL STYLES --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+        body.dark-mode .modal-content {
+            background-color: #1e293b;
+        }
+
+        /* Custom Prompt/Confirm Modal Styles */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3001; /* Higher than other modals */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .custom-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-modal-content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            /* MODIFIED: Flex layout for consistency */
+            display: flex;
+            flex-direction: column;
+            min-height: 180px;
+        }
+        .custom-modal.show .custom-modal-content {
+            transform: scale(1);
+        }
+        body.dark-mode .custom-modal-content {
+            background-color: #1e293b;
+        }
+        /* MODIFIED: Let message grow */
+        #customPromptMessage, #customConfirmMessage {
+            flex-grow: 1;
+        }
+        .custom-modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        body.dark-mode .custom-modal-content input {
+            background-color: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        .custom-modal-content input::placeholder {
+            color: #94a3b8;
+        }
+        .custom-modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .custom-modal-buttons button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .custom-modal-buttons .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .custom-modal-buttons .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        /* Make btn-secondary styles global */
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+        body.dark-mode .btn-secondary {
+            background-color: #334155;
+            color: #e2e8f0;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+            color: #1e293b;
+        }
+        body.dark-mode .btn-secondary:hover {
+            background-color: #475569;
+        }
+        /* --- END: MODAL STYLES --- */
 
         /* --- START: HOME(WEATHER) PAGE STYLES --- */
         #homePage .weather-card {
@@ -692,7 +878,7 @@
         body.dark-mode .dark\:border-slate-600 { border-color: #475569; }
         body.dark-mode .dark\:peer-focus\:ring-blue-800:focus { --tw-ring-color: rgba(30, 64, 175, 0.5); }
         /* Added styles for language select in dark mode */
-        body.dark-mode #languageSelect {
+        body.dark-mode #languageSelect, body.dark-mode #defaultStartPageSelect {
             background-color: #334155; /* slate-700, adjusted for better contrast */
             color: #e2e8f0; /* slate-200 */
             border-color: #475569; /* slate-600 */
@@ -831,13 +1017,7 @@
                     </header>
 
                 <div class="flex items-center justify-center mb-2">
-                    <button id="backButton" class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-2 rounded-full transition-colors flex items-center justify-center mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
                     <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
-                    <div class="w-9 h-9 mr-2"></div>
                 </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
 
@@ -872,6 +1052,12 @@
                 <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h1>
                 <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。</p>
             </header>
+
+            <!-- NEW: Favorite Group Tabs Container -->
+            <div id="favoriteGroupTabsContainer" class="mb-6 pb-2">
+                <!-- Group tabs will be dynamically inserted here -->
+            </div>
+
             <div id="favoriteListContainer" class="space-y-3">
             </div>
             <div id="noFavoritesMessage" class="text-center py-20 text-slate-500 hidden">
@@ -969,6 +1155,27 @@
                     </div>
                 </div>
 
+                <!-- NEW: Default Start Page Setting -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h2 class="text-lg font-semibold text-slate-700" data-i18n="defaultStartPageTitle">預設起始頁面</h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">web</span>
+                                <span class="text-slate-600" data-i18n="defaultStartPageSubtitle">選擇啟動時的頁面</span>
+                            </div>
+                            <select id="defaultStartPageSelect" class="bg-slate-100 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-slate-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option value="home" data-i18n="navHome">首頁</option>
+                                <option value="dynamic" data-i18n="navDynamic">動態</option>
+                                <option value="favorites" data-i18n="navFavorites">最愛</option>
+                                <option value="mrt" data-i18n="navMrt">捷運</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="languageSettings">語言設定</h2>
@@ -1041,6 +1248,58 @@
         </button>
     </div>
 
+    <!-- NEW: Modals for Group Management -->
+    <div id="selectGroupModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold mb-4 text-slate-800" data-i18n="selectGroupTitle">選擇分組</h3>
+            <div id="selectGroupModalBody" class="space-y-2">
+                <!-- Group buttons will be inserted here -->
+            </div>
+            <!-- Apply btn-secondary class for consistent styling -->
+            <button id="closeSelectGroupModal" class="mt-4 w-full text-center py-2 rounded-lg btn-secondary" data-i18n="cancel">取消</button>
+        </div>
+    </div>
+
+    <div id="manageGroupsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800" data-i18n="manageGroupsTitle">管理分組</h3>
+                <button id="closeManageGroupsModal" class="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+            <div id="manageGroupsModalBody" class="space-y-2 max-h-60 overflow-y-auto mb-4">
+                <!-- Group list for management will be inserted here -->
+            </div>
+            <button id="addNewGroupBtn" class="w-full text-center py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors" data-i18n="addNewGroup">新增分組</button>
+        </div>
+    </div>
+
+    <!-- Custom Prompt Modal -->
+    <div id="customPromptModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 id="customPromptTitle" class="text-lg font-bold mb-2 text-slate-800"></h3>
+            <p id="customPromptMessage" class="text-slate-700 mb-4"></p>
+            <input type="text" id="customPromptInput" class="custom-modal-input" />
+            <div class="custom-modal-buttons">
+                <button id="customPromptCancelBtn" class="btn-secondary" data-i18n="cancel">取消</button>
+                <button id="customPromptConfirmBtn" class="btn-primary" data-i18n="confirm">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <h3 id="customConfirmTitle" class="text-lg font-bold mb-2 text-slate-800"></h3>
+            <p id="customConfirmMessage" class="text-slate-700 mb-4"></p>
+            <div class="custom-modal-buttons">
+                <button id="customConfirmCancelBtn" class="btn-secondary" data-i18n="cancel">取消</button>
+                <button id="customConfirmConfirmBtn" class="btn-primary" data-i18n="confirm">確認</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CONFIG & GLOBAL VARS ---
@@ -1069,7 +1328,6 @@
             const filterKeyboard = document.getElementById('filterKeyboard');
             const filterKeyboardContainer = document.getElementById('filterKeyboardContainer');
 
-            const backButton = document.getElementById('backButton');
             const trackerLoading = document.getElementById('trackerLoading');
             const routeTitle = document.getElementById('routeTitle');
             const routeDescription = document.getElementById('routeDescription');
@@ -1086,13 +1344,40 @@
 
             const favoriteListContainer = document.getElementById('favoriteListContainer');
             const noFavoritesMessage = document.getElementById('noFavoritesMessage');
+            const favoriteGroupTabsContainer = document.getElementById('favoriteGroupTabsContainer');
             const favoriteActionButton = document.getElementById('favoriteActionButton');
             const favoriteActionIcon = document.getElementById('favoriteActionIcon');
             const favoriteActionText = document.getElementById('favoriteActionText');
             const toastContainer = document.getElementById('toastContainer');
 
+            // Modal elements
+            const selectGroupModal = document.getElementById('selectGroupModal');
+            const selectGroupModalBody = document.getElementById('selectGroupModalBody');
+            const closeSelectGroupModal = document.getElementById('closeSelectGroupModal');
+            const manageGroupsModal = document.getElementById('manageGroupsModal');
+            const manageGroupsModalBody = document.getElementById('manageGroupsModalBody');
+            const closeManageGroupsModal = document.getElementById('closeManageGroupsModal');
+            const addNewGroupBtn = document.getElementById('addNewGroupBtn');
+
+            // Custom Modal Elements
+            const customPromptModal = document.getElementById('customPromptModal');
+            const customPromptTitle = document.getElementById('customPromptTitle');
+            const customPromptMessage = document.getElementById('customPromptMessage');
+            const customPromptInput = document.getElementById('customPromptInput');
+            const customPromptConfirmBtn = document.getElementById('customPromptConfirmBtn');
+            const customPromptCancelBtn = document.getElementById('customPromptCancelBtn');
+
+            const customConfirmModal = document.getElementById('customConfirmModal');
+            const customConfirmTitle = document.getElementById('customConfirmTitle');
+            const customConfirmMessage = document.getElementById('customConfirmMessage');
+            const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
+            const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
+
+
             const darkModeToggle = document.getElementById('darkModeToggle');
             const languageSelect = document.getElementById('languageSelect');
+            const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
+
 
             const weatherLoadingElement = document.getElementById('weatherLoading');
             const weatherErrorMessageElement = document.getElementById('weatherErrorMessage');
@@ -1117,17 +1402,22 @@
             let currentRouteId = null;
             let currentRouteName = null;
             let countdownInterval = null;
-            let currentLang = localStorage.getItem("lang") || "zh";
+            let currentLang = "zh";
+            let defaultStartPage = 'home';
             let routeDataLang = null;
 
-            let activePage = 'dynamic';
+            let activePage = 'homePage'; // Default to home
             let selectedCategoryPrefix = '';
 
-            let favoriteStations = [];
+            // MODIFIED: Favorite data structure
+            let favoriteData = { groups: [], favorites: [] };
+            let activeGroupId = 'all'; // 'all' or a specific group ID
+
             let longPressTimer;
             let currentStationContext = null;
             let favoriteButtonHideTimeout;
             let draggedItem = null;
+            let draggedGroupTab = null;
 
             let isAnimatingDirection = false;
             let lastPage = null;
@@ -1135,6 +1425,10 @@
             let weatherDataLoaded = false;
             let announcementsDataLoaded = false;
             let mrtIframeLoaded = false;
+
+            // Resolve/Reject functions for custom modals
+            let resolveCustomPrompt;
+            let resolveCustomConfirm;
 
 
             // Translations object
@@ -1169,11 +1463,31 @@
                     favoritesTitle: '常用站牌',
                     favoritesSubtitle: '點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。',
                     noFavoritesYet: '還沒有常用站牌喔！',
+                    noFavoritesInGroup: '這個分組還沒有常用站牌喔！',
                     addFavoritesHint: '在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。',
+                    addedToGroup: '已加入到',
+                    selectGroupTitle: '選擇分組',
+                    manageGroupsTitle: '管理分組',
+                    addNewGroup: '新增分組',
+                    enterNewGroupName: '請輸入新分組的名稱：',
+                    enterRename: '請輸入新的名稱：',
+                    deleteGroupConfirm: '確定要刪除這個分組嗎？分組下的所有站牌將會被一併移除。',
+                    groupNameExists: '分組名稱已存在！',
+                    groupDeleted: '分組已刪除',
+                    groupRenamed: '分組已重新命名',
+                    groupAdded: '分組已新增',
+                    manage: '管理',
+                    all: '全部',
+                    go: '出門',
+                    home: '回家',
+                    cancel: '取消',
+                    confirm: '確認',
                     settingsTitle: '設定',
                     settingsSubtitle: '調整應用程式設定。',
                     appearance: '外觀',
                     darkMode: '深色模式',
+                    defaultStartPageTitle: '預設起始頁面',
+                    defaultStartPageSubtitle: '選擇啟動時的頁面',
                     languageSettings: '語言設定',
                     selectLanguage: '選擇語言',
                     githubSource: 'GitHub 原始碼',
@@ -1254,11 +1568,31 @@
                     favoritesTitle: 'Favorite Stops',
                     favoritesSubtitle: 'Tap to view details, long-press or right-click to remove, drag to reorder.',
                     noFavoritesYet: 'No favorite stops yet!',
+                    noFavoritesInGroup: 'No favorite stops in this group yet!',
                     addFavoritesHint: 'On the dynamic route page, long-press or right-click a stop to add it to favorites.',
+                    addedToGroup: 'Added to',
+                    selectGroupTitle: 'Select Group',
+                    manageGroupsTitle: 'Manage Groups',
+                    addNewGroup: 'Add New Group',
+                    enterNewGroupName: 'Please enter the new group name:',
+                    enterRename: 'Please enter the new name:',
+                    deleteGroupConfirm: 'Are you sure you want to delete this group? All stops within it will also be removed.',
+                    groupNameExists: 'Group name already exists!',
+                    groupDeleted: 'Group deleted',
+                    groupRenamed: 'Group renamed',
+                    groupAdded: 'Group added',
+                    manage: 'Manage',
+                    all: 'All',
+                    go: 'Going Out',
+                    home: 'Going Home',
+                    cancel: 'Cancel',
+                    confirm: 'Confirm',
                     settingsTitle: 'Settings',
                     settingsSubtitle: 'Adjust application settings.',
                     appearance: 'Appearance',
                     darkMode: 'Dark Mode',
+                    defaultStartPageTitle: 'Default Start Page',
+                    defaultStartPageSubtitle: 'Select the page to show on launch',
                     languageSettings: 'Language Settings',
                     selectLanguage: 'Select Language',
                     githubSource: 'GitHub Source Code',
@@ -1470,7 +1804,12 @@
                 document.querySelectorAll('[data-i18n]').forEach(element => {
                     const key = element.dataset.i18n;
                     if (translations[currentLang] && translations[currentLang][key]) {
-                        element.textContent = translations[currentLang][key];
+                        // For <option> tags, we set the text content.
+                        if (element.tagName === 'OPTION') {
+                            element.textContent = translations[currentLang][key];
+                        } else {
+                            element.textContent = translations[currentLang][key];
+                        }
                     }
                 });
 
@@ -1509,8 +1848,6 @@
                 await setLanguage(e.target.value);
             });
 
-            languageSelect.value = currentLang;
-
             // --- UTILITY FUNCTIONS ---
             async function fetchAPI(query, variables) {
                 try {
@@ -1527,50 +1864,198 @@
                 }
             }
 
+            function showToast(message) {
+                 // REMOVED: This function is disabled per user request.
+            }
+
+            /**
+             * MODIFIED: Shows a custom prompt modal that integrates with browser history.
+             * @param {string} title - The modal title.
+             * @param {string} message - The modal message.
+             * @param {string} [defaultValue=''] - The default value for the input.
+             * @returns {Promise<string|null>} A promise that resolves with the input string or null if canceled.
+             */
+            function customPrompt(title, message, defaultValue = '') {
+                // Use a unique hash to represent this modal state
+                const modalHash = `#prompt/${Date.now()}`;
+                history.pushState({ modal: 'prompt' }, '', modalHash);
+
+                customPromptTitle.textContent = title;
+                customPromptMessage.textContent = message;
+                customPromptInput.value = defaultValue;
+                customPromptModal.classList.add('show');
+                customPromptInput.focus();
+
+                return new Promise(resolve => {
+                    resolveCustomPrompt = resolve;
+
+                    const cleanup = (result) => {
+                        // Check if this modal's specific hash is still active before going back
+                        if (window.location.hash === modalHash) {
+                            history.back();
+                        }
+                        customPromptModal.classList.remove('show');
+                        resolve(result);
+                        removeEventListeners();
+                        resolveCustomPrompt = null;
+                    };
+
+                    const handleConfirm = () => cleanup(customPromptInput.value);
+                    const handleCancel = () => cleanup(null);
+
+                    const handleKeyDown = (e) => {
+                        if (e.key === 'Enter') handleConfirm();
+                        else if (e.key === 'Escape') handleCancel();
+                    };
+
+                    const removeEventListeners = () => {
+                        customPromptConfirmBtn.removeEventListener('click', handleConfirm);
+                        customPromptCancelBtn.removeEventListener('click', handleCancel);
+                        customPromptInput.removeEventListener('keydown', handleKeyDown);
+                    };
+
+                    customPromptConfirmBtn.addEventListener('click', handleConfirm);
+                    customPromptCancelBtn.addEventListener('click', handleCancel);
+                    customPromptInput.addEventListener('keydown', handleKeyDown);
+                });
+            }
+
+            /**
+             * MODIFIED: Shows a custom confirm modal that integrates with browser history.
+             * @param {string} title - The modal title.
+             * @param {string} message - The modal message.
+             * @returns {Promise<boolean>} A promise that resolves with true (confirm) or false (cancel).
+             */
+            function customConfirm(title, message) {
+                // Use a unique hash to represent this modal state, allowing for nesting
+                const modalHash = `${window.location.hash}/confirm/${Date.now()}`;
+                history.pushState({ modal: 'confirm' }, '', modalHash);
+
+                customConfirmTitle.textContent = title;
+                customConfirmMessage.textContent = message;
+                customConfirmModal.classList.add('show');
+
+                return new Promise(resolve => {
+                    resolveCustomConfirm = resolve;
+
+                    const cleanup = (result) => {
+                        // Only go back if the history state is the one this modal created
+                        if (window.location.hash === modalHash) {
+                            history.back();
+                        }
+                        customConfirmModal.classList.remove('show');
+                        resolve(result);
+                        removeEventListeners();
+                        resolveCustomConfirm = null;
+                    };
+
+                    const handleConfirm = () => cleanup(true);
+                    const handleCancel = () => cleanup(false);
+                    
+                    const removeEventListeners = () => {
+                        customConfirmConfirmBtn.removeEventListener('click', handleConfirm);
+                        customConfirmCancelBtn.removeEventListener('click', handleCancel);
+                    };
+
+                    customConfirmConfirmBtn.addEventListener('click', handleConfirm);
+                    customConfirmCancelBtn.addEventListener('click', handleCancel);
+                });
+            }
+
+
+            // --- NEW: Favorite Data Management ---
             function loadFavorites() {
                 try {
-                    const favorites = localStorage.getItem('favoriteStations');
-                    favoriteStations = favorites ? JSON.parse(favorites) : [];
+                    let data = localStorage.getItem('favoriteData');
+                    const oldData = localStorage.getItem('favoriteStations');
+
+                    if (data) {
+                        favoriteData = JSON.parse(data);
+                        // Filter out any default groups if they somehow remained (from previous versions)
+                        favoriteData.groups = favoriteData.groups.filter(g => !g.isDefault);
+
+                    } else if (oldData) {
+                        // --- Data Migration Logic ---
+                        console.log("Migrating old favorite stations to new group structure. No default groups will be created.");
+                        const oldFavorites = JSON.parse(oldData);
+                        favoriteData = {
+                            groups: [], // Start with no groups
+                            favorites: oldFavorites.map(fav => ({ ...fav, groupId: 'uncategorized' })) // Assign old favorites to an 'uncategorized' group
+                        };
+                        // Create an 'uncategorized' group if there are favorites being migrated
+                        if (favoriteData.favorites.length > 0) {
+                            favoriteData.groups.push({ id: 'uncategorized', name: translations[currentLang].all, isDefault: false }); // Using 'all' translation for a generic group
+                        }
+                        localStorage.removeItem('favoriteStations'); // Remove old data
+                        saveFavorites();
+                    } else {
+                        // First time user, initialize with empty groups and favorites
+                        favoriteData = {
+                            groups: [],
+                            favorites: []
+                        };
+                    }
+                    // Ensure activeGroupId is valid or reset to 'all'
+                    if (activeGroupId !== 'all' && !favoriteData.groups.some(g => g.id === activeGroupId)) {
+                        activeGroupId = 'all';
+                    }
+                    saveFavorites(); // Persist the cleaned/migrated data
                 } catch (e) {
-                    console.error("Error loading favorites from localStorage:", e);
-                    favoriteStations = [];
+                    console.error("Error loading/migrating favorites from localStorage:", e);
+                    // Fallback to a clean state if loading/parsing fails
+                    favoriteData = {
+                        groups: [],
+                        favorites: []
+                    };
                 }
             }
 
             function saveFavorites() {
                 try {
-                    localStorage.setItem('favoriteStations', JSON.stringify(favoriteStations));
+                    localStorage.setItem('favoriteData', JSON.stringify(favoriteData));
                 } catch (e) {
                     console.error("Error saving favorites to localStorage:", e);
                 }
             }
 
             function isFavorite(routeId, stationId, direction) {
-                return favoriteStations.some(fav => fav.routeId === Number(routeId) && fav.stationId === String(stationId) && fav.direction === Number(direction));
+                return favoriteData.favorites.some(fav =>
+                    fav.routeId === Number(routeId) &&
+                    fav.stationId === String(stationId) &&
+                    fav.direction === Number(direction)
+                );
             }
 
-            function toggleFavorite(stationData) {
-                const routeId = Number(stationData.routeId);
-                const stationId = String(stationData.stationId);
-                const direction = Number(stationData.direction);
-                const { routeName, stationName, destination } = stationData;
+            function addFavorite(stationData, groupId) {
+                const { routeId, stationId, direction } = stationData;
+                if (!isFavorite(routeId, stationId, direction)) {
+                    favoriteData.favorites.push({ ...stationData, groupId });
+                    saveFavorites();
+                    if (busTrackerPage.classList.contains('active')) {
+                        loadBusData(currentRouteId, false);
+                    }
+                }
+            }
 
-                const index = favoriteStations.findIndex(fav => fav.routeId === routeId && fav.stationId === stationId && fav.direction === direction);
+            function removeFavorite(stationData) {
+                const { routeId, stationId, direction } = stationData;
+                const index = favoriteData.favorites.findIndex(fav =>
+                    fav.routeId === Number(routeId) &&
+                    fav.stationId === String(stationId) &&
+                    fav.direction === Number(direction)
+                );
 
                 if (index > -1) {
-                    favoriteStations.splice(index, 1);
-                } else {
-                    favoriteStations.push({ routeId, routeName, stationId, stationName, direction, destination });
-                }
-                
-                announcementsDataLoaded = false;
-                saveFavorites();
-
-                if (busTrackerPage.classList.contains('active') && currentRouteId) {
-                    loadBusData(currentRouteId, false);
+                    favoriteData.favorites.splice(index, 1);
+                    saveFavorites();
+                    if (activePage === 'favoriteStationsPage') {
+                        displayFavoriteStations();
+                    } else if (busTrackerPage.classList.contains('active')) {
+                         loadBusData(currentRouteId, false);
+                    }
                 }
             }
-            
+
             function positionAndShowActionButton(clientX, clientY) {
                 favoriteActionButton.classList.remove('hidden');
                 favoriteActionButton.classList.add('show');
@@ -1584,23 +2069,19 @@
                 favoriteActionButton.style.top = `${top}px`;
                 favoriteButtonHideTimeout = setTimeout(() => { hideFavoriteButton(); }, 4000);
             }
-            
-            // MODIFIED: Unified "Add/Remove" button logic
+
             function showFavoriteButton(stationData, clientX, clientY) {
                 clearTimeout(favoriteButtonHideTimeout);
-                currentStationContext = { ...stationData, action: 'toggle' };
+                currentStationContext = stationData;
                 const isCurrentlyFavorite = isFavorite(stationData.routeId, stationData.stationId, stationData.direction);
-                favoriteActionIcon.textContent = 'favorite_border'; 
-                favoriteActionText.textContent = isCurrentlyFavorite ? translations[currentLang].removeFavorite : translations[currentLang].addFavorite;
-                positionAndShowActionButton(clientX, clientY);
-            }
-            
-            // MODIFIED: Unified "Remove" button logic for Favorites page
-            function showRemoveFavoriteButton(stationData, clientX, clientY) {
-                clearTimeout(favoriteButtonHideTimeout);
-                currentStationContext = { ...stationData, action: 'remove' };
-                favoriteActionIcon.textContent = 'favorite_border';
-                favoriteActionText.textContent = translations[currentLang].removeFavorite;
+
+                if (isCurrentlyFavorite) {
+                    favoriteActionIcon.textContent = 'favorite';
+                    favoriteActionText.textContent = translations[currentLang].removeFavorite;
+                } else {
+                    favoriteActionIcon.textContent = 'favorite_border';
+                    favoriteActionText.textContent = translations[currentLang].addFavorite;
+                }
                 positionAndShowActionButton(clientX, clientY);
             }
 
@@ -1614,22 +2095,35 @@
 
             favoriteActionButton.addEventListener('click', () => {
                 if (currentStationContext) {
-                    toggleFavorite(currentStationContext);
-                    hideFavoriteButton();
-
-                    if (currentStationContext.action === 'remove' && activePage === 'favoriteStationsPage') {
-                        displayFavoriteStations();
+                    const isCurrentlyFavorite = isFavorite(currentStationContext.routeId, currentStationContext.stationId, currentStationContext.direction);
+                    if (isCurrentlyFavorite) {
+                        removeFavorite(currentStationContext);
+                    } else {
+                        showSelectGroupModal(currentStationContext);
                     }
+                    hideFavoriteButton();
                 }
             });
 
             // --- PAGE MANAGEMENT & HISTORY LOGIC ---
             function showPage(pageId, pushState = true) {
-                if (activePage === pageId) return;
-
+                if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
+                    return; // Avoid redundant page loads
+                }
+            
+                // MODIFIED: Handle history for the home page to clear forward history.
+                if (pageId === 'homePage') {
+                    const state = { page: pageId };
+                    const url = window.location.pathname + '?page=home';
+                    // Replace the current history state. This clears any forward history.
+                    history.replaceState(state, '', url);
+                    // Disable the generic pushState logic for this case.
+                    pushState = false;
+                }
+            
                 lastPage = activePage;
                 activePage = pageId;
-
+            
                 const pages = document.querySelectorAll('.page');
                 pages.forEach(page => page.classList.remove('active'));
                 const newPage = document.getElementById(pageId);
@@ -1640,13 +2134,28 @@
                     document.getElementById('homePage').classList.add('active');
                     activePage = 'homePage';
                 }
-
+            
                 if (pushState) {
                     const state = { page: pageId };
-                    const url = `?page=${pageId.replace('Page', '')}`;
-                    history.pushState(state, '', url);
+                    let pageName = pageId.replace('Page', '');
+                    if (pageId === 'routeSelectionPage') pageName = 'dynamic';
+                    if (pageId === 'busTrackerPage') pageName = 'tracker';
+            
+                    let url = `?page=${pageName}`;
+                    if(pageId === 'busTrackerPage' && currentRouteId) {
+                        state.routeId = currentRouteId;
+                        url += `&route=${currentRouteId}`;
+                    }
+            
+                    const newUrl = window.location.pathname + url;
+                    const currentUrl = window.location.pathname + window.location.search;
+            
+                    if (newUrl !== currentUrl) {
+                        history.pushState(state, '', url);
+                    }
                 }
-
+            
+                // --- The rest of the function remains the same ---
                 if (pageId === 'routeSelectionPage') {
                     filterKeyboardContainer.style.display = 'block';
                     updateCountdownButton.style.display = 'none';
@@ -1666,11 +2175,11 @@
                         container.style.paddingBottom = '90px';
                     }
                 }
-
+            
                 document.querySelectorAll('#mainNav button').forEach(button => {
                     button.classList.remove('active-nav');
                 });
-
+            
                 let navButtonId = pageId.replace('Page', '');
                 if (pageId === 'routeSelectionPage' || pageId === 'busTrackerPage') {
                     navButtonId = 'dynamic';
@@ -1679,8 +2188,7 @@
                 if (navButton) {
                     navButton.classList.add('active-nav');
                 }
-
-                // Page-specific lazy-loading and data fetching
+            
                 if (pageId === 'favoriteStationsPage') {
                     displayFavoriteStations();
                 } else if (pageId === 'homePage') {
@@ -1692,42 +2200,41 @@
                         fetchAnnouncements();
                     }
                 } else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
-                    // Lazy load MRT iframe content
                     mrtIframeLoaded = true;
                     updateMrtIframeSrc();
                 }
             }
 
 
-            window.addEventListener('popstate', (event) => {
-                const fromPage = activePage;
-                const spokePages = ['routeSelectionPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
-
-                if (spokePages.includes(fromPage)) {
-                    showPage('homePage', true);
-                    return;
-                }
+            window.addEventListener('popstate', async (event) => {
+                handleHashChange(true);
 
                 if (event.state && event.state.page) {
                     const pageId = event.state.page;
+                    const routeId = event.state.routeId;
 
-                    if (pageId === 'busTrackerPage') {
-                        const routeId = event.state.routeId;
-                        if (routeId) {
-                            const route = allRoutes.find(r => r.id.toString() === routeId.toString());
-                            if (route) {
-                                navigateToTracker(route.id, route.name, route.description, false);
-                            } else {
-                                showPage('routeSelectionPage', false);
-                            }
+                    // When popstate leads to a page, we don't want to push a new state.
+                    const pushState = false;
+
+                    if (pageId === 'busTrackerPage' && routeId) {
+                         if (allRoutes.length === 0) {
+                            await initRouteSelection();
+                        }
+                        const route = allRoutes.find(r => r.id.toString() === routeId.toString());
+                        if (route) {
+                            navigateToTracker(route.id, route.name, route.description, pushState);
                         } else {
-                             showPage('routeSelectionPage', false);
+                            showPage('routeSelectionPage', pushState);
                         }
                     } else {
-                        showPage(pageId, false);
+                        showPage(pageId, pushState);
                     }
                 } else {
-                    showPage('homePage', false);
+                    // Fallback for cases where state is null
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const pageFromUrl = urlParams.get('page');
+                    const initialPageId = mapPageNameToId(pageFromUrl) || 'homePage';
+                    showPage(initialPageId, false);
                 }
             });
 
@@ -1743,6 +2250,10 @@
             }
 
             async function initRouteSelection() {
+                // Prevent re-fetching if data for the current language is already loaded
+                if (allRoutes.length > 0 && routeDataLang === currentLang) {
+                    return;
+                }
                 try {
                     initialLoading.style.display = 'block';
                     routeListContainer.innerHTML = '';
@@ -2050,14 +2561,13 @@
                 }, {passive: false});
 
                 stationCard.addEventListener('touchmove', (e) => {
-                    if (!longPressTimer || !touchStartPos) return;
-                    const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.x);
-                    const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.y);
-                    if (deltaX > 10 || deltaY > 10) {
+                    if (!longPressTimer || !e.touches[0]) return; // Check if touch exists
+                    const deltaX = Math.abs(e.touches[0].clientX - e.changedTouches[0].clientX);
+                    const deltaY = Math.abs(e.touches[0].clientY - e.changedTouches[0].clientY);
+                    if (deltaX > 10 || deltaY > 10) { // If significant movement, cancel long press
                         clearTimeout(longPressTimer);
                     }
                 });
-
                 stationCard.addEventListener('touchend', () => clearTimeout(longPressTimer));
                 stationCard.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
 
@@ -2099,7 +2609,7 @@
                     stationListGo.classList.add('hidden');
                     stationListBack.classList.add('hidden');
                 }
-                errorMessageDiv.style.display = 'none';
+                errorMessageDiv.style.display = 'none'; // Always hide error at the start of loading
                 updateCountdownButton.disabled = true;
 
                 try {
@@ -2146,30 +2656,15 @@
                 currentDirection = direction;
 
                 showPage('busTrackerPage', pushState);
-
-                if (pushState) {
-                     const state = { page: 'busTrackerPage', routeId: routeId };
-                     const url = `?page=tracker&route=${routeId}`;
-                     history.pushState(state, '', url);
-                }
-
+                
                 routeTitle.textContent = routeName;
                 routeDescription.textContent = routeDesc;
 
                 loadBusData(currentRouteId, true, scrollToStationId);
                 countdownTimer.reset();
             }
-
-            function navigateToSelection() {
-                showPage('routeSelectionPage');
-                currentRouteData = null;
-                currentRouteId = null;
-                currentRouteName = null;
-                resetSearch();
-                hideFavoriteButton();
-            }
-
-            // --- PAGE 3: FAVORITE STATIONS (OPTIMIZED) ---
+            
+            // --- PAGE 3: FAVORITE STATIONS (OPTIMIZED WITH GROUPS) ---
             function createTimePillHtml(estimate) {
                 let timeDisplay = translations[currentLang].lastBusDeparted;
                 let pillBgColorClass = 'bg-slate-200';
@@ -2204,22 +2699,150 @@
                             <p>${timeDisplay}</p>
                         </div>`;
             }
+            
+            // --- DRAG AND DROP FOR GROUP TABS ---
+            function handleGroupTabDragStart(e) {
+                draggedGroupTab = this;
+                setTimeout(() => { this.style.opacity = '0.5'; }, 0);
+            }
+
+            function handleGroupTabDragEnd() {
+                if(this) { this.style.opacity = '1'; }
+                draggedGroupTab = null;
+            }
+
+            function handleGroupTabDragOver(e) {
+                e.preventDefault();
+                const container = e.currentTarget;
+                const afterElement = getDragAfterGroupTab(container, e.clientX);
+                if (!draggedGroupTab) return;
+                
+                if (afterElement == null) {
+                    container.appendChild(draggedGroupTab);
+                } else {
+                    container.insertBefore(draggedGroupTab, afterElement);
+                }
+            }
+            
+            function getDragAfterGroupTab(container, x) {
+                const draggableElements = [...container.querySelectorAll('.group-tab[draggable="true"]')];
+                return draggableElements.reduce((closest, child) => {
+                    if (child === draggedGroupTab) return closest;
+                    const box = child.getBoundingClientRect();
+                    const offset = x - box.left - box.width / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+
+            function renderGroupTabs() {
+                favoriteGroupTabsContainer.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                const allTab = document.createElement('div');
+                allTab.className = `group-tab ${activeGroupId === 'all' ? 'active' : ''}`;
+                allTab.textContent = translations[currentLang].all;
+                allTab.dataset.groupId = 'all';
+                allTab.addEventListener('click', () => {
+                    activeGroupId = 'all';
+                    displayFavoriteStations();
+                });
+                fragment.appendChild(allTab);
+
+                const sortableTabsContainer = document.createElement('div');
+                sortableTabsContainer.className = 'flex'; 
+                sortableTabsContainer.addEventListener('dragover', handleGroupTabDragOver);
+                
+                favoriteData.groups.forEach(group => {
+                    const groupTab = document.createElement('div');
+                    groupTab.className = `group-tab ${activeGroupId === group.id ? 'active' : ''}`;
+                    groupTab.textContent = group.name;
+                    groupTab.dataset.groupId = group.id;
+                    groupTab.draggable = true; // 所有自定義分組都可以拖動
+
+                    groupTab.addEventListener('click', () => {
+                        if (draggedGroupTab) return;
+                        activeGroupId = group.id;
+                        displayFavoriteStations();
+                    });
+
+                    groupTab.addEventListener('dragstart', handleGroupTabDragStart);
+                    groupTab.addEventListener('dragend', handleGroupTabDragEnd);
+                    sortableTabsContainer.appendChild(groupTab);
+                });
+
+                fragment.appendChild(sortableTabsContainer);
+
+                sortableTabsContainer.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (!draggedGroupTab) return;
+
+                    const newOrderedIds = [...sortableTabsContainer.querySelectorAll('.group-tab[draggable="true"]')].map(tab => tab.dataset.groupId);
+                    // 根據新的順序重新排序 favoriteData.groups
+                    const orderedGroups = [];
+                    newOrderedIds.forEach(id => {
+                        const group = favoriteData.groups.find(g => g.id === id);
+                        if (group) orderedGroups.push(group);
+                    });
+                    favoriteData.groups = orderedGroups;
+
+                    saveFavorites();
+                    displayFavoriteStations();
+                });
+
+                const manageTab = document.createElement('div');
+                manageTab.className = 'group-tab manage-btn';
+                manageTab.innerHTML = `<span class="material-icons-outlined text-lg align-middle">tune</span>`;
+                manageTab.addEventListener('click', () => {
+                    window.location.hash = 'manage-groups';
+                });
+                fragment.appendChild(manageTab);
+
+                favoriteGroupTabsContainer.appendChild(fragment);
+            }
 
             async function displayFavoriteStations() {
                 loadFavorites();
+                renderGroupTabs();
                 favoriteListContainer.innerHTML = '';
 
-                if (favoriteStations.length === 0) {
+                let stationsToDisplay;
+                if (activeGroupId === 'all') {
+                    stationsToDisplay = [...favoriteData.favorites];
+                } else {
+                    stationsToDisplay = favoriteData.favorites.filter(fav => fav.groupId === activeGroupId);
+                }
+
+                // 更新顯示「還沒有常用站牌」或「這個分組還沒有常用站牌」的訊息
+                const noFavoritesYetElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesYet"]');
+                const noFavoritesInGroupElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesInGroup"]');
+
+                if (favoriteData.favorites.length === 0) {
+                    noFavoritesYetElement.classList.remove('hidden');
+                    if (noFavoritesInGroupElement) noFavoritesInGroupElement.classList.add('hidden');
                     noFavoritesMessage.classList.remove('hidden');
                     return;
                 }
 
+                if (stationsToDisplay.length === 0 && activeGroupId !== 'all') {
+                     noFavoritesYetElement.classList.add('hidden');
+                     if (noFavoritesInGroupElement) noFavoritesInGroupElement.classList.remove('hidden');
+                     noFavoritesMessage.classList.remove('hidden');
+                     return;
+                }
+
                 noFavoritesMessage.classList.add('hidden');
 
-                favoriteStations.forEach((fav, index) => {
+                stationsToDisplay.forEach((fav) => {
                     const favCard = document.createElement('div');
                     favCard.className = 'favorite-card-item bg-white rounded-lg shadow-md';
-                    favCard.dataset.index = index;
+                    favCard.dataset.routeId = fav.routeId;
+                    favCard.dataset.stationId = fav.stationId;
+                    favCard.dataset.direction = fav.direction;
 
                     const directionText = fav.destination ? `${translations[currentLang].goDirection} ${fav.destination}` : `${translations[currentLang].direction} ${fav.direction}`;
 
@@ -2246,8 +2869,7 @@
 
                 addFavoriteCardEventListeners();
 
-                // OPTIMIZATION: Fetch unique routes only
-                const uniqueRouteIds = [...new Set(favoriteStations.map(f => f.routeId))];
+                const uniqueRouteIds = [...new Set(stationsToDisplay.map(f => f.routeId))];
                 if (uniqueRouteIds.length === 0) return;
 
                 const promises = uniqueRouteIds.map(routeId =>
@@ -2281,7 +2903,11 @@
 
             function addFavoriteCardEventListeners() {
                 favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
-                    const favData = favoriteStations[parseInt(card.dataset.index)];
+                    const { routeId, stationId, direction } = card.dataset;
+                     const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
+
+                    if (!favData) return;
+
                     const content = card.querySelector('.favorite-card-content');
                     const tapArea = card.querySelector('.card-tap-area');
                     const dragHandle = card.querySelector('.drag-handle');
@@ -2296,19 +2922,26 @@
 
                     card.addEventListener('contextmenu', (e) => {
                         e.preventDefault();
-                        showRemoveFavoriteButton(favData, e.clientX, e.clientY);
+                        showFavoriteButton(favData, e.clientX, e.clientY);
                     });
 
                     card.addEventListener('touchstart', (e) => {
                         if (dragHandle.contains(e.target)) return;
                         favLongPressTimer = setTimeout(() => {
                             e.preventDefault();
-                            showRemoveFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
+                            showFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
                             favLongPressTimer = null;
                         }, 700);
                     }, { passive: false });
 
-                    card.addEventListener('touchmove', () => clearTimeout(favLongPressTimer));
+                    card.addEventListener('touchmove', (e) => {
+                        if (!favLongPressTimer || !e.touches[0]) return; // Check if touch exists
+                        const deltaX = Math.abs(e.touches[0].clientX - e.changedTouches[0].clientX);
+                        const deltaY = Math.abs(e.touches[0].clientY - e.changedTouches[0].clientY);
+                        if (deltaX > 10 || deltaY > 10) { // If significant movement, cancel long press
+                            clearTimeout(favLongPressTimer);
+                        }
+                    });
                     card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
                     card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
 
@@ -2338,12 +2971,15 @@
             }
 
             function handleDragEnd() {
-                this.classList.remove('dragging');
+                if(this) {
+                    this.classList.remove('dragging');
+                }
                 draggedItem = null;
             }
 
             function handleDragOver(e) {
                 e.preventDefault();
+                if (!draggedItem) return;
                 const afterElement = getDragAfterElement(favoriteListContainer, e.clientY);
                 if (afterElement == null) {
                     favoriteListContainer.appendChild(draggedItem);
@@ -2368,12 +3004,18 @@
 
             function handleDrop(e) {
                 e.preventDefault();
-                const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
-                const newFavoritesArray = newOrderedElements.map(elem => favoriteStations[parseInt(elem.dataset.index)]);
+                if (!draggedItem) return;
 
-                favoriteStations = newFavoritesArray;
+                const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
+                const newFavoritesInGroup = newOrderedElements.map(elem => {
+                    const { routeId, stationId, direction } = elem.dataset;
+                    return favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
+                }).filter(Boolean); // Filter out undefined if any card is not found
+
+                const otherFavorites = favoriteData.favorites.filter(f => f.groupId !== activeGroupId);
+                favoriteData.favorites = [...newFavoritesInGroup, ...otherFavorites];
+
                 saveFavorites();
-                displayFavoriteStations();
             }
 
             // --- PAGE 5: HOME (WEATHER) ---
@@ -2495,8 +3137,8 @@
 
             // --- 訊息公告邏輯 ---
             async function fetchAnnouncements() {
-                loadFavorites();
-                if (favoriteStations.length === 0) {
+                loadFavorites(); // 重新載入，確保分組數據是最新的
+                if (favoriteData.favorites.length === 0) {
                     announcementLoading.classList.add('hidden');
                     noAnnouncementsMessage.classList.remove('hidden');
                     announcementContent.innerHTML = '';
@@ -2510,7 +3152,7 @@
                 announcementContent.innerHTML = '';
 
 
-                const uniqueRouteIds = [...new Set(favoriteStations.map(fav => fav.routeId))];
+                const uniqueRouteIds = [...new Set(favoriteData.favorites.map(fav => fav.routeId))];
                 let allMessages = [];
 
                 try {
@@ -2522,7 +3164,7 @@
                     results.forEach((result, index) => {
                         if (result.status === 'fulfilled' && result.value.data) {
                             const routeId = uniqueRouteIds[index];
-                            const favRoute = favoriteStations.find(fav => fav.routeId === routeId);
+                            const favRoute = favoriteData.favorites.find(fav => fav.routeId === routeId);
                             const routeName = favRoute ? favRoute.routeName : `Route ${routeId}`;
 
 
@@ -2645,10 +3287,178 @@
                 }
             }
 
+            // --- MODAL & HASH ROUTING LOGIC ---
+            function handleHashChange(isPopState = false) {
+                const hash = window.location.hash;
+
+                // Close modals if hash doesn't match their identifiers
+                if (!hash.includes('manage-groups')) {
+                    manageGroupsModal.classList.remove('show');
+                }
+                if (!hash.includes('/confirm/')) {
+                    if (customConfirmModal.classList.contains('show')) {
+                        customConfirmModal.classList.remove('show');
+                        if (resolveCustomConfirm) resolveCustomConfirm(false); // Resolve as cancel
+                    }
+                }
+                if (!hash.includes('/prompt/')) {
+                     if (customPromptModal.classList.contains('show')) {
+                        customPromptModal.classList.remove('show');
+                        if (resolveCustomPrompt) resolveCustomPrompt(null); // Resolve as cancel
+                    }
+                }
+                
+                // Open modals based on hash
+                if (hash === '#manage-groups') {
+                    renderManageGroupList();
+                    manageGroupsModal.classList.add('show');
+                }
+            }
+            
+            function closeManageGroupsModalAndRefresh() {
+                // Use history.back() to navigate away from the hash, triggering popstate
+                if(window.location.hash === '#manage-groups'){
+                    history.back();
+                } else {
+                    manageGroupsModal.classList.remove('show');
+                }
+                displayFavoriteStations();
+            }
+
+            function showSelectGroupModal(stationData) {
+                currentStationContext = stationData;
+                selectGroupModalBody.innerHTML = '';
+                // Ensure there's at least one group to select from, if not, prompt to create
+                if (favoriteData.groups.length === 0) {
+                    customPrompt(
+                        translations[currentLang].addNewGroup,
+                        translations[currentLang].enterNewGroupName
+                    ).then(name => {
+                        if (name) {
+                            addNewGroupAction(name); // Call the actual add group logic
+                            showSelectGroupModal(stationData); // Re-open select group modal after adding
+                        } else {
+                            // User cancelled adding a group, just close the select group modal
+                            selectGroupModal.classList.remove('show');
+                        }
+                    });
+                    return;
+                }
+
+                favoriteData.groups.forEach(group => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full text-left py-3 px-4 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600';
+                    btn.textContent = group.name;
+                    btn.addEventListener('click', () => {
+                        addFavorite(stationData, group.id);
+                        selectGroupModal.classList.remove('show');
+                    });
+                    selectGroupModalBody.appendChild(btn);
+                });
+                selectGroupModal.classList.add('show');
+            }
+
+            closeSelectGroupModal.addEventListener('click', () => selectGroupModal.classList.remove('show'));
+
+            function renderManageGroupList() {
+                 manageGroupsModalBody.innerHTML = '';
+                 // Filter out the 'all' pseudo-group from the management list
+                 favoriteData.groups.filter(g => g.id !== 'all').forEach(group => {
+                     const groupItem = document.createElement('div');
+                     groupItem.className = 'flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-700 rounded-lg';
+                     groupItem.innerHTML = `<span class="font-medium">${group.name}</span>`;
+
+                     const controls = document.createElement('div');
+                     controls.className = 'flex items-center space-x-2';
+                     
+                     const renameBtn = document.createElement('button');
+                     renameBtn.className = 'p-1 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600';
+                     renameBtn.innerHTML = `<span class="material-icons-outlined text-lg">edit</span>`;
+                     renameBtn.addEventListener('click', () => renameGroup(group.id, group.name));
+                     controls.appendChild(renameBtn);
+                     
+                     // All groups except the 'all' pseudo-group are now deletable
+                     const deleteBtn = document.createElement('button');
+                     deleteBtn.className = 'p-1 rounded-full hover:bg-slate-300 dark:hover:bg-slate-600';
+                     deleteBtn.innerHTML = `<span class="material-icons-outlined text-lg text-red-500">delete_outline</span>`;
+                     deleteBtn.addEventListener('click', () => deleteGroup(group.id));
+                     controls.appendChild(deleteBtn);
+                     
+                     groupItem.appendChild(controls);
+                     
+                     manageGroupsModalBody.appendChild(groupItem);
+                 });
+            }
+
+            async function addNewGroup() {
+                const name = await customPrompt(
+                    translations[currentLang].addNewGroup,
+                    translations[currentLang].enterNewGroupName
+                );
+                if (name && name.trim()) {
+                    addNewGroupAction(name.trim());
+                }
+            }
+
+            function addNewGroupAction(name) {
+                if (favoriteData.groups.some(g => g.id !== 'all' && g.name.toLowerCase() === name.toLowerCase())) {
+                    return;
+                }
+                const newGroup = {
+                    id: Date.now().toString(),
+                    name: name,
+                    isDefault: false
+                };
+                favoriteData.groups.push(newGroup);
+                saveFavorites();
+                renderManageGroupList();
+            }
+
+            async function renameGroup(groupId, currentName) {
+                const newName = await customPrompt(
+                    translations[currentLang].enterRename,
+                    '',
+                    currentName
+                );
+                if (newName && newName.trim() && newName.trim() !== currentName) {
+                    if (favoriteData.groups.some(g => g.id !== 'all' && g.name.toLowerCase() === newName.trim().toLowerCase() && g.id !== groupId)) {
+                        return;
+                    }
+                    const group = favoriteData.groups.find(g => g.id === groupId);
+                    if (group) {
+                        group.name = newName.trim();
+                        saveFavorites();
+                        renderManageGroupList();
+                    }
+                }
+            }
+
+            async function deleteGroup(groupId) {
+                if (groupId === 'all') {
+                    return;
+                }
+
+                const confirmed = await customConfirm(
+                    translations[currentLang].deleteGroupConfirm,
+                    ''
+                );
+
+                if (confirmed) {
+                    favoriteData.groups = favoriteData.groups.filter(g => g.id !== groupId);
+                    favoriteData.favorites = favoriteData.favorites.filter(f => f.groupId !== groupId);
+
+                    if (activeGroupId === groupId) {
+                        activeGroupId = 'all'; 
+                    }
+                    saveFavorites();
+                    renderManageGroupList();
+                }
+            }
+            
+            closeManageGroupsModal.addEventListener('click', closeManageGroupsModalAndRefresh);
+            addNewGroupBtn.addEventListener('click', addNewGroup);
+
             // --- Event Listeners ---
-            backButton.addEventListener('click', () => history.back());
-
-
             goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
             backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
 
@@ -2693,13 +3503,23 @@
                 const page = button.dataset.page;
 
                 if (page === 'dynamic') {
+                    initRouteSelection();
                     resetSearch();
                     showPage('routeSelectionPage');
                 }
-                else if (page === 'favorites') showPage('favoriteStationsPage');
+                else if (page === 'favorites') {
+                    activeGroupId = 'all'; 
+                    showPage('favoriteStationsPage');
+                }
                 else if (page === 'mrt') showPage('mrtPage');
                 else if (page === 'home') showPage('homePage');
                 else if (page === 'settings') showPage('settingsPage');
+            });
+
+            defaultStartPageSelect.addEventListener('change', () => {
+                const newDefault = defaultStartPageSelect.value;
+                localStorage.setItem('defaultStartPage', newDefault);
+                defaultStartPage = newDefault;
             });
 
 
@@ -2710,48 +3530,56 @@
             });
 
             // --- Initial Load Logic ---
-            loadFavorites();
             applyInitialTheme();
             currentLang = localStorage.getItem("lang") || "zh";
             languageSelect.value = currentLang;
-            applyTranslations();
-
-            await initRouteSelection();
-
+            loadFavorites(); 
+            applyTranslations(); 
+            
+            defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
+            defaultStartPageSelect.value = defaultStartPage;
+            
             adjustContentPadding();
             window.addEventListener('resize', adjustContentPadding);
+            
+            window.addEventListener('hashchange', () => handleHashChange(false));
 
+            const mapPageNameToId = (name) => {
+                switch (name) {
+                    case 'home': return 'homePage';
+                    case 'dynamic': return 'routeSelectionPage';
+                    case 'tracker': return 'busTrackerPage';
+                    case 'favorites': return 'favoriteStationsPage';
+                    case 'mrt': return 'mrtPage';
+                    case 'settings': return 'settingsPage';
+                    default: return null;
+                }
+            };
+            
             const urlParams = new URLSearchParams(window.location.search);
-            let pageFromUrl = urlParams.get('page');
+            const pageFromUrl = urlParams.get('page');
             const routeIdFromUrl = urlParams.get('route');
 
-            let initialPage = 'homePage';
+            let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
-            if(pageFromUrl) {
-                switch(pageFromUrl) {
-                    case 'dynamic': initialPage = 'routeSelectionPage'; break;
-                    case 'tracker':
-                        if (routeIdFromUrl) {
-                            const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
-                            if (route) {
-                                setTimeout(() => navigateToTracker(route.id, route.name, route.description, false), 0);
-                                initialPage = 'busTrackerPage';
-                            } else {
-                                initialPage = 'routeSelectionPage';
-                            }
-                        } else {
-                            initialPage = 'routeSelectionPage';
-                        }
-                        break;
-                    case 'favorites': initialPage = 'favoriteStationsPage'; break;
-                    case 'mrt': initialPage = 'mrtPage'; break;
-                    case 'settings': initialPage = 'settingsPage'; break;
-                    case 'home': initialPage = 'homePage'; break;
-                }
+            if (initialPageId === 'routeSelectionPage' || initialPageId === 'busTrackerPage') {
+                await initRouteSelection();
             }
+            
+            if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
+                if (route) {
+                    navigateToTracker(route.id, route.name, route.description, false);
+                } else {
+                    showPage('routeSelectionPage', false);
+                }
+            } else {
+                showPage(initialPageId, false);
+            }
+            
+            // This is handled by the new logic in showPage now, so no explicit replaceState is needed here.
+            handleHashChange(false);
 
-            showPage(initialPage, false);
-            history.replaceState({ page: initialPage }, '', window.location.href);
 
             countdownInterval = setInterval(() => {
                 if (busTrackerPage.classList.contains('active') && navigator.onLine) {
