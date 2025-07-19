@@ -6,7 +6,10 @@
     <meta name="google-site-verification" content="ahdkishmook7wgZXJ6JVA43nNO5SSccNOlvmB575Od4" />
     <title>高雄市公車動態查詢器</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght%40400;500;700&display=swap" rel="stylesheet">
+    <!-- Optimized Font Loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         body {
@@ -881,7 +884,8 @@
     <div id="mrtPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
             <div class="flex-grow relative -mx-4 -mb-4 md:-mx-6 md:-mb-6">
-                <iframe src="https://krtc.pages.dev/" id="mrtIframe" style="width: 100%; height: 100%; border: none;"></iframe>
+                <!-- Iframe src is set to about:blank initially for lazy loading -->
+                <iframe src="about:blank" id="mrtIframe" style="width: 100%; height: 100%; border: none;"></iframe>
             </div>
         </div>
     </div>
@@ -1054,6 +1058,8 @@
             const mrtPage = document.getElementById('mrtPage');
             const homePage = document.getElementById('homePage');
             const settingsPage = document.getElementById('settingsPage');
+            const mrtIframe = document.getElementById('mrtIframe');
+
 
             const routeSearchInput = document.getElementById('routeSearchInput');
             const categoryDisplay = document.getElementById('categoryDisplay');
@@ -1128,6 +1134,8 @@
 
             let weatherDataLoaded = false;
             let announcementsDataLoaded = false;
+            let mrtIframeLoaded = false;
+
 
             // Translations object
             const translations = {
@@ -1390,13 +1398,13 @@
 
             // --- DARK MODE LOGIC ---
             function updateMrtIframeSrc() {
-                const mrtIframe = document.getElementById('mrtIframe');
                 const isDarkMode = body.classList.contains('dark-mode');
                 const darkSrc = 'https://krtc.pages.dev/?mode=dark';
                 const lightSrc = 'https://krtc.pages.dev/';
-
                 const newSrc = isDarkMode ? darkSrc : lightSrc;
-                if (mrtIframe.src !== newSrc) {
+
+                // Only update src if it has been loaded before to avoid premature loading
+                if (mrtIframeLoaded) {
                     mrtIframe.src = newSrc;
                 }
             }
@@ -1672,6 +1680,7 @@
                     navButton.classList.add('active-nav');
                 }
 
+                // Page-specific lazy-loading and data fetching
                 if (pageId === 'favoriteStationsPage') {
                     displayFavoriteStations();
                 } else if (pageId === 'homePage') {
@@ -1682,8 +1691,13 @@
                     if (!announcementsDataLoaded) {
                         fetchAnnouncements();
                     }
+                } else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
+                    // Lazy load MRT iframe content
+                    mrtIframeLoaded = true;
+                    updateMrtIframeSrc();
                 }
             }
+
 
             window.addEventListener('popstate', (event) => {
                 const fromPage = activePage;
@@ -2155,7 +2169,7 @@
                 hideFavoriteButton();
             }
 
-            // --- PAGE 3: FAVORITE STATIONS ---
+            // --- PAGE 3: FAVORITE STATIONS (OPTIMIZED) ---
             function createTimePillHtml(estimate) {
                 let timeDisplay = translations[currentLang].lastBusDeparted;
                 let pillBgColorClass = 'bg-slate-200';
@@ -2232,18 +2246,20 @@
 
                 addFavoriteCardEventListeners();
 
-                const routesToFetch = [...new Set(favoriteStations.map(f => f.routeId))];
-                if (routesToFetch.length === 0) return;
+                // OPTIMIZATION: Fetch unique routes only
+                const uniqueRouteIds = [...new Set(favoriteStations.map(f => f.routeId))];
+                if (uniqueRouteIds.length === 0) return;
 
-                const promises = routesToFetch.map(routeId =>
+                const promises = uniqueRouteIds.map(routeId =>
                     fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
                 );
 
                 const results = await Promise.allSettled(promises);
                 const routeDataMap = new Map();
+
                 results.forEach((result, index) => {
                     if (result.status === 'fulfilled' && result.value.data.route) {
-                        const routeId = routesToFetch[index];
+                        const routeId = uniqueRouteIds[index];
                         routeDataMap.set(routeId, result.value.data.route);
                     }
                 });
@@ -2262,7 +2278,7 @@
                     div.innerHTML = timeHtml;
                 });
             }
-            
+
             function addFavoriteCardEventListeners() {
                 favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                     const favData = favoriteStations[parseInt(card.dataset.index)];
