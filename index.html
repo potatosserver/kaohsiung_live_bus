@@ -1878,7 +1878,8 @@
             function customPrompt(title, message, defaultValue = '') {
                 // Use a unique hash to represent this modal state
                 const modalHash = `#prompt/${Date.now()}`;
-                history.pushState({ modal: 'prompt' }, '', modalHash);
+                // MODIFICATION: Include current page in state
+                history.pushState({ modal: 'prompt', page: activePage }, '', modalHash);
 
                 customPromptTitle.textContent = title;
                 customPromptMessage.textContent = message;
@@ -1929,7 +1930,8 @@
             function customConfirm(title, message) {
                 // Use a unique hash to represent this modal state, allowing for nesting
                 const modalHash = `${window.location.hash}/confirm/${Date.now()}`;
-                history.pushState({ modal: 'confirm' }, '', modalHash);
+                // MODIFICATION: Include current page in state
+                history.pushState({ modal: 'confirm', page: activePage }, '', modalHash);
 
                 customConfirmTitle.textContent = title;
                 customConfirmMessage.textContent = message;
@@ -2110,20 +2112,16 @@
                 if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                     return; // Avoid redundant page loads
                 }
-            
-                // MODIFIED: Handle history for the home page to clear forward history.
+                
+                // MODIFICATION: Always use replaceState for the home page to make it a history root.
                 if (pageId === 'homePage') {
-                    const state = { page: pageId };
-                    const url = window.location.pathname + '?page=home';
-                    // Replace the current history state. This clears any forward history.
-                    history.replaceState(state, '', url);
-                    // Disable the generic pushState logic for this case.
-                    pushState = false;
+                    history.replaceState({ page: 'homePage' }, '', '?page=home');
+                    pushState = false; // Ensure a pushState doesn't happen later.
                 }
-            
+
                 lastPage = activePage;
                 activePage = pageId;
-            
+
                 const pages = document.querySelectorAll('.page');
                 pages.forEach(page => page.classList.remove('active'));
                 const newPage = document.getElementById(pageId);
@@ -2134,28 +2132,22 @@
                     document.getElementById('homePage').classList.add('active');
                     activePage = 'homePage';
                 }
-            
+
                 if (pushState) {
                     const state = { page: pageId };
                     let pageName = pageId.replace('Page', '');
                     if (pageId === 'routeSelectionPage') pageName = 'dynamic';
                     if (pageId === 'busTrackerPage') pageName = 'tracker';
-            
+
                     let url = `?page=${pageName}`;
                     if(pageId === 'busTrackerPage' && currentRouteId) {
                         state.routeId = currentRouteId;
                         url += `&route=${currentRouteId}`;
                     }
-            
-                    const newUrl = window.location.pathname + url;
-                    const currentUrl = window.location.pathname + window.location.search;
-            
-                    if (newUrl !== currentUrl) {
-                        history.pushState(state, '', url);
-                    }
+
+                    history.pushState(state, '', url);
                 }
-            
-                // --- The rest of the function remains the same ---
+
                 if (pageId === 'routeSelectionPage') {
                     filterKeyboardContainer.style.display = 'block';
                     updateCountdownButton.style.display = 'none';
@@ -2175,11 +2167,11 @@
                         container.style.paddingBottom = '90px';
                     }
                 }
-            
+
                 document.querySelectorAll('#mainNav button').forEach(button => {
                     button.classList.remove('active-nav');
                 });
-            
+
                 let navButtonId = pageId.replace('Page', '');
                 if (pageId === 'routeSelectionPage' || pageId === 'busTrackerPage') {
                     navButtonId = 'dynamic';
@@ -2188,7 +2180,7 @@
                 if (navButton) {
                     navButton.classList.add('active-nav');
                 }
-            
+
                 if (pageId === 'favoriteStationsPage') {
                     displayFavoriteStations();
                 } else if (pageId === 'homePage') {
@@ -2204,41 +2196,38 @@
                     updateMrtIframeSrc();
                 }
             }
-
-
+            
+            // MODIFICATION: New popstate handler to enforce back-to-home logic
             window.addEventListener('popstate', async (event) => {
-                handleHashChange(true);
+                handleHashChange(true); // Always handle modal closing first
 
-                if (event.state && event.state.page) {
-                    const pageId = event.state.page;
-                    const routeId = event.state.routeId;
+                const fromPage = activePage;
+                const toState = event.state;
+                const toPage = toState ? toState.page : null;
+                const mainPagesIds = ['routeSelectionPage', 'busTrackerPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
 
-                    // When popstate leads to a page, we don't want to push a new state.
-                    const pushState = false;
+                // This condition checks if the back button was pressed to close a modal.
+                // If the destination page (`toPage`) is the same as the page we're on (`fromPage`),
+                // it means a state with a hash was popped, but the page itself shouldn't change.
+                if (toPage && toPage === fromPage) {
+                    return; // Do nothing, let the modal be closed by handleHashChange.
+                }
 
-                    if (pageId === 'busTrackerPage' && routeId) {
-                         if (allRoutes.length === 0) {
-                            await initRouteSelection();
-                        }
-                        const route = allRoutes.find(r => r.id.toString() === routeId.toString());
-                        if (route) {
-                            navigateToTracker(route.id, route.name, route.description, pushState);
-                        } else {
-                            showPage('routeSelectionPage', pushState);
-                        }
-                    } else {
-                        showPage(pageId, pushState);
-                    }
+                // This is the core logic for Requirement 1.
+                // If we are currently on any main functional page, any "back" navigation
+                // that would lead to a different page is intercepted and redirected to the home page.
+                if (mainPagesIds.includes(fromPage)) {
+                    showPage('homePage', false); // `false` because we are responding to a pop, not a new navigation.
+                    return;
+                }
+
+                // Default behavior for any other cases (e.g., if non-main pages were ever added).
+                if (toPage) {
+                    showPage(toPage, false);
                 } else {
-                    // Fallback for cases where state is null
-                    // BUG FIX: If there's a hash, we assume it's a modal action and should not navigate.
-                    if (window.location.hash) {
-                        return;
-                    }
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const pageFromUrl = urlParams.get('page');
-                    const initialPageId = mapPageNameToId(pageFromUrl) || 'homePage';
-                    showPage(initialPageId, false);
+                    // If there's no state, we've gone back to the very beginning of the history stack.
+                    // The safe and correct destination is the home page.
+                    showPage('homePage', false);
                 }
             });
 
@@ -2802,7 +2791,10 @@
                 manageTab.className = 'group-tab manage-btn';
                 manageTab.innerHTML = `<span class="material-icons-outlined text-lg align-middle">tune</span>`;
                 manageTab.addEventListener('click', () => {
-                    window.location.hash = 'manage-groups';
+                    // MODIFICATION: Open modal directly and manage history
+                    history.pushState({ modal: 'manage-groups', page: activePage }, '', '#manage-groups');
+                    renderManageGroupList();
+                    manageGroupsModal.classList.add('show');
                 });
                 fragment.appendChild(manageTab);
 
@@ -2850,8 +2842,9 @@
 
                     const directionText = fav.destination ? `${translations[currentLang].goDirection} ${fav.destination}` : `${translations[currentLang].direction} ${fav.direction}`;
 
+                    // FIX: Removed draggable="true" from favorite-card-content
                     favCard.innerHTML = `
-                        <div class="favorite-card-content" draggable="true">
+                        <div class="favorite-card-content">
                             <div class="drag-handle">
                                 <span class="material-icons-outlined">drag_indicator</span>
                             </div>
@@ -2939,28 +2932,33 @@
                     }, { passive: false });
 
                     card.addEventListener('touchmove', (e) => {
-                        if (!favLongPressTimer || !e.touches[0]) return; // Check if touch exists
-                        const deltaX = Math.abs(e.touches[0].clientX - e.changedTouches[0].clientX);
+                        if (!favLongPressTimer || !e.touches[0]) return;
                         const deltaY = Math.abs(e.touches[0].clientY - e.changedTouches[0].clientY);
-                        if (deltaX > 10 || deltaY > 10) { // If significant movement, cancel long press
+                        if (deltaY > 10) { // If significant vertical movement, cancel long press
                             clearTimeout(favLongPressTimer);
                         }
                     });
                     card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
                     card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
 
-                    content.addEventListener('dragstart', (e) => {
-                        if (dragHandle.contains(e.target)) {
-                            isDragging = true;
-                            handleDragStart.call(card, e);
-                        } else {
-                            e.preventDefault();
-                        }
-                    });
+                    // --- FIX: Attach drag events ONLY to the drag handle ---
+                    dragHandle.draggable = true;
 
-                    content.addEventListener('dragend', () => {
+                    dragHandle.addEventListener('dragstart', (e) => {
+                        isDragging = true;
+                        handleDragStart.call(card, e);
+                        // Use the whole card item as the drag image for better UX
+                        try {
+                            e.dataTransfer.setDragImage(card, 20, 20); 
+                        } catch (err) {
+                            // IE does not support setDragImage
+                        }
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    
+                    dragHandle.addEventListener('dragend', () => {
                         handleDragEnd.call(card);
-                        setTimeout(() => isDragging = false, 100);
+                        setTimeout(() => { isDragging = false; }, 50);
                     });
                 });
 
@@ -2971,6 +2969,7 @@
 
             function handleDragStart(e) {
                 draggedItem = this;
+                // Use a timeout to allow the browser to render the drag image before applying opacity
                 setTimeout(() => this.classList.add('dragging'), 0);
             }
 
@@ -3014,12 +3013,18 @@
                 const newFavoritesInGroup = newOrderedElements.map(elem => {
                     const { routeId, stationId, direction } = elem.dataset;
                     return favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
-                }).filter(Boolean); // Filter out undefined if any card is not found
+                }).filter(Boolean);
 
-                const otherFavorites = favoriteData.favorites.filter(f => f.groupId !== activeGroupId);
-                favoriteData.favorites = [...newFavoritesInGroup, ...otherFavorites];
+                if (activeGroupId === 'all') {
+                    favoriteData.favorites = newFavoritesInGroup;
+                } else {
+                    const otherFavorites = favoriteData.favorites.filter(f => f.groupId !== activeGroupId);
+                    favoriteData.favorites = [...newFavoritesInGroup, ...otherFavorites];
+                }
 
                 saveFavorites();
+                // FIX: Re-render the entire list from the updated data array to ensure UI consistency
+                displayFavoriteStations();
             }
 
             // --- PAGE 5: HOME (WEATHER) ---
@@ -3311,12 +3316,6 @@
                         if (resolveCustomPrompt) resolveCustomPrompt(null); // Resolve as cancel
                     }
                 }
-                
-                // Open modals based on hash
-                if (hash === '#manage-groups') {
-                    renderManageGroupList();
-                    manageGroupsModal.classList.add('show');
-                }
             }
             
             function closeManageGroupsModalAndRefresh() {
@@ -3507,12 +3506,9 @@
                 const page = button.dataset.page;
 
                 if (page === 'dynamic') {
-                    initRouteSelection();
-                    resetSearch();
                     showPage('routeSelectionPage');
                 }
                 else if (page === 'favorites') {
-                    activeGroupId = 'all'; 
                     showPage('favoriteStationsPage');
                 }
                 else if (page === 'mrt') showPage('mrtPage');
@@ -3563,7 +3559,9 @@
             const urlParams = new URLSearchParams(window.location.search);
             const pageFromUrl = urlParams.get('page');
             const routeIdFromUrl = urlParams.get('route');
-
+            
+            // Set the initial page based on URL or defaults.
+            // The `showPage` function will handle setting the correct history state.
             let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
             if (initialPageId === 'routeSelectionPage' || initialPageId === 'busTrackerPage') {
@@ -3573,15 +3571,14 @@
             if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
                 const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                 if (route) {
-                    navigateToTracker(route.id, route.name, route.description, false);
+                    navigateToTracker(route.id, route.name, route.description, true, null, 1);
                 } else {
-                    showPage('routeSelectionPage', false);
+                    showPage('routeSelectionPage', true);
                 }
             } else {
-                showPage(initialPageId, false);
+                showPage(initialPageId, initialPageId !== 'homePage');
             }
             
-            // This is handled by the new logic in showPage now, so no explicit replaceState is needed here.
             handleHashChange(false);
 
 
