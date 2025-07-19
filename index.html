@@ -976,7 +976,7 @@
              <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="noMatchingRoutes">找不到相符的路線。</p>
         </div>
 
-        <div id="filterKeyboardContainer" class="fixed bottom-[70px] left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
+        <div id="filterKeyboardContainer" class="fixed bottom-[1px] left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
             <div class="container mx-auto max-w-4xl">
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
                     <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md">紅</button>
@@ -2231,6 +2231,10 @@
                     }
                 } else {
                     // Fallback for cases where state is null
+                    // BUG FIX: If there's a hash, we assume it's a modal action and should not navigate.
+                    if (window.location.hash) {
+                        return;
+                    }
                     const urlParams = new URLSearchParams(window.location.search);
                     const pageFromUrl = urlParams.get('page');
                     const initialPageId = mapPageNameToId(pageFromUrl) || 'homePage';
