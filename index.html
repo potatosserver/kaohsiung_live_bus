@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -2270,7 +2271,7 @@
                 });
 
                 // --- PAGE MANAGEMENT & HISTORY LOGIC ---
-                function showPage(pageId, pushState = true) {
+                async function showPage(pageId, pushState = true) {
                     if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                         return; // Avoid redundant page loads
                     }
@@ -2311,6 +2312,7 @@
                     }
 
                     if (pageId === 'routeSelectionPage') {
+                        await initRouteSelection();
                         filterKeyboardContainer.style.display = 'block';
                         updateCountdownButton.style.display = 'none';
                         adjustContentPadding();
