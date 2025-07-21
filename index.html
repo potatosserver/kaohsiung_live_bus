@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -942,7 +941,7 @@
         body.dark-mode .dark\:border-slate-600 { border-color: #475569; }
         body.dark-mode .dark\:peer-focus\:ring-blue-800:focus { --tw-ring-color: rgba(30, 64, 175, 0.5); }
         /* Added styles for language select in dark mode */
-        body.dark-mode #languageSelect, body.dark-mode #defaultStartPageSelect {
+        body.dark-mode #languageSelect, body.dark-mode #defaultStartPageSelect, body.dark-mode #updateIntervalSelect {
             background-color: #334155; /* slate-700, adjusted for better contrast */
             color: #e2e8f0; /* slate-200 */
             border-color: #475569; /* slate-600 */
@@ -1228,7 +1227,6 @@
                     </div>
                 </div>
 
-                <!-- NEW: Default Start Page Setting -->
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="defaultStartPageTitle">預設起始頁面</h2>
@@ -1246,6 +1244,31 @@
                                 <option value="mrt" data-i18n="navMrt">捷運</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Update Interval Setting -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-4 border-b border-slate-200">
+                        <h2 class="text-lg font-semibold text-slate-700" data-i18n="updateIntervalTitle">自動更新頻率</h2>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">timer</span>
+                                <span class="text-slate-600" data-i18n="updateIntervalSubtitle">設定動態更新秒數</span>
+                            </div>
+                            <select id="updateIntervalSelect" class="bg-slate-100 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-slate-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                <option value="10">10 秒</option>
+                                <option value="20">20 秒</option>
+                                <option value="30">30 秒</option>
+                                <option value="40">40 秒</option>
+                                <option value="60">60 秒</option>
+                            </select>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-2" data-i18n="updateIntervalWarning">
+                            高於30秒可能導致資訊過慢，請自行斟酌。
+                        </p>
                     </div>
                 </div>
 
@@ -1288,7 +1311,7 @@
 
     <button id="updateCountdown" style="display:none;">
         <span class="material-icons-outlined">autorenew</span>
-        <span id="updateCountdownText" data-i18n="updateCountdown">30秒後更新</span>
+        <span id="updateCountdownText" data-i18n="updateCountdown">20秒後更新</span>
     </button>
 
     <button id="favoriteActionButton" class="hidden">
@@ -1540,6 +1563,7 @@
                 const darkModeToggle = document.getElementById('darkModeToggle');
                 const languageSelect = document.getElementById('languageSelect');
                 const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
+                const updateIntervalSelect = document.getElementById('updateIntervalSelect');
 
 
                 const weatherLoadingElement = document.getElementById('weatherLoading');
@@ -1567,6 +1591,7 @@
                 let countdownInterval = null;
                 let currentLang = "zh";
                 let defaultStartPage = 'home';
+                let updateInterval = 20; // Default update interval
                 let routeDataLang = null;
 
                 let activePage = 'homePage'; // Default to home
@@ -1651,6 +1676,9 @@
                         darkMode: '深色模式',
                         defaultStartPageTitle: '預設起始頁面',
                         defaultStartPageSubtitle: '選擇啟動時的頁面',
+                        updateIntervalTitle: '自動更新頻率',
+                        updateIntervalSubtitle: '設定動態更新秒數',
+                        updateIntervalWarning: '高於30秒可能導致資訊過慢，請自行斟酌。',
                         languageSettings: '語言設定',
                         selectLanguage: '選擇語言',
                         githubSource: 'GitHub 原始碼',
@@ -1756,6 +1784,9 @@
                         darkMode: 'Dark Mode',
                         defaultStartPageTitle: 'Default Start Page',
                         defaultStartPageSubtitle: 'Select the page to show on launch',
+                        updateIntervalTitle: 'Auto-Update Frequency',
+                        updateIntervalSubtitle: 'Set dynamic update interval',
+                        updateIntervalWarning: 'Intervals above 30s may result in outdated info. Use with caution.',
                         languageSettings: 'Language Settings',
                         selectLanguage: 'Select Language',
                         githubSource: 'GitHub Source Code',
@@ -2273,20 +2304,22 @@
                 // --- PAGE MANAGEMENT & HISTORY LOGIC ---
                 async function showPage(pageId, pushState = true) {
                     if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
-                        return; // Avoid redundant page loads
+                        // Special case: if we are asked to show routeSelectionPage again, re-run the init
+                        if (pageId === 'routeSelectionPage') {
+                            await initRouteSelection();
+                        }
+                        return; 
                     }
                     
-                    // MODIFICATION: Always use replaceState for the home page to make it a history root.
                     if (pageId === 'homePage') {
                         history.replaceState({ page: 'homePage' }, '', '?page=home');
-                        pushState = false; // Ensure a pushState doesn't happen later.
+                        pushState = false;
                     }
 
                     lastPage = activePage;
                     activePage = pageId;
 
-                    const pages = document.querySelectorAll('.page');
-                    pages.forEach(page => page.classList.remove('active'));
+                    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
                     const newPage = document.getElementById(pageId);
                     if (newPage) {
                         newPage.classList.add('active');
@@ -2345,53 +2378,39 @@
                         navButton.classList.add('active-nav');
                     }
 
-                    if (pageId === 'favoriteStationsPage') {
-                        displayFavoriteStations();
-                    } else if (pageId === 'homePage') {
-                        if (!weatherDataLoaded) {
-                            fetchWeather();
-                            weatherDataLoaded = true;
-                        }
-                        if (!announcementsDataLoaded) {
-                            fetchAnnouncements();
-                        }
-                    } else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
+                    // Page-specific data loading
+                    if (pageId === 'favoriteStationsPage') displayFavoriteStations();
+                    else if (pageId === 'homePage') {
+                        if (!weatherDataLoaded) fetchWeather();
+                        if (!announcementsDataLoaded) fetchAnnouncements();
+                    }
+                    else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
                         mrtIframeLoaded = true;
                         updateMrtIframeSrc();
                     }
                 }
                 
-                // MODIFICATION: New popstate handler to enforce back-to-home logic
                 window.addEventListener('popstate', async (event) => {
-                    handleHashChange(true); // Always handle modal closing first
+                    handleHashChange(true); 
 
                     const fromPage = activePage;
                     const toState = event.state;
                     const toPage = toState ? toState.page : null;
                     const mainPagesIds = ['routeSelectionPage', 'busTrackerPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
 
-                    // This condition checks if the back button was pressed to close a modal.
-                    // If the destination page (`toPage`) is the same as the page we're on (`fromPage`),
-                    // it means a state with a hash was popped, but the page itself shouldn't change.
                     if (toPage && toPage === fromPage) {
-                        return; // Do nothing, let the modal be closed by handleHashChange.
-                    }
-
-                    // This is the core logic for Requirement 1.
-                    // If we are currently on any main functional page, any "back" navigation
-                    // that would lead to a different page is intercepted and redirected to the home page.
-                    if (mainPagesIds.includes(fromPage)) {
-                        showPage('homePage', false); // `false` because we are responding to a pop, not a new navigation.
                         return;
                     }
 
-                    // Default behavior for any other cases (e.g., if non-main pages were ever added).
+                    if (mainPagesIds.includes(fromPage)) {
+                        await showPage('homePage', false);
+                        return;
+                    }
+
                     if (toPage) {
-                        showPage(toPage, false);
+                        await showPage(toPage, false);
                     } else {
-                        // If there's no state, we've gone back to the very beginning of the history stack.
-                        // The safe and correct destination is the home page.
-                        showPage('homePage', false);
+                        await showPage('homePage', false);
                     }
                 });
 
@@ -2407,7 +2426,6 @@
                 }
 
                 async function initRouteSelection() {
-                    // Prevent re-fetching if data for the current language is already loaded
                     if (allRoutes.length > 0 && routeDataLang === currentLang) {
                         return;
                     }
@@ -3424,7 +3442,7 @@
 
                 // --- Update Countdown Logic ---
                 let countdownTimer = {
-                    remaining: 30,
+                    remaining: updateInterval,
                     updateButton: document.getElementById('updateCountdown'),
                     updateDisplay: function() {
                         const text = `${this.remaining}${translations[currentLang].updateCountdown}`;
@@ -3434,7 +3452,7 @@
                         const icon = this.updateButton.querySelector('.material-icons-outlined');
                         icon.classList.add('spin-update');
                         setTimeout(() => icon.classList.remove('spin-update'), 500);
-                        this.remaining = 30;
+                        this.remaining = updateInterval;
                         this.updateDisplay();
                     },
                     update: async function() {
@@ -3688,6 +3706,15 @@
                     defaultStartPage = newDefault;
                 });
 
+                updateIntervalSelect.addEventListener('change', () => {
+                    const newInterval = parseInt(updateIntervalSelect.value, 10);
+                    updateInterval = newInterval;
+                    localStorage.setItem('updateInterval', newInterval);
+                    if (busTrackerPage.classList.contains('active')) {
+                        countdownTimer.reset();
+                    }
+                });
+
 
                 document.addEventListener('click', (e) => {
                     if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
@@ -3699,6 +3726,11 @@
                 applyInitialTheme();
                 currentLang = localStorage.getItem("lang") || "zh";
                 languageSelect.value = currentLang;
+
+                updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
+                updateIntervalSelect.value = updateInterval;
+                countdownTimer.remaining = updateInterval;
+
                 loadFavorites(); 
                 applyTranslations(); 
                 
@@ -3726,23 +3758,18 @@
                 const pageFromUrl = urlParams.get('page');
                 const routeIdFromUrl = urlParams.get('route');
                 
-                // Set the initial page based on URL or defaults.
-                // The `showPage` function will handle setting the correct history state.
                 let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
-                if (initialPageId === 'routeSelectionPage' || initialPageId === 'busTrackerPage') {
-                    await initRouteSelection();
-                }
-                
                 if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                    await initRouteSelection();
                     const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                     if (route) {
                         navigateToTracker(route.id, route.name, route.description, true, null, 1);
                     } else {
-                        showPage('routeSelectionPage', true);
+                        await showPage('routeSelectionPage', true);
                     }
                 } else {
-                    showPage(initialPageId, initialPageId !== 'homePage');
+                    await showPage(initialPageId, initialPageId !== 'homePage');
                 }
                 
                 handleHashChange(false);
