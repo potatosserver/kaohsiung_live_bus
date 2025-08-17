@@ -1,0 +1,22 @@
+{
+  "name": "YouBike Station Finder",
+  "version": "1.0.0",
+  "short_name": "高雄等公車",
+  "description": "一個簡單、美觀、低流量的高雄公車查詢器",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffaa00",
+  "icons": [
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
