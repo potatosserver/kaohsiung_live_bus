@@ -2003,6 +2003,7 @@
                 async function showPage(pageId, pushState = true) {
                     if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                         if (pageId === 'routeSelectionPage') {
+                            resetSearch();
                             await initRouteSelection();
                         }
                         return; 
@@ -2035,6 +2036,7 @@
                         history.pushState(state, '', url);
                     }
                     if (pageId === 'routeSelectionPage') {
+                        resetSearch();
                         await initRouteSelection();
                         filterKeyboardContainer.style.display = 'block';
                         updateCountdownButton.style.display = 'none';
@@ -2104,6 +2106,7 @@
                 }
                 async function initRouteSelection() {
                     if (allRoutes.length > 0 && routeDataLang === currentLang) {
+                        displayInitialPrompt();
                         return;
                     }
                     try {
@@ -2115,16 +2118,32 @@
                             .filter(route => route.id !== 0)
                             .sort((a, b) => a.seq - b.seq);
                         routeDataLang = currentLang;
-                        initialLoading.style.display = 'none';
-                        const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
-                        if (fullSearchTerm.trim()) {
-                            applySearch(fullSearchTerm);
-                        } else {
-                            displayInitialPrompt();
+                        try {
+                            localStorage.setItem('cachedRoutes', JSON.stringify(allRoutes));
+                            localStorage.setItem('cachedRoutesLang', currentLang);
+                        } catch (e) {
+                            console.error("Error saving routes to localStorage", e);
                         }
+                        initialLoading.style.display = 'none';
+                        displayInitialPrompt();
                     } catch (error) {
-                        routeDataLang = null;
-                        initialLoading.innerHTML = `<p class="text-red-500">${translations[currentLang].loadingRoutesError || '無法載入路線列表，請重新整理頁面。'}</p>`;
+                        console.error("Failed to fetch routes, trying to use cache.", error);
+                        try {
+                            const cachedRoutes = localStorage.getItem('cachedRoutes');
+                            const cachedRoutesLang = localStorage.getItem('cachedRoutesLang');
+                            if (cachedRoutes && cachedRoutesLang === currentLang) {
+                                console.log("Using cached routes as fallback.");
+                                allRoutes = JSON.parse(cachedRoutes);
+                                routeDataLang = currentLang;
+                                initialLoading.style.display = 'none';
+                                applySearch(selectedCategoryPrefix + routeSearchInput.value);
+                            } else {
+                                throw new Error("No cached data available.");
+                            }
+                        } catch (cacheError) {
+                            routeDataLang = null;
+                            initialLoading.innerHTML = `<p class="text-red-500">${translations[currentLang].loadingRoutesError || '無法載入路線列表，請重新整理頁面。'}</p>`;
+                        }
                     }
                 }
                 function displayInitialPrompt() {
@@ -2276,7 +2295,7 @@
                         isAnimatingDirection = false;
                     }, 300);
                 }
-                function createStationCard(estimate, stationName, displayedBusIds) {
+                function createStationCard(estimate, stationName, displayedBusIds, direction) {
                     let timeDisplay = translations[currentLang].lastBusDeparted;
                     let busIdDisplayHtml = '';
                     let pillBgColorClass = 'bg-slate-200';
@@ -2315,7 +2334,7 @@
                     stationCard.dataset.stationName = stationName;
                     stationCard.dataset.routeId = currentRouteId;
                     stationCard.dataset.routeName = currentRouteName;
-                    const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, currentDirection);
+                    const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, direction);
                     const iconHtml = isCurrentlyFavorite
                         ? '<span class="material-icons-outlined text-red-500">favorite</span>'
                         : '<div class="station-dot"></div>';
@@ -2339,8 +2358,8 @@
                             routeName: e.currentTarget.dataset.routeName,
                             stationId: e.currentTarget.dataset.stationId,
                             stationName: e.currentTarget.dataset.stationName,
-                            direction: currentDirection,
-                            destination: currentDirection === 1 ? currentRouteData.destination : currentRouteData.departure
+                            direction: direction,
+                            destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure
                         };
                         showFavoriteButton(stationData, e.clientX, e.clientY);
                     });
@@ -2356,8 +2375,8 @@
                                     routeName: e.currentTarget.dataset.routeName,
                                     stationId: e.currentTarget.dataset.stationId,
                                     stationName: e.currentTarget.dataset.stationName,
-                                    direction: currentDirection,
-                                    destination: currentDirection === 1 ? currentRouteData.destination : currentRouteData.departure
+                                    direction: direction,
+                                    destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure
                                 };
                                 showFavoriteButton(stationData, e.touches[0].clientX, e.touches[0].clientY);
                                 longPressTimer = null;
@@ -2388,7 +2407,7 @@
                     const displayedBusIds = new Set();
                     filteredEstimates.forEach(({ node: estimate }) => {
                         const stationName = stationMap.get(estimate.id) || `${translations[currentLang].unknownStation} (ID: ${estimate.id})`;
-                        const card = createStationCard(estimate, stationName, displayedBusIds);
+                        const card = createStationCard(estimate, stationName, displayedBusIds, direction);
                         fragment.appendChild(card);
                     });
                     targetElement.appendChild(fragment);
@@ -2463,7 +2482,7 @@
                                 pillBgColorClass = 'bg-red-200';
                             } else if (closestEta.etaTime <= 3) {
                                 timeDisplay = translations[currentLang].arrivingSoon;
-                                pillBgColorClass = 'bg-yellow-200';
+                                pillBgColorClass = 'bg-green-200';
                             } else {
                                 timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
                                 pillBgColorClass = 'bg-blue-200';
