@@ -420,6 +420,8 @@
             font-weight: 500;
             background-color: #e2e8f0;
             color: #475569;
+            min-width: 5rem;
+            text-align: center;
         }
         .group-tab[draggable="true"] {
             cursor: move;
@@ -742,6 +744,37 @@
             transform-origin: center center;
             will-change: transform;
         }
+
+        /* === REVISED CSS FOR MARQUEE EFFECT === */
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .direction-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .direction-button .static-text {
+            flex-shrink: 0;
+            padding-right: 0.25rem;
+        }
+        .direction-button .marquee-container {
+            flex-grow: 1;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .direction-button .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            will-change: transform;
+        }
+        .direction-button .marquee-text.is-overflowing {
+            animation: marquee-scroll 10s linear infinite;
+        }
+        /* === END OF MARQUEE CSS === */
+
         body.dark-mode {
             background-color: #0f172a; 
             color: #e2e8f0; 
@@ -975,8 +1008,19 @@
                     <span class="block sm:inline" id="errorMessageText"></span>
                 </div>
                 <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
-                    <button id="goDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="1" data-i18n="goDirection">去程</button>
-                    <button id="backDirectionButton" class="direction-button flex-1 p-1 font-semibold transition-colors" data-direction="2" data-i18n="backDirection">返程</button>
+                    <!-- === HTML MODIFICATION FOR MARQUEE === -->
+                    <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold transition-colors" data-direction="1">
+                        <span class="static-text" data-i18n="goDirection">去程</span>
+                        <span class="marquee-container">
+                            <span class="marquee-text"></span>
+                        </span>
+                    </button>
+                    <button id="backDirectionButton" class="direction-button flex-1 p-2 font-semibold transition-colors" data-direction="2">
+                        <span class="static-text" data-i18n="backDirection">返程</span>
+                        <span class="marquee-container">
+                            <span class="marquee-text"></span>
+                        </span>
+                    </button>
                 </div>
             </div>
             <div id="estimateTimesSection" class="flex-grow relative overflow-hidden" style="touch-action: pan-y;">
@@ -1075,7 +1119,7 @@
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="appearance">外觀</h2>
                     </div>
-                    <div class="p-4">
+                    <div class="p-4 space-y-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
                                 <span class="material-icons-outlined text-slate-500 mr-3">dark_mode</span>
@@ -1083,6 +1127,16 @@
                             </div>
                             <label for="darkModeToggle" class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="darkModeToggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">animation</span>
+                                <span class="text-slate-600" data-i18n="splashScreen">啟用啟動動畫</span>
+                            </div>
+                            <label for="splashScreenToggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="splashScreenToggle" class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
                             </label>
                         </div>
@@ -1244,68 +1298,79 @@
             if (localStorage.getItem('darkMode') === 'true') {
                 body.classList.add('dark-mode');
             }
-            function startIconPhysics() {
-                const container = document.getElementById('icons-container');
-                const iconNames = [
-                    'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
-                    'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
-                    'route', 'navigation', 'trip_origin'
-                ];
-                const numIcons = 200;
-                let icons = [];
-                const gravity = 0.2;
-                const initialUpwardVelocity = -13;
-                for (let i = 0; i < numIcons; i++) {
-                    const element = document.createElement('span');
-                    element.classList.add('material-icons', 'spray-icon');
-                    element.textContent = iconNames[Math.floor(Math.random() * iconNames.length)];
-                    const size = Math.random() * 22 + 18;
-                    element.style.fontSize = size + 'px';
-                    element.style.color = `hsl(${Math.random() * 360}, 70%, 65%)`;
-                    container.appendChild(element);
-                    icons.push({
-                        element: element,
-                        x: 0,
-                        y: 0,
-                        vx: (Math.random() - 0.5) * 18,
-                        vy: initialUpwardVelocity * (Math.random() * 0.5 + 0.8),
-                    });
-                }
-                function update() {
-                    const killMargin = 100;
-                    const killZone = {
-                        top: -window.innerHeight / 2 - killMargin,
-                        right: window.innerWidth / 2 + killMargin,
-                        bottom: window.innerHeight / 2 + killMargin,
-                        left: -window.innerWidth / 2 - killMargin
-                    };
-                    for (let i = icons.length - 1; i >= 0; i--) {
-                        let icon = icons[i];
-                        icon.vy += gravity;
-                        icon.x += icon.vx;
-                        icon.y += icon.vy;
-                        if (icon.x < killZone.left || icon.x > killZone.right || icon.y < killZone.top || icon.y > killZone.bottom) {
-                            icon.element.remove();
-                            icons.splice(i, 1);
-                        } else {
-                            icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px)`;
+            
+            const showSplashScreen = localStorage.getItem('splashScreenEnabled') !== 'false'; // Default to true
+
+            if (showSplashScreen) {
+                function startIconPhysics() {
+                    const container = document.getElementById('icons-container');
+                    const iconNames = [
+                        'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
+                        'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
+                        'route', 'navigation', 'trip_origin'
+                    ];
+                    const numIcons = 200;
+                    let icons = [];
+                    const gravity = 0.2;
+                    const initialUpwardVelocity = -13;
+                    for (let i = 0; i < numIcons; i++) {
+                        const element = document.createElement('span');
+                        element.classList.add('material-icons', 'spray-icon');
+                        element.textContent = iconNames[Math.floor(Math.random() * iconNames.length)];
+                        const size = Math.random() * 22 + 18;
+                        element.style.fontSize = size + 'px';
+                        element.style.color = `hsl(${Math.random() * 360}, 70%, 65%)`;
+                        container.appendChild(element);
+                        icons.push({
+                            element: element,
+                            x: 0,
+                            y: 0,
+                            vx: (Math.random() - 0.5) * 18,
+                            vy: initialUpwardVelocity * (Math.random() * 0.5 + 0.8),
+                        });
+                    }
+                    function update() {
+                        const killMargin = 100;
+                        const killZone = {
+                            top: -window.innerHeight / 2 - killMargin,
+                            right: window.innerWidth / 2 + killMargin,
+                            bottom: window.innerHeight / 2 + killMargin,
+                            left: -window.innerWidth / 2 - killMargin
+                        };
+                        for (let i = icons.length - 1; i >= 0; i--) {
+                            let icon = icons[i];
+                            icon.vy += gravity;
+                            icon.x += icon.vx;
+                            icon.y += icon.vy;
+                            if (icon.x < killZone.left || icon.x > killZone.right || icon.y < killZone.top || icon.y > killZone.bottom) {
+                                icon.element.remove();
+                                icons.splice(i, 1);
+                            } else {
+                                icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px)`;
+                            }
+                        }
+                        if (icons.length > 0) {
+                            requestAnimationFrame(update);
                         }
                     }
-                    if (icons.length > 0) {
-                        requestAnimationFrame(update);
-                    }
+                    update();
                 }
-                update();
+                setTimeout(startIconPhysics, 600);
+                setTimeout(() => {
+                    splashScreen.style.transition = 'opacity 0.5s ease-out';
+                    splashScreen.style.opacity = '0';
+                    splashScreen.addEventListener('transitionend', () => {
+                        splashScreen.remove(); 
+                    }, { once: true });
+                    initializeApp(); 
+                }, 2800); 
+            } else {
+                if(splashScreen) {
+                    splashScreen.remove();
+                }
+                initializeApp();
             }
-            setTimeout(startIconPhysics, 600);
-            setTimeout(() => {
-                splashScreen.style.transition = 'opacity 0.5s ease-out';
-                splashScreen.style.opacity = '0';
-                splashScreen.addEventListener('transitionend', () => {
-                    splashScreen.remove(); 
-                }, { once: true });
-                initializeApp(); 
-            }, 2800); 
+
             async function initializeApp() {
                 const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
                 const HEADERS = {
@@ -1366,6 +1431,7 @@
                 const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
                 const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
                 const darkModeToggle = document.getElementById('darkModeToggle');
+                const splashScreenToggle = document.getElementById('splashScreenToggle');
                 const languageSelect = document.getElementById('languageSelect');
                 const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
                 const updateIntervalSelect = document.getElementById('updateIntervalSelect');
@@ -1408,6 +1474,11 @@
                 let mrtIframeLoaded = false;
                 let resolveCustomPrompt;
                 let resolveCustomConfirm;
+                
+                const favoritePage = document.getElementById('favoriteStationsPage');
+                let favTouchStartX = 0;
+                let favTouchEndX = 0;
+                
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -1462,6 +1533,7 @@
                         settingsSubtitle: '調整應用程式設定。',
                         appearance: '外觀',
                         darkMode: '深色模式',
+                        splashScreen: '啟用啟動動畫',
                         defaultStartPageTitle: '預設起始頁面',
                         defaultStartPageSubtitle: '選擇啟動時的頁面',
                         updateIntervalTitle: '自動更新頻率',
@@ -1533,8 +1605,8 @@
                         otherRoutes: 'Other',
                         reset: 'Reset',
                         errorTitle: 'Error!',
-                        goDirection: 'To Destination',
-                        backDirection: 'To Origin',
+                        goDirection: 'To',
+                        backDirection: 'To',
                         loadingBusData: 'Loading bus data...',
                         noBusDataForDirection: 'No bus information available for this direction.',
                         lastBusDeparted: 'Last bus departed',
@@ -1570,6 +1642,7 @@
                         settingsSubtitle: 'Adjust application settings.',
                         appearance: 'Appearance',
                         darkMode: 'Dark Mode',
+                        splashScreen: 'Enable Startup Animation',
                         defaultStartPageTitle: 'Default Start Page',
                         defaultStartPageSubtitle: 'Select the page to show on launch',
                         updateIntervalTitle: 'Auto-Update Frequency',
@@ -1704,6 +1777,48 @@
                         }
                     }`
                 };
+                
+                function checkMarqueeOverflow(container, textElement, originalText) {
+                    if (!container || !textElement) return;
+
+                    // 1. Reset styles for measurement
+                    container.style.flexGrow = '1';
+                    textElement.classList.remove('is-overflowing');
+                    textElement.style.animation = 'none';
+                    textElement.textContent = originalText; // Use original text for initial measurement
+
+                    // Use rAF to wait for the DOM to update with the new text
+                    requestAnimationFrame(() => {
+                        const containerWidth = container.clientWidth;
+                        const textWidth = textElement.scrollWidth;
+
+                        const isOverflowing = textWidth > containerWidth;
+
+                        if (isOverflowing) {
+                            // Text is too long, set up the marquee
+                            const gap = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+                            const unitText = `${gap}${originalText}`;
+                            const fullMarqueeText = `${unitText}${unitText}`; // Creates "[5 spaces]Name[5 spaces]Name"
+
+                            textElement.innerHTML = fullMarqueeText;
+                            
+                            // Wait another frame to measure the *new* full width
+                            requestAnimationFrame(() => {
+                                const scrollWidth = textElement.scrollWidth / 2; // Width of one unit
+                                const duration = scrollWidth / 40; // Speed: 40px/s
+
+                                textElement.style.animation = `marquee-scroll ${Math.max(8, duration)}s linear infinite`;
+                                textElement.classList.add('is-overflowing');
+                            });
+                        } else {
+                            // Text fits, just center it
+                            container.style.flexGrow = '0'; // Allow centering by not growing
+                            textElement.textContent = originalText; // Keep original text
+                            textElement.classList.remove('is-overflowing');
+                        }
+                    });
+                }
+                
                 function updateMrtIframeSrc() {
                     const isDarkMode = body.classList.contains('dark-mode');
                     const darkSrc = 'https://krtc.pages.dev/?mode=dark';
@@ -1732,6 +1847,9 @@
                         localStorage.setItem('darkMode', 'false');
                     }
                     updateMrtIframeSrc();
+                });
+                splashScreenToggle.addEventListener('change', () => {
+                    localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
                 });
                 async function setLanguage(lang) {
                     if (lang === currentLang) return;
@@ -1763,7 +1881,10 @@
                     document.querySelectorAll('[data-i18n]').forEach(element => {
                         const key = element.dataset.i18n;
                         if (translations[currentLang] && translations[currentLang][key]) {
-                            if (element.tagName === 'OPTION') {
+                            // Check if this is one of our static direction labels
+                            if (element.classList.contains('static-text')) {
+                                element.textContent = translations[currentLang][key] + " ";
+                            } else if (element.tagName === 'OPTION') {
                                 element.textContent = translations[currentLang][key];
                             } else {
                                 element.textContent = translations[currentLang][key];
@@ -2256,10 +2377,27 @@
                     const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                     applySearch(fullSearchTerm);
                 });
+                
                 function updateDirectionButtons() {
                     if (!currentRouteData) return;
-                    goDirectionButton.textContent = `${translations[currentLang].goDirection} ${currentRouteData.destination}`;
-                    backDirectionButton.textContent = `${translations[currentLang].backDirection} ${currentRouteData.departure}`;
+                    
+                    const goStaticText = goDirectionButton.querySelector('.static-text');
+                    const goMarqueeContainer = goDirectionButton.querySelector('.marquee-container');
+                    const goMarqueeText = goDirectionButton.querySelector('.marquee-text');
+
+                    const backStaticText = backDirectionButton.querySelector('.static-text');
+                    const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
+                    const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
+
+                    goStaticText.textContent = `${translations[currentLang].goDirection} `;
+                    backStaticText.textContent = `${translations[currentLang].backDirection} `;
+                    
+                    const goText = currentRouteData.destination;
+                    const backText = currentRouteData.departure;
+                    
+                    checkMarqueeOverflow(goMarqueeContainer, goMarqueeText, goText);
+                    checkMarqueeOverflow(backMarqueeContainer, backMarqueeText, backText);
+
                     if (currentDirection === 1) {
                         goDirectionButton.classList.add('bg-blue-500', 'text-white');
                         goDirectionButton.classList.remove('bg-white', 'text-blue-500');
@@ -2272,6 +2410,7 @@
                         goDirectionButton.classList.remove('bg-blue-500', 'text-white');
                     }
                 }
+
                 function handleDirectionToggle(newDirection) {
                     if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                         return;
@@ -3204,7 +3343,48 @@
                         hideFavoriteButton();
                     }
                 });
+
+                favoritePage.addEventListener('touchstart', e => {
+                    if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
+                    favTouchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                favoritePage.addEventListener('touchend', e => {
+                    if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
+                    favTouchEndX = e.changedTouches[0].screenX;
+                    handleFavoriteSwipe();
+                }, { passive: true });
+
+                function handleFavoriteSwipe() {
+                    const swipeThreshold = 50;
+                    const swipeDistance = favTouchEndX - favTouchStartX;
+
+                    if (Math.abs(swipeDistance) < swipeThreshold || favTouchEndX === 0) {
+                        return;
+                    }
+                    
+                    const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
+                    const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
+
+                    if (currentGroupIndex === -1) return;
+
+                    let nextGroupIndex;
+
+                    if (swipeDistance < 0) {
+                        nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
+                    } else {
+                        nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
+                    }
+
+                    activeGroupId = groupTabsIds[nextGroupIndex];
+                    displayFavoriteStations();
+                    favTouchStartX = 0;
+                    favTouchEndX = 0;
+                }
+
                 applyInitialTheme();
+                const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
+                splashScreenToggle.checked = splashScreenEnabled;
                 currentLang = localStorage.getItem("lang") || "zh";
                 languageSelect.value = currentLang;
                 updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
@@ -3215,7 +3395,14 @@
                 defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
                 defaultStartPageSelect.value = defaultStartPage;
                 adjustContentPadding();
-                window.addEventListener('resize', adjustContentPadding);
+                
+                window.addEventListener('resize', () => {
+                    adjustContentPadding();
+                    if (busTrackerPage.classList.contains('active')) {
+                        updateDirectionButtons();
+                    }
+                });
+                
                 window.addEventListener('hashchange', () => handleHashChange(false));
                 const mapPageNameToId = (name) => {
                     switch (name) {
