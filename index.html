@@ -754,8 +754,6 @@
             transform-origin: center center;
             will-change: transform;
         }
-
-        /* === REVISED CSS FOR MARQUEE EFFECT === */
         @keyframes marquee-scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -783,8 +781,6 @@
         .direction-button .marquee-text.is-overflowing {
             animation: marquee-scroll 10s linear infinite;
         }
-        /* === END OF MARQUEE CSS === */
-
         body.dark-mode {
             background-color: #0f172a; 
             color: #e2e8f0; 
@@ -1018,7 +1014,6 @@
                     <span class="block sm:inline" id="errorMessageText"></span>
                 </div>
                 <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
-                    <!-- === HTML MODIFICATION FOR MARQUEE === -->
                     <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold transition-colors" data-direction="1">
                         <span class="static-text" data-i18n="goDirection">去程</span>
                         <span class="marquee-container">
@@ -1049,7 +1044,6 @@
     </div>
     <div id="favoriteStationsPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
-            <!-- 固定的頭部內容 -->
             <div class="flex-shrink-0">
                 <header class="text-center mb-6">
                     <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h1>
@@ -1058,7 +1052,6 @@
                 <div id="favoriteGroupTabsContainer" class="mb-6 pb-2">
                 </div>
             </div>
-            <!-- 可滾動和可擴展的內容區域 -->
             <div class="flex-grow overflow-y-auto relative">
                 <div id="favoriteListContainer" class="space-y-3">
                 </div>
@@ -1314,9 +1307,7 @@
             if (localStorage.getItem('darkMode') === 'true') {
                 body.classList.add('dark-mode');
             }
-            
-            const showSplashScreen = localStorage.getItem('splashScreenEnabled') !== 'false'; // Default to true
-
+            const showSplashScreen = localStorage.getItem('splashScreenEnabled') !== 'false'; 
             if (showSplashScreen) {
                 function startIconPhysics() {
                     const container = document.getElementById('icons-container');
@@ -1386,7 +1377,6 @@
                 }
                 initializeApp();
             }
-
             async function initializeApp() {
                 const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
                 const HEADERS = {
@@ -1490,11 +1480,9 @@
                 let mrtIframeLoaded = false;
                 let resolveCustomPrompt;
                 let resolveCustomConfirm;
-                
                 const favoritePage = document.getElementById('favoriteStationsPage');
                 let favTouchStartX = 0, favTouchStartY = 0;
                 let favTouchEndX = 0, favTouchEndY = 0;
-                
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -1793,48 +1781,34 @@
                         }
                     }`
                 };
-                
                 function checkMarqueeOverflow(container, textElement, originalText) {
                     if (!container || !textElement) return;
-
-                    // 1. Reset styles for measurement
                     container.style.flexGrow = '1';
                     textElement.classList.remove('is-overflowing');
                     textElement.style.animation = 'none';
-                    textElement.textContent = originalText; // Use original text for initial measurement
-
-                    // Use rAF to wait for the DOM to update with the new text
+                    textElement.textContent = originalText; 
                     requestAnimationFrame(() => {
                         const containerWidth = container.clientWidth;
                         const textWidth = textElement.scrollWidth;
-
                         const isOverflowing = textWidth > containerWidth;
-
                         if (isOverflowing) {
-                            // Text is too long, set up the marquee
                             const gap = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                             const unitText = `${gap}${originalText}`;
-                            const fullMarqueeText = `${unitText}${unitText}`; // Creates "[5 spaces]Name[5 spaces]Name"
-
+                            const fullMarqueeText = `${unitText}${unitText}`; 
                             textElement.innerHTML = fullMarqueeText;
-                            
-                            // Wait another frame to measure the *new* full width
                             requestAnimationFrame(() => {
-                                const scrollWidth = textElement.scrollWidth / 2; // Width of one unit
-                                const duration = scrollWidth / 40; // Speed: 40px/s
-
+                                const scrollWidth = textElement.scrollWidth / 2; 
+                                const duration = scrollWidth / 40; 
                                 textElement.style.animation = `marquee-scroll ${Math.max(8, duration)}s linear infinite`;
                                 textElement.classList.add('is-overflowing');
                             });
                         } else {
-                            // Text fits, just center it
-                            container.style.flexGrow = '0'; // Allow centering by not growing
-                            textElement.textContent = originalText; // Keep original text
+                            container.style.flexGrow = '0'; 
+                            textElement.textContent = originalText; 
                             textElement.classList.remove('is-overflowing');
                         }
                     });
                 }
-                
                 function updateMrtIframeSrc() {
                     const isDarkMode = body.classList.contains('dark-mode');
                     const darkSrc = 'https://krtc.pages.dev/?mode=dark';
@@ -1897,7 +1871,6 @@
                     document.querySelectorAll('[data-i18n]').forEach(element => {
                         const key = element.dataset.i18n;
                         if (translations[currentLang] && translations[currentLang][key]) {
-                            // Check if this is one of our static direction labels
                             if (element.classList.contains('static-text')) {
                                 element.textContent = translations[currentLang][key] + " ";
                             } else if (element.tagName === 'OPTION') {
@@ -2393,27 +2366,20 @@
                     const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                     applySearch(fullSearchTerm);
                 });
-                
                 function updateDirectionButtons() {
                     if (!currentRouteData) return;
-                    
                     const goStaticText = goDirectionButton.querySelector('.static-text');
                     const goMarqueeContainer = goDirectionButton.querySelector('.marquee-container');
                     const goMarqueeText = goDirectionButton.querySelector('.marquee-text');
-
                     const backStaticText = backDirectionButton.querySelector('.static-text');
                     const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
                     const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
-
                     goStaticText.textContent = `${translations[currentLang].goDirection} `;
                     backStaticText.textContent = `${translations[currentLang].backDirection} `;
-                    
                     const goText = currentRouteData.destination;
                     const backText = currentRouteData.departure;
-                    
                     checkMarqueeOverflow(goMarqueeContainer, goMarqueeText, goText);
                     checkMarqueeOverflow(backMarqueeContainer, backMarqueeText, backText);
-
                     if (currentDirection === 1) {
                         goDirectionButton.classList.add('bg-blue-500', 'text-white');
                         goDirectionButton.classList.remove('bg-white', 'text-blue-500');
@@ -2426,7 +2392,6 @@
                         goDirectionButton.classList.remove('bg-blue-500', 'text-white');
                     }
                 }
-
                 function handleDirectionToggle(newDirection) {
                     if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                         return;
@@ -3359,59 +3324,40 @@
                         hideFavoriteButton();
                     }
                 });
-
                 favoritePage.addEventListener('touchstart', e => {
                     if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
                     favTouchStartX = e.changedTouches[0].screenX;
-                    favTouchStartY = e.changedTouches[0].screenY; // <-- 新增此行
-
+                    favTouchStartY = e.changedTouches[0].screenY; 
                 }, { passive: true });
-
                 favoritePage.addEventListener('touchend', e => {
                     if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
                     favTouchEndX = e.changedTouches[0].screenX;
-                    favTouchEndY = e.changedTouches[0].screenY; // <-- 新增此行
-
+                    favTouchEndY = e.changedTouches[0].screenY; 
                     handleFavoriteSwipe();
                 }, { passive: true });
-
                 function handleFavoriteSwipe() {
-                    const swipeThreshold = 50; // 最小水平滑動距離
-                    if (favTouchEndX === 0 || favTouchEndY === 0) return; // 如果沒有滑動，則返回
-
+                    const swipeThreshold = 50; 
+                    if (favTouchEndX === 0 || favTouchEndY === 0) return; 
                     const diffX = favTouchEndX - favTouchStartX;
                     const diffY = favTouchEndY - favTouchStartY;
-
-                    // 核心判斷：水平滑動距離必須大於垂直滑動距離
-                    // 且水平滑動距離必須超過閾值
                     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
-                        
-                        // --- 以下是原本的切換邏輯 ---
                         const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
                         const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
-
                         if (currentGroupIndex === -1) return;
-
                         let nextGroupIndex;
-
-                        // diffX < 0 表示向左滑動
                         if (diffX < 0) {
                             nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
-                        } else { // diffX > 0 表示向右滑動
+                        } else { 
                             nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
                         }
-
                         activeGroupId = groupTabsIds[nextGroupIndex];
                         displayFavoriteStations();
                     }
-
-                    // 無論是否觸發切換，都重置所有座標
                     favTouchStartX = 0;
                     favTouchStartY = 0;
                     favTouchEndX = 0;
                     favTouchEndY = 0;
                 }
-
                 applyInitialTheme();
                 const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
                 splashScreenToggle.checked = splashScreenEnabled;
@@ -3425,14 +3371,12 @@
                 defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
                 defaultStartPageSelect.value = defaultStartPage;
                 adjustContentPadding();
-                
                 window.addEventListener('resize', () => {
                     adjustContentPadding();
                     if (busTrackerPage.classList.contains('active')) {
                         updateDirectionButtons();
                     }
                 });
-                
                 window.addEventListener('hashchange', () => handleHashChange(false));
                 const mapPageNameToId = (name) => {
                     switch (name) {
