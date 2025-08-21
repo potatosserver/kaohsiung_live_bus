@@ -1486,8 +1486,8 @@
                 let resolveCustomConfirm;
                 
                 const favoritePage = document.getElementById('favoriteStationsPage');
-                let favTouchStartX = 0;
-                let favTouchEndX = 0;
+                let favTouchStartX = 0, favTouchStartY = 0;
+                let favTouchEndX = 0, favTouchEndY = 0;
                 
                 const translations = {
                     zh: {
@@ -3357,39 +3357,53 @@
                 favoritePage.addEventListener('touchstart', e => {
                     if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
                     favTouchStartX = e.changedTouches[0].screenX;
+                    favTouchStartY = e.changedTouches[0].screenY; // <-- 新增此行
+
                 }, { passive: true });
 
                 favoritePage.addEventListener('touchend', e => {
                     if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
                     favTouchEndX = e.changedTouches[0].screenX;
+                    favTouchEndY = e.changedTouches[0].screenY; // <-- 新增此行
+
                     handleFavoriteSwipe();
                 }, { passive: true });
 
                 function handleFavoriteSwipe() {
-                    const swipeThreshold = 50;
-                    const swipeDistance = favTouchEndX - favTouchStartX;
+                    const swipeThreshold = 50; // 最小水平滑動距離
+                    if (favTouchEndX === 0 || favTouchEndY === 0) return; // 如果沒有滑動，則返回
 
-                    if (Math.abs(swipeDistance) < swipeThreshold || favTouchEndX === 0) {
-                        return;
+                    const diffX = favTouchEndX - favTouchStartX;
+                    const diffY = favTouchEndY - favTouchStartY;
+
+                    // 核心判斷：水平滑動距離必須大於垂直滑動距離
+                    // 且水平滑動距離必須超過閾值
+                    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+                        
+                        // --- 以下是原本的切換邏輯 ---
+                        const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
+                        const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
+
+                        if (currentGroupIndex === -1) return;
+
+                        let nextGroupIndex;
+
+                        // diffX < 0 表示向左滑動
+                        if (diffX < 0) {
+                            nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
+                        } else { // diffX > 0 表示向右滑動
+                            nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
+                        }
+
+                        activeGroupId = groupTabsIds[nextGroupIndex];
+                        displayFavoriteStations();
                     }
-                    
-                    const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
-                    const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
 
-                    if (currentGroupIndex === -1) return;
-
-                    let nextGroupIndex;
-
-                    if (swipeDistance < 0) {
-                        nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
-                    } else {
-                        nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
-                    }
-
-                    activeGroupId = groupTabsIds[nextGroupIndex];
-                    displayFavoriteStations();
+                    // 無論是否觸發切換，都重置所有座標
                     favTouchStartX = 0;
+                    favTouchStartY = 0;
                     favTouchEndX = 0;
+                    favTouchEndY = 0;
                 }
 
                 applyInitialTheme();
