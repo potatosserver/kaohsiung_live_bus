@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kaohsiung-live-bus.pages.dev/sitemap.xml
