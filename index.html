@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -387,7 +386,7 @@
         }
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            touch-action: pan-y; 
+            touch-action: none; 
         }
         #favoriteListContainer .favorite-card-item.dragging {
             opacity: 0.6;
@@ -406,7 +405,7 @@
             box-sizing: border-box; 
         }
         #favoriteListContainer .favorite-card-item.dragging .favorite-card-content {
-            transition: none; /* Disable transition during drag */
+            transition: none; 
         }
         .drag-handle {
             cursor: move;
@@ -1493,8 +1492,8 @@
                 let favTouchEndX = 0, favTouchEndY = 0;
                 let isDraggingTouch = false;
                 let draggedElementTouch = null;
-                let startYTouch = 0;
                 let initialYTouch = 0;
+                let draggedElementInitialTop = 0;
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -2764,9 +2763,6 @@
                     const stationsNotInOrder = stationsToDisplay.filter(f => !orderedIdsSet.has(`${f.routeId}-${f.stationId}-${f.direction}`));
                     
                     stationsToDisplay = [...sortedStations, ...stationsNotInOrder];
-
-                    const noFavoritesYetElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesYet"]');
-                    const noFavoritesInGroupElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesInGroup"]');
                     
                     if (favoriteData.favorites.length === 0) {
                         noFavoritesMessage.classList.remove('hidden');
@@ -2835,16 +2831,13 @@
                         div.innerHTML = timeHtml;
                     });
                 }
-                function handleTouchDragMove(e) {
+                 function handleTouchDragMove(e) {
                     if (!isDraggingTouch || !draggedElementTouch) return;
-                    e.preventDefault(); 
-                    const touch = e.touches[0];
-                    const currentY = touch.clientY;
-                    const deltaY = currentY - initialYTouch;
-                    
+                    e.preventDefault();
+                    const currentY = e.touches[0].clientY;
+                    const fingerDelta = currentY - initialYTouch;
                     const content = draggedElementTouch.querySelector('.favorite-card-content');
-                    content.style.transform = `translateY(${deltaY}px)`;
-                    
+                    content.style.transform = `translateY(${fingerDelta}px)`;
                     const afterElement = getDragAfterElement(favoriteListContainer, currentY);
                     if (afterElement) {
                         favoriteListContainer.insertBefore(draggedElementTouch, afterElement);
@@ -2854,28 +2847,22 @@
                 }
                 function handleTouchDragEnd(e) {
                     if (!isDraggingTouch || !draggedElementTouch) return;
-                    
                     const content = draggedElementTouch.querySelector('.favorite-card-content');
                     content.style.transform = '';
-                    
                     draggedElementTouch.classList.remove('dragging');
                     document.body.classList.remove('is-dragging-item');
-                    
                     isDraggingTouch = false;
-                    
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                     const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
                         return `${routeId}-${stationId}-${direction}`;
                     });
-                    
                     favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
-                    
                     document.removeEventListener('touchmove', handleTouchDragMove);
+                    document.removeEventListener('touchend', handleTouchDragEnd);
                     draggedElementTouch = null;
                 }
-
                 function addFavoriteCardEventListeners() {
                     favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                         const { routeId, stationId, direction } = card.dataset;
@@ -2926,8 +2913,7 @@
                         dragHandle.addEventListener('touchstart', (e) => {
                             isDraggingTouch = true;
                             draggedElementTouch = card;
-                            const touch = e.touches[0];
-                            initialYTouch = touch.clientY;
+                            initialYTouch = e.touches[0].clientY;
                             
                             document.body.classList.add('is-dragging-item');
                             draggedElementTouch.classList.add('dragging');
