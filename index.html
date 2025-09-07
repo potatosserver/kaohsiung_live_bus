@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -384,7 +383,7 @@
         }
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            touch-action: pan-y; 
+            touch-action: none; /* Disable browser's default touch actions on the item */
         }
         #favoriteListContainer .favorite-card-item.dragging {
             opacity: 0.4;
@@ -1484,6 +1483,9 @@
                 const favoritePage = document.getElementById('favoriteStationsPage');
                 let favTouchStartX = 0, favTouchStartY = 0;
                 let favTouchEndX = 0, favTouchEndY = 0;
+                let isDragging = false;
+                let touchStartY = 0;
+
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -1994,13 +1996,10 @@
                         let data = localStorage.getItem('favoriteData');
                         if (data) {
                             favoriteData = JSON.parse(data);
-                            // Migration for users without the new groupOrder structure
                             if (!favoriteData.groupOrder) {
                                 console.log("Migrating favorites to include new ordering system.");
                                 favoriteData.groupOrder = {};
-                                // 'all' group gets the default order from the favorites array
                                 favoriteData.groupOrder.all = favoriteData.favorites.map(f => `${f.routeId}-${f.stationId}-${f.direction}`);
-                                // Create order lists for each specific group
                                 favoriteData.groups.forEach(group => {
                                     const groupId = group.id;
                                     favoriteData.groupOrder[groupId] = favoriteData.favorites
@@ -2010,7 +2009,6 @@
                                 saveFavorites();
                             }
                         } else {
-                            // Initialize for new users
                             favoriteData = {
                                 groups: [],
                                 favorites: [],
@@ -2047,11 +2045,9 @@
                         favoriteData.favorites.push(newFavorite);
                         const favoriteId = `${newFavorite.routeId}-${newFavorite.stationId}-${newFavorite.direction}`;
                         
-                        // Add to the end of the 'all' group order
                         if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all = [];
                         favoriteData.groupOrder.all.push(favoriteId);
 
-                        // Add to the end of its specific group order
                         if (!favoriteData.groupOrder[groupId]) favoriteData.groupOrder[groupId] = [];
                         favoriteData.groupOrder[groupId].push(favoriteId);
 
@@ -2073,7 +2069,6 @@
                     if (index > -1) {
                         favoriteData.favorites.splice(index, 1);
                         
-                        // Remove from all order arrays in groupOrder
                         if (favoriteData.groupOrder) {
                             Object.keys(favoriteData.groupOrder).forEach(key => {
                                 const orderIndex = favoriteData.groupOrder[key].indexOf(favoriteId);
@@ -2742,18 +2737,16 @@
                         stationsToDisplay = favoriteData.favorites.filter(fav => fav.groupId === activeGroupId);
                     }
 
-                    // Sort stations based on the independent group order
                     const order = favoriteData.groupOrder[activeGroupId] || [];
                     const stationMap = new Map(stationsToDisplay.map(f => [`${f.routeId}-${f.stationId}-${f.direction}`, f]));
                     
                     const sortedStations = order
                         .map(id => stationMap.get(id))
-                        .filter(Boolean); // Filter out any favorites that might have been deleted but still exist in order list
+                        .filter(Boolean);
 
                     const orderedIdsSet = new Set(order);
                     const stationsNotInOrder = stationsToDisplay.filter(f => !orderedIdsSet.has(`${f.routeId}-${f.stationId}-${f.direction}`));
                     
-                    // The final list to display, correctly sorted
                     stationsToDisplay = [...sortedStations, ...stationsNotInOrder];
 
                     const noFavoritesYetElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesYet"]');
@@ -2826,33 +2819,66 @@
                         div.innerHTML = timeHtml;
                     });
                 }
+                function onTouchMove(e) {
+                    if (!draggedItem) return;
+                    e.preventDefault();
+                    const currentY = e.touches[0].clientY;
+                    const transformY = currentY - touchStartY;
+                    draggedItem.style.transform = `translateY(${transformY}px)`;
+                    const afterElement = getDragAfterElement(favoriteListContainer, currentY);
+                    if (afterElement === null) {
+                        favoriteListContainer.appendChild(draggedItem);
+                    } else {
+                        favoriteListContainer.insertBefore(draggedItem, afterElement);
+                    }
+                }
+                function onTouchEnd() {
+                    if (!draggedItem) return;
+                    document.removeEventListener('touchmove', onTouchMove);
+                    document.removeEventListener('touchend', onTouchEnd);
+                    draggedItem.style.transform = '';
+                    draggedItem.style.zIndex = '';
+                    draggedItem.classList.remove('dragging');
+                    const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
+                    const newOrderedIds = newOrderedElements.map(elem => {
+                        const { routeId, stationId, direction } = elem.dataset;
+                        return `${routeId}-${stationId}-${direction}`;
+                    });
+                    favoriteData.groupOrder[activeGroupId] = newOrderedIds;
+                    saveFavorites();
+                    setTimeout(() => { isDragging = false; }, 100);
+                    draggedItem = null;
+                }
+
                 function addFavoriteCardEventListeners() {
                     favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                         const { routeId, stationId, direction } = card.dataset;
-                         const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
+                        const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
                         if (!favData) return;
-                        const content = card.querySelector('.favorite-card-content');
+
                         const tapArea = card.querySelector('.card-tap-area');
                         const dragHandle = card.querySelector('.drag-handle');
                         let favLongPressTimer;
-                        let isDragging = false;
+
                         tapArea.addEventListener('click', () => {
-                             if (!isDragging) {
-                                navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
-                            }
+                            if (isDragging) return;
+                            navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                         });
+
                         card.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
                             showFavoriteButton(favData, e.clientX, e.clientY);
                         });
+
                         card.addEventListener('touchstart', (e) => {
-                            if (e.target.closest('.drag-handle')) return;
+                             if (e.target.closest('.drag-handle')) return;
                             favLongPressTimer = setTimeout(() => {
                                 e.preventDefault();
                                 showFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
                                 favLongPressTimer = null;
                             }, 700);
                         }, { passive: false });
+                        
                         card.addEventListener('touchmove', (e) => {
                             if (!favLongPressTimer || !e.touches[0]) return;
                             const deltaY = Math.abs(e.touches[0].clientY - e.changedTouches[0].clientY);
@@ -2862,32 +2888,42 @@
                         });
                         card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
                         card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
+                        
+                        // Mouse Dragging
                         dragHandle.draggable = true;
                         dragHandle.addEventListener('dragstart', (e) => {
                             isDragging = true;
                             handleDragStart.call(card, e);
-                            try {
-                                e.dataTransfer.setDragImage(card, 20, 20); 
-                            } catch (err) {
-                            }
-                            e.dataTransfer.effectAllowed = 'move';
                         });
                         dragHandle.addEventListener('dragend', () => {
                             handleDragEnd.call(card);
                             setTimeout(() => { isDragging = false; }, 50);
                         });
+
+                        // Touch Dragging
+                        dragHandle.addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            isDragging = true;
+                            draggedItem = card;
+                            touchStartY = e.touches[0].clientY;
+                            draggedItem.classList.add('dragging');
+                            draggedItem.style.zIndex = '1000';
+                            document.addEventListener('touchmove', onTouchMove, { passive: false });
+                            document.addEventListener('touchend', onTouchEnd, { once: true });
+                        }, { passive: false });
                     });
+
                     favoriteListContainer.addEventListener('dragover', handleDragOver);
                     favoriteListContainer.addEventListener('drop', handleDrop);
                 }
                 function handleDragStart(e) {
                     draggedItem = this;
                     setTimeout(() => this.classList.add('dragging'), 0);
+                    e.dataTransfer.effectAllowed = 'move';
+                    try { e.dataTransfer.setDragImage(this, 20, 20); } catch (err) {}
                 }
                 function handleDragEnd() {
-                    if(this) {
-                        this.classList.remove('dragging');
-                    }
+                    if(this) { this.classList.remove('dragging'); }
                     draggedItem = null;
                 }
                 function handleDragOver(e) {
@@ -2915,19 +2951,13 @@
                 function handleDrop(e) {
                     e.preventDefault();
                     if (!draggedItem) return;
-
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                     const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
                         return `${routeId}-${stationId}-${direction}`;
                     });
-
-                    // Update the order array for the currently active group
                     favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
-                    // No need to call displayFavoriteStations() again, the DOM is already updated.
-                    // But a call is okay for consistency if other data changes.
-                    displayFavoriteStations();
                 }
                 const getWeatherDescription = (code) => {
                     switch (code) {
