@@ -387,38 +387,34 @@
         }
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            touch-action: pan-y; /* Allow vertical scroll, but we'll override for drag handle */
-            transition: transform 0.2s ease-out;
+            touch-action: none; /* Disable browser's default touch actions on items */
         }
-        #favoriteListContainer .favorite-card-item.dragging {
-            opacity: 0.6;
-            z-index: 50;
-        }
-        .drag-clone {
-            pointer-events: none;
-            position: fixed;
-            left: 0;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-        .placeholder {
-            background-color: #e0f2fe;
+        #favoriteListContainer .favorite-card-item.placeholder {
+            opacity: 0.4;
+            background: #e0f2fe;
             border: 2px dashed #3b82f6;
-            border-radius: 0.5rem; /* 8px */
-            box-sizing: border-box;
-            transition: all 0.2s ease;
         }
-        body.dark-mode .placeholder {
-            background-color: #1e293b;
-            border-color: #60a5fa;
+        .dragging-ghost {
+            position: absolute !important;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+        }
+        .favorite-card-content {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem; 
+            background-color: #ffffff;
+            width: 100%;
+            box-sizing: border-box; 
         }
         .drag-handle {
             cursor: move;
             cursor: grab;
             padding: 8px;
             color: #94a3b8;
-            touch-action: none; 
         }
         .drag-handle:active {
             cursor: grabbing;
@@ -858,7 +854,7 @@
         body.dark-mode .time-pill.bg-green-200 { background-color: #166534; color: #dcfce7; }
         body.dark-mode .time-pill.bg-blue-200 { background-color: #1e40af; color: #dbeafe; }
         body.dark-mode .favorite-time-display .time-pill.bg-yellow-200 { background-color: #854d0e; color: #fef9c3; }
-        body.dark-mode .favorite-card-item.dragging { background: #0f172a; border-color: #60a5fa; }
+        body.dark-mode .favorite-card-item.placeholder { background: #0f172a; border-color: #60a5fa; }
         body.dark-mode .drag-handle { color: #64748b; }
         body.dark-mode .favorite-card-content { background-color: #1e293b; }
         body.dark-mode #mainNav {
@@ -1497,13 +1493,10 @@
                 let favTouchStartX = 0, favTouchStartY = 0;
                 let favTouchEndX = 0, favTouchEndY = 0;
                 let isDraggingTouch = false;
-                let draggedElementTouch = null;
-                let dragClone = null;
-                let placeholder = null;
+                let placeholder = null; // The original item acting as placeholder
+                let ghost = null; // The cloned item following the finger
                 let startYTouch = 0;
-                let initialYTouch = 0;
-                let lastTouchY = 0;
-                let startXTouch = 0;
+                let startTop = 0;
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -2773,9 +2766,6 @@
                     const stationsNotInOrder = stationsToDisplay.filter(f => !orderedIdsSet.has(`${f.routeId}-${f.stationId}-${f.direction}`));
                     
                     stationsToDisplay = [...sortedStations, ...stationsNotInOrder];
-
-                    const noFavoritesYetElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesYet"]');
-                    const noFavoritesInGroupElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesInGroup"]');
                     
                     if (favoriteData.favorites.length === 0) {
                         noFavoritesMessage.classList.remove('hidden');
@@ -2844,51 +2834,63 @@
                         div.innerHTML = timeHtml;
                     });
                 }
-                function handleTouchDragMove(e) {
-                    if (!isDraggingTouch || !dragClone) return;
-                    e.preventDefault();
-                    lastTouchY = e.touches[0].clientY;
-                    lastTouchX = e.touches[0].clientX;
+                function handleTouchDragStart(e) {
+                    const touch = e.touches[0];
+                    placeholder = this; // The original card
                     
-                    dragClone.style.transform = `translate(${lastTouchX - startXTouch}px, ${lastTouchY - startYTouch}px)`;
+                    ghost = placeholder.cloneNode(true);
+                    ghost.classList.add('dragging-ghost');
+                    document.body.appendChild(ghost);
+                    
+                    const rect = placeholder.getBoundingClientRect();
+                    startTop = rect.top;
+                    startYTouch = touch.clientY;
+                    
+                    ghost.style.width = `${rect.width}px`;
+                    ghost.style.top = `${startTop}px`;
+                    ghost.style.left = `${rect.left}px`;
+                    
+                    placeholder.classList.add('placeholder');
+                    body.classList.add('is-dragging-item');
 
-                    const afterElement = getDragAfterElement(favoriteListContainer, lastTouchY);
+                    document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
+                    document.addEventListener('touchend', handleTouchDragEnd, { once: true });
+                }
+
+                function handleTouchDragMove(e) {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const newTop = startTop + (touch.clientY - startYTouch);
+                    ghost.style.top = `${newTop}px`;
+
+                    const afterElement = getDragAfterElement(favoriteListContainer, touch.clientY);
                     if (afterElement) {
                         favoriteListContainer.insertBefore(placeholder, afterElement);
                     } else {
                         favoriteListContainer.appendChild(placeholder);
                     }
                 }
-                function handleTouchDragEnd(e) {
-                    if (!isDraggingTouch || !draggedElementTouch) return;
-                    
-                    document.body.classList.remove('is-dragging-item');
-                    draggedElementTouch.style.display = '';
 
-                    if(placeholder && placeholder.parentNode) {
-                        placeholder.parentNode.replaceChild(draggedElementTouch, placeholder);
-                    }
-                    
-                    if (dragClone) {
-                        dragClone.remove();
-                    }
-                    
-                    dragClone = null;
+                function handleTouchDragEnd() {
+                    document.body.removeChild(ghost);
+                    placeholder.classList.remove('placeholder');
+                    body.classList.remove('is-dragging-item');
+
+                    ghost = null;
                     placeholder = null;
-                    isDraggingTouch = false;
-                    
+
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                     const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
                         return `${routeId}-${stationId}-${direction}`;
                     });
-                    
+
                     favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
-                    
+
                     document.removeEventListener('touchmove', handleTouchDragMove);
-                    draggedElementTouch = null;
                 }
+                
                 function addFavoriteCardEventListeners() {
                     favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                         const { routeId, stationId, direction } = card.dataset;
@@ -2900,9 +2902,8 @@
                         let favLongPressTimer;
                         
                         tapArea.addEventListener('click', () => {
-                             if (!isDraggingTouch) {
-                                navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
-                            }
+                            if (isDraggingTouch) return;
+                            navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                         });
 
                         card.addEventListener('contextmenu', (e) => {
@@ -2924,38 +2925,11 @@
                         card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
                         
                         // Mobile Touch Drag & Drop
-                        dragHandle.addEventListener('touchstart', (e) => {
-                            isDraggingTouch = true;
-                            draggedElementTouch = card;
-                            const touch = e.touches[0];
-                            const rect = card.getBoundingClientRect();
-                            
-                            startXTouch = touch.clientX - rect.left;
-                            startYTouch = touch.clientY - rect.top;
-                            lastTouchY = touch.clientY;
-                            
-                            dragClone = card.cloneNode(true);
-                            dragClone.classList.add('drag-clone');
-                            document.body.appendChild(dragClone);
-                            dragClone.style.width = `${rect.width}px`;
-                            dragClone.style.transform = `translate(${rect.left}px, ${rect.top}px)`;
-                            
-                            placeholder = document.createElement('div');
-                            placeholder.className = 'placeholder';
-                            placeholder.style.height = `${rect.height}px`;
-                            
-                            card.style.display = 'none';
-                            favoriteListContainer.insertBefore(placeholder, card);
-
-                            document.body.classList.add('is-dragging-item');
-                            
-                            document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
-                            document.addEventListener('touchend', handleTouchDragEnd, { once: true });
-                        });
+                        dragHandle.addEventListener('touchstart', handleTouchDragStart.bind(card));
                     });
                 }
                 function getDragAfterElement(container, y) {
-                    const draggableElements = [...container.querySelectorAll('.favorite-card-item:not([style*="display: none"])')];
+                    const draggableElements = [...container.querySelectorAll('.favorite-card-item:not(.placeholder)')];
                     return draggableElements.reduce((closest, child) => {
                         const box = child.getBoundingClientRect();
                         const offset = y - box.top - box.height / 2;
