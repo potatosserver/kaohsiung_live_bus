@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -386,7 +387,7 @@
         }
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            touch-action: none; 
+            touch-action: pan-y; 
         }
         #favoriteListContainer .favorite-card-item.dragging {
             opacity: 0.6;
@@ -405,7 +406,18 @@
             box-sizing: border-box; 
         }
         #favoriteListContainer .favorite-card-item.dragging .favorite-card-content {
-            transition: none; 
+            transition: none; /* KEY FIX: Disable transition during drag */
+        }
+        .favorite-card-item.drop-target-indicator::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 5%;
+            width: 90%;
+            height: 4px;
+            background-color: #60a5fa; /* A lighter blue */
+            border-radius: 2px;
+            z-index: 1;
         }
         .drag-handle {
             cursor: move;
@@ -1493,7 +1505,7 @@
                 let isDraggingTouch = false;
                 let draggedElementTouch = null;
                 let initialYTouch = 0;
-                let draggedElementInitialTop = 0;
+                let dropTargetElement = null;
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -2057,11 +2069,9 @@
                         favoriteData.favorites.push(newFavorite);
                         const favoriteId = `${newFavorite.routeId}-${newFavorite.stationId}-${newFavorite.direction}`;
                         
-                        // Add to the end of the 'all' group order
                         if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all = [];
                         favoriteData.groupOrder.all.push(favoriteId);
 
-                        // Add to the end of its specific group order
                         if (!favoriteData.groupOrder[groupId]) favoriteData.groupOrder[groupId] = [];
                         favoriteData.groupOrder[groupId].push(favoriteId);
 
@@ -2083,7 +2093,6 @@
                     if (index > -1) {
                         favoriteData.favorites.splice(index, 1);
                         
-                        // Remove from all order arrays in groupOrder
                         if (favoriteData.groupOrder) {
                             Object.keys(favoriteData.groupOrder).forEach(key => {
                                 const orderIndex = favoriteData.groupOrder[key].indexOf(favoriteId);
@@ -2831,34 +2840,59 @@
                         div.innerHTML = timeHtml;
                     });
                 }
-                 function handleTouchDragMove(e) {
+                function handleTouchDragMove(e) {
                     if (!isDraggingTouch || !draggedElementTouch) return;
-                    e.preventDefault();
-                    const currentY = e.touches[0].clientY;
-                    const fingerDelta = currentY - initialYTouch;
+                    e.preventDefault(); 
+
+                    const touch = e.touches[0];
+                    const currentY = touch.clientY;
+                    const deltaY = currentY - initialYTouch;
+                    
                     const content = draggedElementTouch.querySelector('.favorite-card-content');
-                    content.style.transform = `translateY(${fingerDelta}px)`;
+                    content.style.transform = `translateY(${deltaY}px)`;
+
                     const afterElement = getDragAfterElement(favoriteListContainer, currentY);
-                    if (afterElement) {
-                        favoriteListContainer.insertBefore(draggedElementTouch, afterElement);
-                    } else {
-                        favoriteListContainer.appendChild(draggedElementTouch);
+
+                    if (dropTargetElement !== afterElement) {
+                        if (dropTargetElement) {
+                            dropTargetElement.classList.remove('drop-target-indicator');
+                        }
+                        if (afterElement) {
+                            afterElement.classList.add('drop-target-indicator');
+                        }
+                        dropTargetElement = afterElement;
                     }
                 }
                 function handleTouchDragEnd(e) {
                     if (!isDraggingTouch || !draggedElementTouch) return;
+
+                    if (dropTargetElement) {
+                        dropTargetElement.classList.remove('drop-target-indicator');
+                    }
+
+                    if (dropTargetElement) {
+                        favoriteListContainer.insertBefore(draggedElementTouch, dropTargetElement);
+                    } else {
+                        favoriteListContainer.appendChild(draggedElementTouch);
+                    }
+                    dropTargetElement = null;
+                    
                     const content = draggedElementTouch.querySelector('.favorite-card-content');
                     content.style.transform = '';
+
                     draggedElementTouch.classList.remove('dragging');
                     document.body.classList.remove('is-dragging-item');
                     isDraggingTouch = false;
+
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                     const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
                         return `${routeId}-${stationId}-${direction}`;
                     });
+                    
                     favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
+
                     document.removeEventListener('touchmove', handleTouchDragMove);
                     document.removeEventListener('touchend', handleTouchDragEnd);
                     draggedElementTouch = null;
@@ -2898,7 +2932,6 @@
                         card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
                         card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
                         
-                        // Desktop Drag & Drop
                         dragHandle.draggable = true;
                         dragHandle.addEventListener('dragstart', (e) => {
                             isDragging = true;
@@ -2909,11 +2942,13 @@
                             setTimeout(() => { isDragging = false; }, 50);
                         });
 
-                        // Mobile Touch Drag & Drop
                         dragHandle.addEventListener('touchstart', (e) => {
+                            clearTimeout(favLongPressTimer); 
+                            
                             isDraggingTouch = true;
                             draggedElementTouch = card;
-                            initialYTouch = e.touches[0].clientY;
+                            const touch = e.touches[0];
+                            initialYTouch = touch.clientY;
                             
                             document.body.classList.add('is-dragging-item');
                             draggedElementTouch.classList.add('dragging');
