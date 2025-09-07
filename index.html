@@ -39,6 +39,9 @@
             -ms-user-select: none; 
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
+        body.is-dragging-item {
+            overflow: hidden;
+        }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -387,9 +390,10 @@
             touch-action: pan-y; 
         }
         #favoriteListContainer .favorite-card-item.dragging {
-            opacity: 0.4;
+            opacity: 0.6;
             background: #e0f2fe;
             border: 2px dashed #3b82f6;
+            z-index: 50;
         }
         .favorite-card-content {
             position: relative;
@@ -397,9 +401,12 @@
             align-items: center;
             padding: 0.75rem; 
             background-color: #ffffff;
-            transition: transform 0.3s ease-out;
+            transition: transform 0.2s ease-out;
             width: 100%;
             box-sizing: border-box; 
+        }
+        #favoriteListContainer .favorite-card-item.dragging .favorite-card-content {
+            transition: none; /* Disable transition during drag */
         }
         .drag-handle {
             cursor: move;
@@ -1487,6 +1494,7 @@
                 let isDraggingTouch = false;
                 let draggedElementTouch = null;
                 let startYTouch = 0;
+                let initialYTouch = 0;
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -2832,9 +2840,11 @@
                     e.preventDefault(); 
                     const touch = e.touches[0];
                     const currentY = touch.clientY;
-                    const deltaY = currentY - startYTouch;
-                    draggedElementTouch.style.transform = `translateY(${deltaY}px)`;
-                    draggedElementTouch.style.zIndex = '50';
+                    const deltaY = currentY - initialYTouch;
+                    
+                    const content = draggedElementTouch.querySelector('.favorite-card-content');
+                    content.style.transform = `translateY(${deltaY}px)`;
+                    
                     const afterElement = getDragAfterElement(favoriteListContainer, currentY);
                     if (afterElement) {
                         favoriteListContainer.insertBefore(draggedElementTouch, afterElement);
@@ -2844,25 +2854,34 @@
                 }
                 function handleTouchDragEnd(e) {
                     if (!isDraggingTouch || !draggedElementTouch) return;
-                    draggedElementTouch.style.transform = '';
-                    draggedElementTouch.style.zIndex = '';
+                    
+                    const content = draggedElementTouch.querySelector('.favorite-card-content');
+                    content.style.transform = '';
+                    
                     draggedElementTouch.classList.remove('dragging');
+                    document.body.classList.remove('is-dragging-item');
+                    
                     isDraggingTouch = false;
+                    
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                     const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
                         return `${routeId}-${stationId}-${direction}`;
                     });
+                    
                     favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
+                    
                     document.removeEventListener('touchmove', handleTouchDragMove);
                     draggedElementTouch = null;
                 }
+
                 function addFavoriteCardEventListeners() {
                     favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                         const { routeId, stationId, direction } = card.dataset;
-                         const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
+                        const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
                         if (!favData) return;
+                        
                         const tapArea = card.querySelector('.card-tap-area');
                         const dragHandle = card.querySelector('.drag-handle');
                         let favLongPressTimer;
@@ -2880,7 +2899,7 @@
                         });
 
                         card.addEventListener('touchstart', (e) => {
-                            if (dragHandle.contains(e.target)) return;
+                            if (dragHandle.contains(e.target) || isDraggingTouch) return;
                             favLongPressTimer = setTimeout(() => {
                                 e.preventDefault();
                                 showFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
@@ -2908,11 +2927,14 @@
                             isDraggingTouch = true;
                             draggedElementTouch = card;
                             const touch = e.touches[0];
-                            startYTouch = touch.clientY;
+                            initialYTouch = touch.clientY;
+                            
+                            document.body.classList.add('is-dragging-item');
                             draggedElementTouch.classList.add('dragging');
+                            
                             document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
                             document.addEventListener('touchend', handleTouchDragEnd, { once: true });
-                        }, { passive: true });
+                        });
                     });
                     favoriteListContainer.addEventListener('dragover', handleDragOver);
                     favoriteListContainer.addEventListener('drop', handleDrop);
