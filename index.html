@@ -1395,6 +1395,7 @@
                     'Accept': 'application/json',
                 };
                 const body = document.body;
+                let isInitialLoadComplete = false;
                 const routeSelectionPage = document.getElementById('routeSelectionPage');
                 const busTrackerPage = document.getElementById('busTrackerPage');
                 const favoriteStationsPage = document.getElementById('favoriteStationsPage');
@@ -2230,6 +2231,7 @@
                     }
                 }
                 window.addEventListener('popstate', async (event) => {
+                    if (!isInitialLoadComplete) return; 
                     handleHashChange(true);
                     const toState = event.state;
                     const toPage = toState ? toState.page : mapPageNameToId(new URLSearchParams(window.location.search).get('page'));
@@ -3436,40 +3438,33 @@
                     }
                 };
                 
-                // --- INITIAL PAGE LOAD LOGIC ---
+                // --- REFACTORED AND CORRECTED INITIAL PAGE LOAD LOGIC ---
                 const urlParams = new URLSearchParams(window.location.search);
                 const pageFromUrl = urlParams.get('page');
                 const routeIdFromUrl = urlParams.get('route');
 
-                let initialPageId = mapPageNameToId(pageFromUrl);
+                let pageToLoad = mapPageNameToId(pageFromUrl);
 
-                // If the URL doesn't specify a valid page, use the default.
-                if (!initialPageId) {
-                    initialPageId = mapPageNameToId(defaultStartPage) || 'homePage';
-                    // Update the URL to reflect the default page we are loading.
-                    history.replaceState({ page: initialPageId }, '', `?page=${initialPageId.replace('Page', '')}`);
+                if (!pageToLoad) {
+                    pageToLoad = mapPageNameToId(defaultStartPage) || 'homePage';
+                    history.replaceState({ page: pageToLoad }, '', `?page=${pageToLoad.replace('Page', '')}`);
                 }
                 
-                // Special case for the tracker page which needs a routeId
-                if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                if (pageToLoad === 'busTrackerPage' && routeIdFromUrl) {
                     await initRouteSelection();
                     const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                     if (route) {
-                        currentRouteId = route.id;
-                        currentRouteName = route.name;
-                        currentDirection = 1;
-                        await showPage('busTrackerPage', false);
-                        routeTitle.textContent = route.name;
-                        routeDescription.textContent = route.description;
-                        await loadBusData(currentRouteId, true, null);
-                        countdownTimer.reset();
+                        await showPage(pageToLoad, false); // Load the page first
+                        navigateToTracker(route.id, route.name, route.description, false);
                     } else {
                         await showPage('routeSelectionPage', false);
                     }
                 } else {
-                    // For all other pages, just show them without creating a new history entry.
-                    await showPage(initialPageId, false);
+                    await showPage(pageToLoad, false);
                 }
+
+                // Everything is loaded, now allow popstate to work.
+                isInitialLoadComplete = true;
 
                 handleHashChange(false);
                 countdownInterval = setInterval(() => {
