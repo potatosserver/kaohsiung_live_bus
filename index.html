@@ -2220,11 +2220,16 @@
                     if (navButton) {
                         navButton.classList.add('active-nav');
                     }
-                    if (pageId === 'favoriteStationsPage') displayFavoriteStations();
-                    else if (pageId === 'homePage') {
-                        if (!weatherDataLoaded) fetchWeather();
-                        if (!announcementsDataLoaded) fetchAnnouncements();
+
+                    // ================= FIX STARTS HERE =================
+                    if (pageId === 'favoriteStationsPage') {
+                        await displayFavoriteStations();
+                    } else if (pageId === 'homePage') {
+                        if (!weatherDataLoaded) await fetchWeather();
+                        if (!announcementsDataLoaded) await fetchAnnouncements();
                     }
+                    // ================= FIX ENDS HERE =================
+
                     else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
                         mrtIframeLoaded = true;
                         updateMrtIframeSrc();
