@@ -1805,21 +1805,25 @@
                     textElement.classList.remove('is-overflowing');
                     textElement.style.animation = 'none';
                     textElement.textContent = originalText;
+
                     requestAnimationFrame(() => {
                         const containerWidth = container.clientWidth;
                         const textWidth = textElement.scrollWidth;
                         const isOverflowing = textWidth > containerWidth;
+
                         if (isOverflowing) {
                             const gap = '\u00A0\u00A0\u00A0\u00A0\u00A0';
                             const unitText = `${gap}${originalText}`;
                             const fullMarqueeText = `${unitText}${unitText}`;
                             textElement.textContent = fullMarqueeText;
+                            
                             setTimeout(() => {
                                 const scrollWidth = textElement.scrollWidth / 2;
                                 const duration = scrollWidth / 40;
                                 textElement.style.animation = `marquee-scroll ${Math.max(8, duration)}s linear infinite`;
                                 textElement.classList.add('is-overflowing');
                             }, 0);
+
                         } else {
                             container.style.flexGrow = '0';
                             textElement.textContent = originalText;
@@ -2229,13 +2233,13 @@
                     }
                 }
                 window.addEventListener('popstate', async (event) => {
-                    handleHashChange(true); 
+                    handleHashChange(true);
                     const toState = event.state;
                     const toPage = toState ? toState.page : mapPageNameToId(new URLSearchParams(window.location.search).get('page'));
                     if (toPage) {
                         await showPage(toPage, false);
                     } else {
-                        await showPage(defaultStartPage, false);
+                        await showPage(mapPageNameToId(defaultStartPage), false);
                     }
                 });
                 function resetSearch() {
@@ -3434,27 +3438,28 @@
                         default: return null;
                     }
                 };
+                
                 const urlParams = new URLSearchParams(window.location.search);
                 const pageFromUrl = urlParams.get('page');
                 const routeIdFromUrl = urlParams.get('route');
-                let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
-                if (pageFromUrl) {
-                    initialPageId = mapPageNameToId(pageFromUrl);
-                } else {
-                    history.replaceState({ page: initialPageId }, '', `?page=${initialPageId.replace('Page','')}`);
+                let pageToLoad = mapPageNameToId(pageFromUrl);
+
+                if (!pageToLoad) {
+                    pageToLoad = mapPageNameToId(defaultStartPage) || 'homePage';
+                    history.replaceState({ page: pageToLoad }, '', `?page=${pageToLoad.replace('Page', '')}`);
                 }
                 
-                if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                if (pageToLoad === 'busTrackerPage' && routeIdFromUrl) {
                     await initRouteSelection();
                     const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                     if (route) {
-                        navigateToTracker(route.id, route.name, route.description, true, null, 1);
+                        navigateToTracker(route.id, route.name, route.description, false, null, 1);
                     } else {
-                        await showPage('routeSelectionPage', true);
+                        await showPage('routeSelectionPage', false);
                     }
                 } else {
-                    await showPage(initialPageId, false);
+                    await showPage(pageToLoad, false);
                 }
 
                 handleHashChange(false);
