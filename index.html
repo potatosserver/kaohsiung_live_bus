@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1466,7 +1467,7 @@
                 let routeDataLang = null;
                 let activePage = 'homePage'; 
                 let selectedCategoryPrefix = '';
-                let favoriteData = { groups: [], favorites: [] };
+                let favoriteData = { groups: [], favorites: [], groupOrder: { all: [] } };
                 let activeGroupId = 'all'; 
                 let longPressTimer;
                 let currentStationContext = null;
@@ -1991,37 +1992,37 @@
                 function loadFavorites() {
                     try {
                         let data = localStorage.getItem('favoriteData');
-                        const oldData = localStorage.getItem('favoriteStations');
                         if (data) {
                             favoriteData = JSON.parse(data);
-                            favoriteData.groups = favoriteData.groups.filter(g => !g.isDefault);
-                        } else if (oldData) {
-                            console.log("Migrating old favorite stations to new group structure. No default groups will be created.");
-                            const oldFavorites = JSON.parse(oldData);
-                            favoriteData = {
-                                groups: [], 
-                                favorites: oldFavorites.map(fav => ({ ...fav, groupId: 'uncategorized' })) 
-                            };
-                            if (favoriteData.favorites.length > 0) {
-                                favoriteData.groups.push({ id: 'uncategorized', name: translations[currentLang].all, isDefault: false }); 
+                            // Migration for users without the new groupOrder structure
+                            if (!favoriteData.groupOrder) {
+                                console.log("Migrating favorites to include new ordering system.");
+                                favoriteData.groupOrder = {};
+                                // 'all' group gets the default order from the favorites array
+                                favoriteData.groupOrder.all = favoriteData.favorites.map(f => `${f.routeId}-${f.stationId}-${f.direction}`);
+                                // Create order lists for each specific group
+                                favoriteData.groups.forEach(group => {
+                                    const groupId = group.id;
+                                    favoriteData.groupOrder[groupId] = favoriteData.favorites
+                                        .filter(f => f.groupId === groupId)
+                                        .map(f => `${f.routeId}-${f.stationId}-${f.direction}`);
+                                });
+                                saveFavorites();
                             }
-                            localStorage.removeItem('favoriteStations'); 
-                            saveFavorites();
                         } else {
+                            // Initialize for new users
                             favoriteData = {
                                 groups: [],
-                                favorites: []
+                                favorites: [],
+                                groupOrder: { all: [] }
                             };
                         }
-                        if (activeGroupId !== 'all' && !favoriteData.groups.some(g => g.id === activeGroupId)) {
-                            activeGroupId = 'all';
-                        }
-                        saveFavorites(); 
                     } catch (e) {
-                        console.error("Error loading/migrating favorites from localStorage:", e);
+                        console.error("Error loading favorites from localStorage:", e);
                         favoriteData = {
                             groups: [],
-                            favorites: []
+                            favorites: [],
+                            groupOrder: { all: [] }
                         };
                     }
                 }
@@ -2042,7 +2043,18 @@
                 function addFavorite(stationData, groupId) {
                     const { routeId, stationId, direction } = stationData;
                     if (!isFavorite(routeId, stationId, direction)) {
-                        favoriteData.favorites.push({ ...stationData, groupId });
+                        const newFavorite = { ...stationData, groupId };
+                        favoriteData.favorites.push(newFavorite);
+                        const favoriteId = `${newFavorite.routeId}-${newFavorite.stationId}-${newFavorite.direction}`;
+                        
+                        // Add to the end of the 'all' group order
+                        if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all = [];
+                        favoriteData.groupOrder.all.push(favoriteId);
+
+                        // Add to the end of its specific group order
+                        if (!favoriteData.groupOrder[groupId]) favoriteData.groupOrder[groupId] = [];
+                        favoriteData.groupOrder[groupId].push(favoriteId);
+
                         saveFavorites();
                         if (busTrackerPage.classList.contains('active')) {
                             loadBusData(currentRouteId, false);
@@ -2051,13 +2063,26 @@
                 }
                 function removeFavorite(stationData) {
                     const { routeId, stationId, direction } = stationData;
+                    const favoriteId = `${routeId}-${stationId}-${direction}`;
                     const index = favoriteData.favorites.findIndex(fav =>
                         fav.routeId === Number(routeId) &&
                         fav.stationId === String(stationId) &&
                         fav.direction === Number(direction)
                     );
+
                     if (index > -1) {
                         favoriteData.favorites.splice(index, 1);
+                        
+                        // Remove from all order arrays in groupOrder
+                        if (favoriteData.groupOrder) {
+                            Object.keys(favoriteData.groupOrder).forEach(key => {
+                                const orderIndex = favoriteData.groupOrder[key].indexOf(favoriteId);
+                                if (orderIndex > -1) {
+                                    favoriteData.groupOrder[key].splice(orderIndex, 1);
+                                }
+                            });
+                        }
+                        
                         saveFavorites();
                         if (activePage === 'favoriteStationsPage') {
                             displayFavoriteStations();
@@ -2709,26 +2734,40 @@
                     loadFavorites();
                     renderGroupTabs();
                     favoriteListContainer.innerHTML = '';
+
                     let stationsToDisplay;
                     if (activeGroupId === 'all') {
                         stationsToDisplay = [...favoriteData.favorites];
                     } else {
                         stationsToDisplay = favoriteData.favorites.filter(fav => fav.groupId === activeGroupId);
                     }
+
+                    // Sort stations based on the independent group order
+                    const order = favoriteData.groupOrder[activeGroupId] || [];
+                    const stationMap = new Map(stationsToDisplay.map(f => [`${f.routeId}-${f.stationId}-${f.direction}`, f]));
+                    
+                    const sortedStations = order
+                        .map(id => stationMap.get(id))
+                        .filter(Boolean); // Filter out any favorites that might have been deleted but still exist in order list
+
+                    const orderedIdsSet = new Set(order);
+                    const stationsNotInOrder = stationsToDisplay.filter(f => !orderedIdsSet.has(`${f.routeId}-${f.stationId}-${f.direction}`));
+                    
+                    // The final list to display, correctly sorted
+                    stationsToDisplay = [...sortedStations, ...stationsNotInOrder];
+
                     const noFavoritesYetElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesYet"]');
                     const noFavoritesInGroupElement = noFavoritesMessage.querySelector('[data-i18n="noFavoritesInGroup"]');
+                    
                     if (favoriteData.favorites.length === 0) {
-                        noFavoritesYetElement.classList.remove('hidden');
-                        if (noFavoritesInGroupElement) noFavoritesInGroupElement.classList.add('hidden');
                         noFavoritesMessage.classList.remove('hidden');
                         return;
                     }
-                    if (stationsToDisplay.length === 0 && activeGroupId !== 'all') {
-                         noFavoritesYetElement.classList.add('hidden');
-                         if (noFavoritesInGroupElement) noFavoritesInGroupElement.classList.remove('hidden');
-                         noFavoritesMessage.classList.remove('hidden');
-                         return;
+                    if (stationsToDisplay.length === 0) {
+                        noFavoritesMessage.classList.remove('hidden');
+                        return;
                     }
+
                     noFavoritesMessage.classList.add('hidden');
                     stationsToDisplay.forEach((fav) => {
                         const favCard = document.createElement('div');
@@ -2757,9 +2796,11 @@
                         `;
                         favoriteListContainer.appendChild(favCard);
                     });
+
                     addFavoriteCardEventListeners();
                     const uniqueRouteIds = [...new Set(stationsToDisplay.map(f => f.routeId))];
                     if (uniqueRouteIds.length === 0) return;
+
                     const promises = uniqueRouteIds.map(routeId =>
                         fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
                     );
@@ -2771,6 +2812,7 @@
                             routeDataMap.set(routeId, result.value.data.route);
                         }
                     });
+
                     document.querySelectorAll('.favorite-time-display').forEach(div => {
                         const { routeId, stationId, direction } = div.dataset;
                         const routeData = routeDataMap.get(Number(routeId));
@@ -2804,7 +2846,7 @@
                             showFavoriteButton(favData, e.clientX, e.clientY);
                         });
                         card.addEventListener('touchstart', (e) => {
-                            if (dragHandle.contains(e.target)) return;
+                            if (e.target.closest('.drag-handle')) return;
                             favLongPressTimer = setTimeout(() => {
                                 e.preventDefault();
                                 showFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
@@ -2873,18 +2915,18 @@
                 function handleDrop(e) {
                     e.preventDefault();
                     if (!draggedItem) return;
+
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
-                    const newFavoritesInGroup = newOrderedElements.map(elem => {
+                    const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
-                        return favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
-                    }).filter(Boolean);
-                    if (activeGroupId === 'all') {
-                        favoriteData.favorites = newFavoritesInGroup;
-                    } else {
-                        const otherFavorites = favoriteData.favorites.filter(f => f.groupId !== activeGroupId);
-                        favoriteData.favorites = [...newFavoritesInGroup, ...otherFavorites];
-                    }
+                        return `${routeId}-${stationId}-${direction}`;
+                    });
+
+                    // Update the order array for the currently active group
+                    favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
+                    // No need to call displayFavoriteStations() again, the DOM is already updated.
+                    // But a call is okay for consistency if other data changes.
                     displayFavoriteStations();
                 }
                 const getWeatherDescription = (code) => {
