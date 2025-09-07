@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -2156,11 +2157,6 @@
                         hideFavoriteButton();
                     }
                 });
-
-                // =================================================================
-                // ================== START: CORE BUG FIX AREA =====================
-                // =================================================================
-
                 async function showPage(pageId, pushState = true) {
                     if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                         if (pageId === 'routeSelectionPage') {
@@ -2229,13 +2225,9 @@
                         navButton.classList.add('active-nav');
                     }
 
-                    // --- THIS IS THE KEY FIX ---
-                    // Ensure that any async data loading for the page is AWAITED
-                    // This prevents the initializeApp function from completing prematurely
                     if (pageId === 'favoriteStationsPage') {
                         await displayFavoriteStations();
                     } else if (pageId === 'homePage') {
-                        // Using Promise.all to run them in parallel but still wait for both
                         await Promise.all([
                             weatherDataLoaded ? Promise.resolve() : fetchWeather(),
                             announcementsDataLoaded ? Promise.resolve() : fetchAnnouncements()
@@ -2245,11 +2237,6 @@
                         updateMrtIframeSrc();
                     }
                 }
-
-                // =================================================================
-                // =================== END: CORE BUG FIX AREA ======================
-                // =================================================================
-
                 window.addEventListener('popstate', async (event) => {
                     if (!isInitialLoadComplete) return; 
                     handleHashChange(true);
