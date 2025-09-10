@@ -1496,6 +1496,7 @@
                 let ghost = null; 
                 let startYTouch = 0;
                 let startTop = 0;
+                let favoriteUpdateInterval = null;
                 const translations = {
                     zh: {
                         appTitle: '高雄公車 App',
@@ -2142,6 +2143,10 @@
                         }
                         return; 
                     }
+                    if (favoriteUpdateInterval) {
+                        clearInterval(favoriteUpdateInterval);
+                        favoriteUpdateInterval = null;
+                    }
                     if (pageId === 'homePage') {
                         history.replaceState({ page: 'homePage' }, '', '?page=home');
                         pushState = false;
@@ -2201,7 +2206,12 @@
                     if (navButton) {
                         navButton.classList.add('active-nav');
                     }
-                    if (pageId === 'favoriteStationsPage') displayFavoriteStations();
+                    if (pageId === 'favoriteStationsPage') {
+                        await displayFavoriteStations();
+                        if (!favoriteUpdateInterval) {
+                            favoriteUpdateInterval = setInterval(refreshFavoriteTimes, 30000);
+                        }
+                    }
                     else if (pageId === 'homePage') {
                         if (!weatherDataLoaded) fetchWeather();
                         if (!announcementsDataLoaded) fetchAnnouncements();
@@ -2784,20 +2794,29 @@
                         favoriteListContainer.appendChild(favCard);
                     });
                     addFavoriteCardEventListeners();
-                    const uniqueRouteIds = [...new Set(stationsToDisplay.map(f => f.routeId))];
-                    if (uniqueRouteIds.length === 0) return;
-                    const promises = uniqueRouteIds.map(routeId =>
+                    await refreshFavoriteTimes();
+                }
+                async function refreshFavoriteTimes() {
+                    if (activePage !== 'favoriteStationsPage') return;
+                    const timeDisplayDivs = document.querySelectorAll('.favorite-time-display');
+                    if (timeDisplayDivs.length === 0) return;
+                    const routeIdsToFetch = new Set();
+                    timeDisplayDivs.forEach(div => {
+                        routeIdsToFetch.add(div.dataset.routeId);
+                    });
+                    if (routeIdsToFetch.size === 0) return;
+                    const promises = Array.from(routeIdsToFetch).map(routeId =>
                         fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
                     );
                     const results = await Promise.allSettled(promises);
                     const routeDataMap = new Map();
                     results.forEach((result, index) => {
                         if (result.status === 'fulfilled' && result.value.data.route) {
-                            const routeId = uniqueRouteIds[index];
-                            routeDataMap.set(routeId, result.value.data.route);
+                            const routeId = Array.from(routeIdsToFetch)[index];
+                            routeDataMap.set(Number(routeId), result.value.data.route);
                         }
                     });
-                    document.querySelectorAll('.favorite-time-display').forEach(div => {
+                    timeDisplayDivs.forEach(div => {
                         const { routeId, stationId, direction } = div.dataset;
                         const routeData = routeDataMap.get(Number(routeId));
                         let timeHtml = createTimePillHtml(null);
@@ -3161,20 +3180,7 @@
                 function showSelectGroupModal(stationData) {
                     currentStationContext = stationData;
                     selectGroupModalBody.innerHTML = '';
-                    if (favoriteData.groups.length === 0) {
-                        customPrompt(
-                            translations[currentLang].addNewGroup,
-                            translations[currentLang].enterNewGroupName
-                        ).then(name => {
-                            if (name) {
-                                addNewGroupAction(name); 
-                                showSelectGroupModal(stationData); 
-                            } else {
-                                selectGroupModal.classList.remove('show');
-                            }
-                        });
-                        return;
-                    }
+                    
                     favoriteData.groups.forEach(group => {
                         const btn = document.createElement('button');
                         btn.className = 'w-full text-left py-3 px-4 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600';
@@ -3185,6 +3191,30 @@
                         });
                         selectGroupModalBody.appendChild(btn);
                     });
+
+                    const hr = document.createElement('hr');
+                    hr.className = 'my-2 border-slate-200 dark:border-slate-600';
+                    selectGroupModalBody.appendChild(hr);
+
+                    const addNewGroupBtnInModal = document.createElement('button');
+                    addNewGroupBtnInModal.className = 'w-full flex items-center justify-center text-left py-3 px-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 font-medium';
+                    addNewGroupBtnInModal.innerHTML = `<span class="material-icons-outlined mr-2">add</span> ${translations[currentLang].addNewGroup}`;
+                    addNewGroupBtnInModal.addEventListener('click', async () => {
+                        selectGroupModal.classList.remove('show');
+                        const name = await customPrompt(
+                            translations[currentLang].addNewGroup,
+                            translations[currentLang].enterNewGroupName
+                        );
+                        if (name && name.trim()) {
+                            addNewGroupAction(name.trim());
+                            const newGroup = favoriteData.groups.find(g => g.name === name.trim());
+                            if (newGroup) {
+                                addFavorite(stationData, newGroup.id);
+                            }
+                        }
+                    });
+                    selectGroupModalBody.appendChild(addNewGroupBtnInModal);
+
                     selectGroupModal.classList.add('show');
                 }
                 closeSelectGroupModal.addEventListener('click', () => selectGroupModal.classList.remove('show'));
@@ -3445,4 +3475,3 @@
     </script>
 </body>
 </html>
-
