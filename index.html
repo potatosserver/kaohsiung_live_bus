@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -40,7 +39,7 @@
             transition: background-color 0.3s ease, color 0.3s ease; 
         }
         body.is-dragging-item {
-            overflow: hidden; /* Prevent page scroll during drag */
+            overflow: hidden; 
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -387,7 +386,7 @@
         }
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            touch-action: none; /* Disable browser's default touch actions on items */
+            touch-action: none; 
         }
         #favoriteListContainer .favorite-card-item.placeholder {
             opacity: 0.4;
@@ -1493,8 +1492,8 @@
                 let favTouchStartX = 0, favTouchStartY = 0;
                 let favTouchEndX = 0, favTouchEndY = 0;
                 let isDraggingTouch = false;
-                let placeholder = null; // The original item acting as placeholder
-                let ghost = null; // The cloned item following the finger
+                let placeholder = null; 
+                let ghost = null; 
                 let startYTouch = 0;
                 let startTop = 0;
                 const translations = {
@@ -2007,13 +2006,10 @@
                         let data = localStorage.getItem('favoriteData');
                         if (data) {
                             favoriteData = JSON.parse(data);
-                            // Migration for users without the new groupOrder structure
                             if (!favoriteData.groupOrder) {
                                 console.log("Migrating favorites to include new ordering system.");
                                 favoriteData.groupOrder = {};
-                                // 'all' group gets the default order from the favorites array
                                 favoriteData.groupOrder.all = favoriteData.favorites.map(f => `${f.routeId}-${f.stationId}-${f.direction}`);
-                                // Create order lists for each specific group
                                 favoriteData.groups.forEach(group => {
                                     const groupId = group.id;
                                     favoriteData.groupOrder[groupId] = favoriteData.favorites
@@ -2023,7 +2019,6 @@
                                 saveFavorites();
                             }
                         } else {
-                            // Initialize for new users
                             favoriteData = {
                                 groups: [],
                                 favorites: [],
@@ -2059,15 +2054,10 @@
                         const newFavorite = { ...stationData, groupId };
                         favoriteData.favorites.push(newFavorite);
                         const favoriteId = `${newFavorite.routeId}-${newFavorite.stationId}-${newFavorite.direction}`;
-                        
-                        // Add to the end of the 'all' group order
                         if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all = [];
                         favoriteData.groupOrder.all.push(favoriteId);
-
-                        // Add to the end of its specific group order
                         if (!favoriteData.groupOrder[groupId]) favoriteData.groupOrder[groupId] = [];
                         favoriteData.groupOrder[groupId].push(favoriteId);
-
                         saveFavorites();
                         if (busTrackerPage.classList.contains('active')) {
                             loadBusData(currentRouteId, false);
@@ -2082,11 +2072,8 @@
                         fav.stationId === String(stationId) &&
                         fav.direction === Number(direction)
                     );
-
                     if (index > -1) {
                         favoriteData.favorites.splice(index, 1);
-                        
-                        // Remove from all order arrays in groupOrder
                         if (favoriteData.groupOrder) {
                             Object.keys(favoriteData.groupOrder).forEach(key => {
                                 const orderIndex = favoriteData.groupOrder[key].indexOf(favoriteId);
@@ -2095,7 +2082,6 @@
                                 }
                             });
                         }
-                        
                         saveFavorites();
                         if (activePage === 'favoriteStationsPage') {
                             displayFavoriteStations();
@@ -2747,26 +2733,20 @@
                     loadFavorites();
                     renderGroupTabs();
                     favoriteListContainer.innerHTML = '';
-
                     let stationsToDisplay;
                     if (activeGroupId === 'all') {
                         stationsToDisplay = [...favoriteData.favorites];
                     } else {
                         stationsToDisplay = favoriteData.favorites.filter(fav => fav.groupId === activeGroupId);
                     }
-
                     const order = favoriteData.groupOrder[activeGroupId] || [];
                     const stationMap = new Map(stationsToDisplay.map(f => [`${f.routeId}-${f.stationId}-${f.direction}`, f]));
-                    
                     const sortedStations = order
                         .map(id => stationMap.get(id))
                         .filter(Boolean); 
-
                     const orderedIdsSet = new Set(order);
                     const stationsNotInOrder = stationsToDisplay.filter(f => !orderedIdsSet.has(`${f.routeId}-${f.stationId}-${f.direction}`));
-                    
                     stationsToDisplay = [...sortedStations, ...stationsNotInOrder];
-                    
                     if (favoriteData.favorites.length === 0) {
                         noFavoritesMessage.classList.remove('hidden');
                         return;
@@ -2775,7 +2755,6 @@
                         noFavoritesMessage.classList.remove('hidden');
                         return;
                     }
-
                     noFavoritesMessage.classList.add('hidden');
                     stationsToDisplay.forEach((fav) => {
                         const favCard = document.createElement('div');
@@ -2804,11 +2783,9 @@
                         `;
                         favoriteListContainer.appendChild(favCard);
                     });
-
                     addFavoriteCardEventListeners();
                     const uniqueRouteIds = [...new Set(stationsToDisplay.map(f => f.routeId))];
                     if (uniqueRouteIds.length === 0) return;
-
                     const promises = uniqueRouteIds.map(routeId =>
                         fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
                     );
@@ -2820,7 +2797,6 @@
                             routeDataMap.set(routeId, result.value.data.route);
                         }
                     });
-
                     document.querySelectorAll('.favorite-time-display').forEach(div => {
                         const { routeId, stationId, direction } = div.dataset;
                         const routeData = routeDataMap.get(Number(routeId));
@@ -2836,33 +2812,26 @@
                 }
                 function handleTouchDragStart(e) {
                     const touch = e.touches[0];
-                    placeholder = this; // The original card
-                    
+                    placeholder = this; 
                     ghost = placeholder.cloneNode(true);
                     ghost.classList.add('dragging-ghost');
                     document.body.appendChild(ghost);
-                    
                     const rect = placeholder.getBoundingClientRect();
                     startTop = rect.top;
                     startYTouch = touch.clientY;
-                    
                     ghost.style.width = `${rect.width}px`;
                     ghost.style.top = `${startTop}px`;
                     ghost.style.left = `${rect.left}px`;
-                    
                     placeholder.classList.add('placeholder');
                     body.classList.add('is-dragging-item');
-
                     document.addEventListener('touchmove', handleTouchDragMove, { passive: false });
                     document.addEventListener('touchend', handleTouchDragEnd, { once: true });
                 }
-
                 function handleTouchDragMove(e) {
                     e.preventDefault();
                     const touch = e.touches[0];
                     const newTop = startTop + (touch.clientY - startYTouch);
                     ghost.style.top = `${newTop}px`;
-
                     const afterElement = getDragAfterElement(favoriteListContainer, touch.clientY);
                     if (afterElement) {
                         favoriteListContainer.insertBefore(placeholder, afterElement);
@@ -2870,47 +2839,37 @@
                         favoriteListContainer.appendChild(placeholder);
                     }
                 }
-
                 function handleTouchDragEnd() {
                     document.body.removeChild(ghost);
                     placeholder.classList.remove('placeholder');
                     body.classList.remove('is-dragging-item');
-
                     ghost = null;
                     placeholder = null;
-
                     const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                     const newOrderedIds = newOrderedElements.map(elem => {
                         const { routeId, stationId, direction } = elem.dataset;
                         return `${routeId}-${stationId}-${direction}`;
                     });
-
                     favoriteData.groupOrder[activeGroupId] = newOrderedIds;
                     saveFavorites();
-
                     document.removeEventListener('touchmove', handleTouchDragMove);
                 }
-                
                 function addFavoriteCardEventListeners() {
                     favoriteListContainer.querySelectorAll('.favorite-card-item').forEach(card => {
                         const { routeId, stationId, direction } = card.dataset;
                         const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
                         if (!favData) return;
-                        
                         const tapArea = card.querySelector('.card-tap-area');
                         const dragHandle = card.querySelector('.drag-handle');
                         let favLongPressTimer;
-                        
                         tapArea.addEventListener('click', () => {
                             if (isDraggingTouch) return;
                             navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                         });
-
                         card.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
                             showFavoriteButton(favData, e.clientX, e.clientY);
                         });
-
                         card.addEventListener('touchstart', (e) => {
                             if (dragHandle.contains(e.target) || isDraggingTouch) return;
                             favLongPressTimer = setTimeout(() => {
@@ -2919,12 +2878,9 @@
                                 favLongPressTimer = null;
                             }, 700);
                         }, { passive: false });
-
                         card.addEventListener('touchmove', () => clearTimeout(favLongPressTimer));
                         card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
                         card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
-                        
-                        // Mobile Touch Drag & Drop
                         dragHandle.addEventListener('touchstart', handleTouchDragStart.bind(card));
                     });
                 }
@@ -3488,5 +3444,4 @@
         });
     </script>
 </body>
-
 </html>
