@@ -2135,6 +2135,21 @@
                         hideFavoriteButton();
                     }
                 });
+
+                function updateNavHighlight() {
+                    document.querySelectorAll('#mainNav button').forEach(button => {
+                        button.classList.remove('active-nav');
+                    });
+                    let navButtonId = activePage.replace('Page', '');
+                    if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
+                        navButtonId = 'dynamic';
+                    }
+                    const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
+                    if (navButton) {
+                        navButton.classList.add('active-nav');
+                    }
+                }
+
                 async function showPage(pageId, pushState = true) {
                     if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                         if (pageId === 'routeSelectionPage') {
@@ -2195,17 +2210,9 @@
                             container.style.paddingBottom = '90px';
                         }
                     }
-                    document.querySelectorAll('#mainNav button').forEach(button => {
-                        button.classList.remove('active-nav');
-                    });
-                    let navButtonId = pageId.replace('Page', '');
-                    if (pageId === 'routeSelectionPage' || pageId === 'busTrackerPage') {
-                        navButtonId = 'dynamic';
-                    }
-                    const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
-                    if (navButton) {
-                        navButton.classList.add('active-nav');
-                    }
+                    
+                    updateNavHighlight();
+
                     if (pageId === 'favoriteStationsPage') {
                         await displayFavoriteStations();
                         if (!favoriteUpdateInterval) {
@@ -3466,8 +3473,11 @@
                     updateCountdownButton.style.display = "none";
                 });
                 document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'visible' && busTrackerPage.classList.contains('active') && navigator.onLine) {
-                        countdownTimer.update();
+                    if (document.visibilityState === 'visible') {
+                        updateNavHighlight();
+                        if (busTrackerPage.classList.contains('active') && navigator.onLine) {
+                            countdownTimer.update();
+                        }
                     }
                 });
             } 
