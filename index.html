@@ -1795,6 +1795,21 @@
                         }
                     }`
                 };
+
+                function updateNavHighlight() {
+                    document.querySelectorAll('#mainNav button').forEach(button => {
+                        button.classList.remove('active-nav');
+                    });
+                    let navButtonId = activePage.replace('Page', '');
+                    if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
+                        navButtonId = 'dynamic';
+                    }
+                    const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
+                    if (navButton) {
+                        navButton.classList.add('active-nav');
+                    }
+                }
+
                 function checkMarqueeOverflow(container, textElement, originalText) {
                     if (!container || !textElement) return;
                     container.style.flexGrow = '1';
@@ -2135,21 +2150,6 @@
                         hideFavoriteButton();
                     }
                 });
-
-                function updateNavHighlight() {
-                    document.querySelectorAll('#mainNav button').forEach(button => {
-                        button.classList.remove('active-nav');
-                    });
-                    let navButtonId = activePage.replace('Page', '');
-                    if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
-                        navButtonId = 'dynamic';
-                    }
-                    const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
-                    if (navButton) {
-                        navButton.classList.add('active-nav');
-                    }
-                }
-
                 async function showPage(pageId, pushState = true) {
                     if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                         if (pageId === 'routeSelectionPage') {
@@ -3451,6 +3451,7 @@
                     await showPage(initialPageId, initialPageId !== 'homePage');
                 }
                 handleHashChange(false);
+                updateNavHighlight(); 
                 countdownInterval = setInterval(() => {
                     if (busTrackerPage.classList.contains('active') && navigator.onLine) {
                         updateCountdownButton.style.display = "flex";
