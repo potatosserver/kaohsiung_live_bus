@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1272,10 +1271,7 @@
             <h3 class="text-lg font-bold mb-4 text-slate-800" data-i18n="selectGroupTitle">選擇分組</h3>
             <div id="selectGroupModalBody" class="space-y-2">
             </div>
-            <div id="selectGroupModalFooter" class="mt-4 space-y-2">
-                <button id="addNewGroupFromSelectModalBtn" class="w-full text-center py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors" data-i18n="addNewGroup">新增分組</button>
-                <button id="closeSelectGroupModal" class="w-full text-center py-2 rounded-lg btn-secondary" data-i18n="cancel">取消</button>
-            </div>
+            <button id="closeSelectGroupModal" class="mt-4 w-full text-center py-2 rounded-lg btn-secondary" data-i18n="cancel">取消</button>
         </div>
     </div>
     <div id="manageGroupsModal" class="modal-overlay">
@@ -1396,7 +1392,6 @@
                     'Accept': 'application/json',
                 };
                 const body = document.body;
-                let isInitialLoadComplete = false;
                 const routeSelectionPage = document.getElementById('routeSelectionPage');
                 const busTrackerPage = document.getElementById('busTrackerPage');
                 const favoriteStationsPage = document.getElementById('favoriteStationsPage');
@@ -1434,7 +1429,6 @@
                 const selectGroupModal = document.getElementById('selectGroupModal');
                 const selectGroupModalBody = document.getElementById('selectGroupModalBody');
                 const closeSelectGroupModal = document.getElementById('closeSelectGroupModal');
-                const addNewGroupFromSelectModalBtn = document.getElementById('addNewGroupFromSelectModalBtn');
                 const manageGroupsModal = document.getElementById('manageGroupsModal');
                 const manageGroupsModalBody = document.getElementById('manageGroupsModalBody');
                 const closeManageGroupsModal = document.getElementById('closeManageGroupsModal');
@@ -1805,29 +1799,25 @@
                     container.style.flexGrow = '1';
                     textElement.classList.remove('is-overflowing');
                     textElement.style.animation = 'none';
-                    textElement.textContent = originalText;
-
+                    textElement.textContent = originalText; 
                     requestAnimationFrame(() => {
                         const containerWidth = container.clientWidth;
                         const textWidth = textElement.scrollWidth;
                         const isOverflowing = textWidth > containerWidth;
-
                         if (isOverflowing) {
-                            const gap = '\u00A0\u00A0\u00A0\u00A0\u00A0';
+                            const gap = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
                             const unitText = `${gap}${originalText}`;
-                            const fullMarqueeText = `${unitText}${unitText}`;
-                            textElement.textContent = fullMarqueeText;
-                            
-                            setTimeout(() => {
-                                const scrollWidth = textElement.scrollWidth / 2;
-                                const duration = scrollWidth / 40;
+                            const fullMarqueeText = `${unitText}${unitText}`; 
+                            textElement.innerHTML = fullMarqueeText;
+                            requestAnimationFrame(() => {
+                                const scrollWidth = textElement.scrollWidth / 2; 
+                                const duration = scrollWidth / 40; 
                                 textElement.style.animation = `marquee-scroll ${Math.max(8, duration)}s linear infinite`;
                                 textElement.classList.add('is-overflowing');
-                            }, 0);
-
+                            });
                         } else {
-                            container.style.flexGrow = '0';
-                            textElement.textContent = originalText;
+                            container.style.flexGrow = '0'; 
+                            textElement.textContent = originalText; 
                             textElement.classList.remove('is-overflowing');
                         }
                     });
@@ -2165,7 +2155,10 @@
                         }
                         return; 
                     }
-                    
+                    if (pageId === 'homePage') {
+                        history.replaceState({ page: 'homePage' }, '', '?page=home');
+                        pushState = false;
+                    }
                     lastPage = activePage;
                     activePage = pageId;
                     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -2177,7 +2170,6 @@
                         document.getElementById('homePage').classList.add('active');
                         activePage = 'homePage';
                     }
-
                     if (pushState) {
                         const state = { page: pageId };
                         let pageName = pageId.replace('Page', '');
@@ -2190,7 +2182,6 @@
                         }
                         history.pushState(state, '', url);
                     }
-
                     if (pageId === 'routeSelectionPage') {
                         resetSearch();
                         await initRouteSelection();
@@ -2212,7 +2203,6 @@
                             container.style.paddingBottom = '90px';
                         }
                     }
-
                     document.querySelectorAll('#mainNav button').forEach(button => {
                         button.classList.remove('active-nav');
                     });
@@ -2224,28 +2214,33 @@
                     if (navButton) {
                         navButton.classList.add('active-nav');
                     }
-
-                    if (pageId === 'favoriteStationsPage') {
-                        await displayFavoriteStations();
-                    } else if (pageId === 'homePage') {
-                        await Promise.all([
-                            weatherDataLoaded ? Promise.resolve() : fetchWeather(),
-                            announcementsDataLoaded ? Promise.resolve() : fetchAnnouncements()
-                        ]);
-                    } else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
+                    if (pageId === 'favoriteStationsPage') displayFavoriteStations();
+                    else if (pageId === 'homePage') {
+                        if (!weatherDataLoaded) fetchWeather();
+                        if (!announcementsDataLoaded) fetchAnnouncements();
+                    }
+                    else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
                         mrtIframeLoaded = true;
                         updateMrtIframeSrc();
                     }
                 }
                 window.addEventListener('popstate', async (event) => {
-                    if (!isInitialLoadComplete) return; 
-                    handleHashChange(true);
+                    handleHashChange(true); 
+                    const fromPage = activePage;
                     const toState = event.state;
-                    const toPage = toState ? toState.page : mapPageNameToId(new URLSearchParams(window.location.search).get('page'));
+                    const toPage = toState ? toState.page : null;
+                    const mainPagesIds = ['routeSelectionPage', 'busTrackerPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
+                    if (toPage && toPage === fromPage) {
+                        return;
+                    }
+                    if (mainPagesIds.includes(fromPage)) {
+                        await showPage('homePage', false);
+                        return;
+                    }
                     if (toPage) {
                         await showPage(toPage, false);
                     } else {
-                        await showPage(mapPageNameToId(defaultStartPage), false);
+                        await showPage('homePage', false);
                     }
                 });
                 function resetSearch() {
@@ -3209,7 +3204,20 @@
                 function showSelectGroupModal(stationData) {
                     currentStationContext = stationData;
                     selectGroupModalBody.innerHTML = '';
-                    
+                    if (favoriteData.groups.length === 0) {
+                        customPrompt(
+                            translations[currentLang].addNewGroup,
+                            translations[currentLang].enterNewGroupName
+                        ).then(name => {
+                            if (name) {
+                                addNewGroupAction(name); 
+                                showSelectGroupModal(stationData); 
+                            } else {
+                                selectGroupModal.classList.remove('show');
+                            }
+                        });
+                        return;
+                    }
                     favoriteData.groups.forEach(group => {
                         const btn = document.createElement('button');
                         btn.className = 'w-full text-left py-3 px-4 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600';
@@ -3220,20 +3228,9 @@
                         });
                         selectGroupModalBody.appendChild(btn);
                     });
-
                     selectGroupModal.classList.add('show');
                 }
                 closeSelectGroupModal.addEventListener('click', () => selectGroupModal.classList.remove('show'));
-                addNewGroupFromSelectModalBtn.addEventListener('click', async () => {
-                    const name = await customPrompt(
-                        translations[currentLang].addNewGroup,
-                        translations[currentLang].enterNewGroupName
-                    );
-                    if (name && name.trim()) {
-                        addNewGroupAction(name.trim());
-                        showSelectGroupModal(currentStationContext);
-                    }
-                });
                 function renderManageGroupList() {
                      manageGroupsModalBody.innerHTML = '';
                      favoriteData.groups.filter(g => g.id !== 'all').forEach(group => {
@@ -3444,53 +3441,21 @@
                         default: return null;
                     }
                 };
-                
-                // =================================================================
-                // =========== START: REFACTORED INITIAL PAGE LOAD LOGIC ===========
-                // =================================================================
-                
                 const urlParams = new URLSearchParams(window.location.search);
                 const pageFromUrl = urlParams.get('page');
                 const routeIdFromUrl = urlParams.get('route');
-
-                let pageToLoad = mapPageNameToId(pageFromUrl);
-
-                // Step 1: Determine the final page to load and fix the URL if necessary.
-                if (!pageToLoad) {
-                    pageToLoad = mapPageNameToId(defaultStartPage) || 'homePage';
-                    // Only replace history if we are correcting the URL from an invalid state.
-                    history.replaceState({ page: pageToLoad }, '', `?page=${pageToLoad.replace('Page', '')}`);
-                }
-                
-                // Step 2: Handle special page dependencies BEFORE showing the page.
-                let initialRouteData = null;
-                if (pageToLoad === 'busTrackerPage' && routeIdFromUrl) {
-                    await initRouteSelection(); // Pre-load dependency
-                    initialRouteData = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
-                    if (!initialRouteData) {
-                        // If the route in the URL is invalid, redirect to the route list page.
-                        pageToLoad = 'routeSelectionPage';
-                        history.replaceState({ page: pageToLoad }, '', `?page=dynamic`);
+                let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+                if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                    await initRouteSelection();
+                    const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
+                    if (route) {
+                        navigateToTracker(route.id, route.name, route.description, true, null, 1);
+                    } else {
+                        await showPage('routeSelectionPage', true);
                     }
+                } else {
+                    await showPage(initialPageId, initialPageId !== 'homePage');
                 }
-
-                // Step 3: Now, show the determined page and WAIT for it to finish its async setup.
-                await showPage(pageToLoad, false); 
-
-                // Step 4: After the page is shown, perform any post-display actions.
-                if (pageToLoad === 'busTrackerPage' && initialRouteData) {
-                    // The tracker page is visible, now populate it with data.
-                    navigateToTracker(initialRouteData.id, initialRouteData.name, initialRouteData.description, false);
-                }
-
-                // Step 5: Mark the app as fully initialized. This unblocks the popstate handler.
-                isInitialLoadComplete = true;
-
-                // =================================================================
-                // ============ END: REFACTORED INITIAL PAGE LOAD LOGIC ============
-                // =================================================================
-
-
                 handleHashChange(false);
                 countdownInterval = setInterval(() => {
                     if (busTrackerPage.classList.contains('active') && navigator.onLine) {
