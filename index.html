@@ -1218,15 +1218,26 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                                <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-4 border-b border-slate-200">
                         <h2 class="text-lg font-semibold text-slate-700" data-i18n="about">關於</h2>
                     </div>
-                    <div class="p-4">
+                    <div class="p-4 space-y-2">
                         <a href="https://github.com/potatosserver/kaohsiung_live_bus" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors -m-2">
                             <div class="flex items-center">
                                 <svg class="w-6 h-6 mr-3 fill-current" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
                                 <span data-i18n="githubSource">GitHub 原始碼</span>
+                            </div>
+                            <span class="material-icons-outlined text-slate-400">open_in_new</span>
+                        </a>
+                        <div class="flex items-center text-slate-600 dark:text-slate-300 p-2 -m-2">
+                            <span class="material-icons-outlined text-slate-500 mr-3">badge</span>
+                            <span data-i18n="authorName">作者：卓稟鈞 (Andrew)</span>
+                        </div>
+                        <a href="https://potatosserver.github.io/" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg p-2 transition-colors -m-2">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">public</span>
+                                <span data-i18n="authorWebsite">作者網站</span>
                             </div>
                             <span class="material-icons-outlined text-slate-400">open_in_new</span>
                         </a>
@@ -1559,6 +1570,9 @@
                         updateIntervalWarning: '高於30秒可能導致資訊過慢，請自行斟酌。',
                         languageSettings: '語言設定',
                         selectLanguage: '選擇語言',
+                        about: '關於',
+                        authorName: '作者：卓稟鈞 (Andrew)',
+                        authorWebsite: '作者網站',
                         githubSource: 'GitHub 原始碼',
                         updateCountdown: '秒後更新',
                         navHome: '首頁',
@@ -1668,6 +1682,9 @@
                         updateIntervalWarning: 'Intervals above 30s may result in outdated info. Use with caution.',
                         languageSettings: 'Language Settings',
                         selectLanguage: 'Select Language',
+                        about: 'About',
+                        authorName: 'Author: Cho Pin-Chun (Andrew)',
+                        authorWebsite: "Author's Website",
                         githubSource: 'GitHub Source Code',
                         updateCountdown: 's to update',
                         navHome: 'Home',
@@ -1803,9 +1820,6 @@
                     let navButtonId = activePage.replace('Page', '');
                     if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
                         navButtonId = 'dynamic';
-                    }
-                    if (activePage === 'favoriteStationsPage') {
-                        navButtonId = 'favoriteStations';
                     }
                     const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
                     if (navButton) {
