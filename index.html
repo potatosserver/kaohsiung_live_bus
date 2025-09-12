@@ -1253,7 +1253,7 @@
             <span class="material-icons-outlined">directions_bus</span>
             <span data-i18n="navDynamic">動態</span>
         </button>
-        <button id="navFavorites" data-page="favorites">
+        <button id="navFavorites" data-page="favoriteStations">
             <span class="material-icons-outlined">favorite</span>
             <span data-i18n="navFavorites">最愛</span>
          </button>
@@ -1803,6 +1803,9 @@
                     let navButtonId = activePage.replace('Page', '');
                     if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
                         navButtonId = 'dynamic';
+                    }
+                    if (activePage === 'favoriteStationsPage') {
+                        navButtonId = 'favoriteStations';
                     }
                     const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
                     if (navButton) {
@@ -3345,12 +3348,18 @@
                     if (page === 'dynamic') {
                         showPage('routeSelectionPage');
                     }
-                    else if (page === 'favorites') {
+                    else if (page === 'favoriteStations') {
                         showPage('favoriteStationsPage');
                     }
-                    else if (page === 'mrt') showPage('mrtPage');
-                    else if (page === 'home') showPage('homePage');
-                    else if (page === 'settings') showPage('settingsPage');
+                    else if (page === 'mrt') {
+                        showPage('mrtPage');
+                    }
+                    else if (page === 'home') {
+                        showPage('homePage');
+                    }
+                    else if (page === 'settings') {
+                        showPage('settingsPage');
+                    }
                 });
                 defaultStartPageSelect.addEventListener('change', () => {
                     const newDefault = defaultStartPageSelect.value;
