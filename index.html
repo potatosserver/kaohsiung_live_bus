@@ -386,7 +386,6 @@
         }
         #favoriteListContainer .favorite-card-item {
             position: relative;
-            touch-action: none; 
         }
         #favoriteListContainer .favorite-card-item.placeholder {
             opacity: 0.4;
@@ -414,6 +413,7 @@
             cursor: grab;
             padding: 8px;
             color: #94a3b8;
+            touch-action: none;
         }
         .drag-handle:active {
             cursor: grabbing;
@@ -2543,7 +2543,7 @@
                                 longPressTimer = null;
                             }, 700);
                         }
-                    }, {passive: false});
+                    }, {passive: true});
                     stationCard.addEventListener('touchmove', (e) => {
                         if (!longPressTimer || !e.touches[0]) return; 
                         const deltaX = Math.abs(e.touches[0].clientX - e.changedTouches[0].clientX);
@@ -2903,7 +2903,7 @@
                                 showFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
                                 favLongPressTimer = null;
                             }, 700);
-                        }, { passive: false });
+                        }, { passive: true });
                         card.addEventListener('touchmove', () => clearTimeout(favLongPressTimer));
                         card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
                         card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
