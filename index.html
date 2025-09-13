@@ -873,11 +873,6 @@
             color: #1c1b1f;
             box-shadow: 0 3px 6px rgba(0,0,0,0.4);
         }
-        body.dark-mode #errorMessage {
-            background-color: #7f1d1d;
-            border-color: #f87171;
-            color: #fecaca;
-        }
         body.dark-mode .dark\:bg-slate-800 { background-color: #1e293b !important; }
         body.dark-mode .dark\:text-slate-200 { color: #e2e8f0; }
         body.dark-mode .dark\:text-slate-300 { color: #cbd5e1; }
@@ -1017,10 +1012,6 @@
                     <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
                 </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
-                <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4 text-sm" role="alert">
-                    <strong class="font-bold" data-i18n="errorTitle">錯誤!</strong>
-                    <span class="block sm:inline" id="errorMessageText"></span>
-                </div>
                 <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
                     <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold transition-colors" data-direction="1">
                         <span class="static-text" data-i18n="goDirection">去程</span>
@@ -1047,6 +1038,7 @@
                 <div id="stationListBack" class="station-list-container hidden">
                     <div id="stationListBackContent" class="space-y-3"></div>
                 </div>
+                <p id="offlineNotice" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="networkErrorOfflineView"></p>
             </div>
         </div>
     </div>
@@ -1386,7 +1378,7 @@
                     splashScreen.style.transition = 'opacity 0.5s ease-out';
                     splashScreen.style.opacity = '0';
                     splashScreen.addEventListener('transitionend', () => {
-                        splashScreen.remove(); 
+                        if (splashScreen) splashScreen.remove(); 
                     }, { once: true });
                     initializeApp(); 
                 }, 2800); 
@@ -1424,8 +1416,6 @@
                 const stationListBack = document.getElementById('stationListBack');
                 const stationListGoContent = document.getElementById('stationListGoContent');
                 const stationListBackContent = document.getElementById('stationListBackContent');
-                const errorMessageDiv = document.getElementById('errorMessage');
-                const errorMessageText = document.getElementById('errorMessageText');
                 const goDirectionButton = document.getElementById('goDirectionButton');
                 const backDirectionButton = document.getElementById('backDirectionButton');
                 const updateCountdownButton = document.getElementById('updateCountdown');
@@ -1619,7 +1609,14 @@
                         weatherUnknown: '未知天氣',
                         announcementTitle: '訊息公告',
                         loadingAnnouncements: '正在載入訊息公告...',
-                        noAnnouncements: '目前沒有任何訊息通知喔'
+                        noAnnouncements: '目前沒有任何訊息通知喔',
+                        loadingRoutesError: '無法載入路線列表，請檢查您的網路連線。',
+                        networkErrorCriticalTitle: '網路連線失敗',
+                        networkErrorCriticalMessage: '無法獲取公車資料，功能將受限。請檢查網路後重試。',
+                        networkErrorWarningTitle: '網路連線不穩定',
+                        networkErrorWarningMessage: '無法更新至最新資料，目前顯示的是離線快取內容。',
+                        networkErrorOfflineView: '網路連線失敗，無法顯示即時動態。',
+                        offlineStatus: '離線'
                     },
                     en: {
                         appTitle: 'Kaohsiung Bus App',
@@ -1731,7 +1728,14 @@
                         weatherUnknown: 'Unknown Weather',
                         announcementTitle: 'Message Announcements',
                         loadingAnnouncements: 'Loading announcements...',
-                        noAnnouncements: 'Currently no message notifications.'
+                        noAnnouncements: 'Currently no message notifications.',
+                        loadingRoutesError: 'Could not load route list. Please check your network connection.',
+                        networkErrorCriticalTitle: 'Network Connection Failed',
+                        networkErrorCriticalMessage: 'Could not fetch bus data, functionality is limited. Please check your connection and retry.',
+                        networkErrorWarningTitle: 'Unstable Network Connection',
+                        networkErrorWarningMessage: 'Could not update to the latest data. Displaying offline cache.',
+                        networkErrorOfflineView: 'Network connection failed. Cannot display real-time data.',
+                        offlineStatus: 'Offline'
                     }
                 };
                 const categoryFilters = [
@@ -2272,48 +2276,89 @@
                        applySearch('');
                     }
                 }
+                // --- MODIFICATION START ---
+                function displayNetworkErrorAnnouncement(isCritical) {
+                    const announcementContent = document.getElementById('announcementContent');
+                    const announcementLoading = document.getElementById('announcementLoading');
+                    const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+
+                    announcementLoading.style.display = 'none';
+                    noAnnouncementsMessage.style.display = 'none';
+
+                    const existingError = announcementContent.querySelector('.error-announcement');
+                    if (existingError) return;
+
+                    const errorCard = document.createElement('div');
+                    errorCard.className = 'error-announcement announcement-item bg-red-100 dark:bg-red-900 p-3 rounded-lg shadow-sm mb-3 border border-red-300 dark:border-red-700';
+
+                    const title = isCritical
+                        ? (translations[currentLang].networkErrorCriticalTitle)
+                        : (translations[currentLang].networkErrorWarningTitle);
+                    
+                    const message = isCritical
+                        ? (translations[currentLang].networkErrorCriticalMessage)
+                        : (translations[currentLang].networkErrorWarningMessage);
+
+                    errorCard.innerHTML = `
+                        <h3 class="font-semibold text-red-800 dark:text-red-200 flex items-center">
+                            <span class="material-icons-outlined mr-2">wifi_off</span>
+                            ${title}
+                        </h3>
+                        <p class="text-sm text-red-700 dark:text-red-300 mt-1">${message}</p>
+                    `;
+                    announcementContent.prepend(errorCard);
+                }
+
                 async function initRouteSelection() {
-                    if (allRoutes.length > 0 && routeDataLang === currentLang) {
-                        displayInitialPrompt();
-                        return;
-                    }
+                    // This function is now wrapped to ensure it never throws an unhandled error,
+                    // which was the cause of the app getting stuck on the splash screen.
                     try {
+                        if (allRoutes.length > 0 && routeDataLang === currentLang) {
+                            displayInitialPrompt();
+                            return;
+                        }
+
                         initialLoading.style.display = 'block';
                         routeListContainer.innerHTML = '';
+                        
                         const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang });
                         allRoutes = data.data.routes.edges
                             .map(edge => edge.node)
                             .filter(route => route.id !== 0)
                             .sort((a, b) => a.seq - b.seq);
-                        routeDataLang = currentLang;
+                        
                         try {
                             localStorage.setItem('cachedRoutes', JSON.stringify(allRoutes));
                             localStorage.setItem('cachedRoutesLang', currentLang);
                         } catch (e) {
                             console.error("Error saving routes to localStorage", e);
                         }
-                        initialLoading.style.display = 'none';
                         displayInitialPrompt();
-                    } catch (error) {
-                        console.error("Failed to fetch routes, trying to use cache.", error);
+
+                    } catch (fetchError) {
+                        console.warn("API fetch failed. Attempting to load from cache.", fetchError);
                         try {
                             const cachedRoutes = localStorage.getItem('cachedRoutes');
                             const cachedRoutesLang = localStorage.getItem('cachedRoutesLang');
                             if (cachedRoutes && cachedRoutesLang === currentLang) {
-                                console.log("Using cached routes as fallback.");
                                 allRoutes = JSON.parse(cachedRoutes);
-                                routeDataLang = currentLang;
-                                initialLoading.style.display = 'none';
-                                applySearch(selectedCategoryPrefix + routeSearchInput.value);
+                                displayInitialPrompt();
+                                displayNetworkErrorAnnouncement(false); 
                             } else {
-                                throw new Error("No cached data available.");
+                                throw new Error("No valid cached data available for the current language.");
                             }
                         } catch (cacheError) {
-                            routeDataLang = null;
-                            initialLoading.innerHTML = `<p class="text-red-500">${translations[currentLang].loadingRoutesError || '無法載入路線列表，請重新整理頁面。'}</p>`;
+                            console.error("Cache also failed. App will start in a limited state.", cacheError);
+                            allRoutes = []; 
+                            displayNetworkErrorAnnouncement(true); 
+                            routeListContainer.innerHTML = `<p class="text-center py-10 text-red-500">${translations[currentLang].loadingRoutesError}</p>`;
                         }
+                    } finally {
+                        initialLoading.style.display = 'none';
+                        routeDataLang = currentLang;
                     }
                 }
+                // --- MODIFICATION END ---
                 function displayInitialPrompt() {
                     routeListContainer.innerHTML = `
                         <div id="initialPrompt" class="text-center col-span-full py-10 text-slate-500">
@@ -2323,7 +2368,7 @@
                 }
                 function displayRoutes(routes) {
                     routeListContainer.innerHTML = '';
-                    if (routes.length === 0) {
+                    if (routes.length === 0 && allRoutes.length > 0) { // Only show no results if there were routes to search from
                         noResultsMessage.style.display = 'block';
                     } else {
                         noResultsMessage.style.display = 'none';
@@ -2347,7 +2392,11 @@
                 function applySearch(searchTerm) {
                     const lowerCaseTerm = searchTerm.toLowerCase().trim();
                     if (!lowerCaseTerm) {
-                        displayInitialPrompt();
+                        if (allRoutes.length === 0) {
+                             routeListContainer.innerHTML = `<p class="text-center py-10 text-red-500">${translations[currentLang].loadingRoutesError}</p>`;
+                        } else {
+                            displayInitialPrompt();
+                        }
                         return;
                     }
                     let filteredRoutes = [...allRoutes];
@@ -2425,7 +2474,11 @@
                     applySearch(fullSearchTerm);
                 });
                 function updateDirectionButtons() {
-                    if (!currentRouteData) return;
+                    if (!currentRouteData) {
+                        goDirectionButton.parentElement.style.display = 'none';
+                        return;
+                    }
+                    goDirectionButton.parentElement.style.display = 'flex';
                     const goStaticText = goDirectionButton.querySelector('.static-text');
                     const goMarqueeContainer = goDirectionButton.querySelector('.marquee-container');
                     const goMarqueeText = goDirectionButton.querySelector('.marquee-text');
@@ -2473,39 +2526,48 @@
                         isAnimatingDirection = false;
                     }, 300);
                 }
-                function createStationCard(estimate, stationName, displayedBusIds, direction) {
-                    let timeDisplay = translations[currentLang].lastBusDeparted;
+                function createStationCard(estimate, stationName, displayedBusIds, direction, isOffline = false) {
+                    let timeDisplay;
+                    let pillBgColorClass;
                     let busIdDisplayHtml = '';
-                    let pillBgColorClass = 'bg-slate-200';
-                    if (estimate.etas && estimate.etas.length > 0) {
-                        const closestEta = estimate.etas.reduce((minEta, currentEta) => {
-                            const minTime = minEta.etaTime !== null ? minEta.etaTime : Infinity;
-                            const currentTime = currentEta.etaTime !== null ? currentEta.etaTime : Infinity;
-                            return currentTime < minTime ? currentEta : minEta;
-                        }, { etaTime: Infinity });
-                        if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
-                            if (closestEta.etaTime <= 1) {
-                                timeDisplay = translations[currentLang].approaching;
-                                pillBgColorClass = 'bg-red-200';
-                            } else if (closestEta.etaTime <= 3) {
-                                timeDisplay = translations[currentLang].arrivingSoon;
-                                pillBgColorClass = 'bg-green-200';
-                            } else {
-                                timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
-                                pillBgColorClass = 'bg-blue-200';
-                            }
-                            if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
-                                busIdDisplayHtml = `<div class="bus-id-display">
-                                                    <span class="material-icons-outlined text-sm">directions_bus</span>
-                                                    <span>${closestEta.busId}</span>
-                                                </div>`;
-                                displayedBusIds.add(closestEta.busId);
-                            }
-                        }
-                    } else if (estimate.comeTime) {
-                        timeDisplay = estimate.comeTime;
+                    
+                    if (isOffline) {
+                        timeDisplay = translations[currentLang].offlineStatus;
                         pillBgColorClass = 'bg-slate-200';
+                    } else {
+                        timeDisplay = translations[currentLang].lastBusDeparted;
+                        pillBgColorClass = 'bg-slate-200';
+                        if (estimate.etas && estimate.etas.length > 0) {
+                            const closestEta = estimate.etas.reduce((minEta, currentEta) => {
+                                const minTime = minEta.etaTime !== null ? minEta.etaTime : Infinity;
+                                const currentTime = currentEta.etaTime !== null ? currentEta.etaTime : Infinity;
+                                return currentTime < minTime ? currentEta : minEta;
+                            }, { etaTime: Infinity });
+                            if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
+                                if (closestEta.etaTime <= 1) {
+                                    timeDisplay = translations[currentLang].approaching;
+                                    pillBgColorClass = 'bg-red-200';
+                                } else if (closestEta.etaTime <= 3) {
+                                    timeDisplay = translations[currentLang].arrivingSoon;
+                                    pillBgColorClass = 'bg-green-200';
+                                } else {
+                                    timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
+                                    pillBgColorClass = 'bg-blue-200';
+                                }
+                                if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
+                                    busIdDisplayHtml = `<div class="bus-id-display">
+                                                        <span class="material-icons-outlined text-sm">directions_bus</span>
+                                                        <span>${closestEta.busId}</span>
+                                                    </div>`;
+                                    displayedBusIds.add(closestEta.busId);
+                                }
+                            }
+                        } else if (estimate.comeTime) {
+                            timeDisplay = estimate.comeTime;
+                            pillBgColorClass = 'bg-slate-200';
+                        }
                     }
+
                     const stationCard = document.createElement('div');
                     stationCard.className = 'station-item';
                     stationCard.dataset.stationId = estimate.id;
@@ -2573,7 +2635,7 @@
                     stationCard.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
                     return stationCard;
                 }
-                function displayEstimateTimes(data, direction, targetElement) {
+                function displayEstimateTimes(data, direction, targetElement, isOffline = false) {
                     targetElement.innerHTML = '';
                     const stationMap = new Map(data.stations.edges.map(edge => [edge.node.id, edge.node.name]));
                     const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
@@ -2585,15 +2647,26 @@
                     const displayedBusIds = new Set();
                     filteredEstimates.forEach(({ node: estimate }) => {
                         const stationName = stationMap.get(estimate.id) || `${translations[currentLang].unknownStation} (ID: ${estimate.id})`;
-                        const card = createStationCard(estimate, stationName, displayedBusIds, direction);
+                        const card = createStationCard(estimate, stationName, displayedBusIds, direction, isOffline);
                         fragment.appendChild(card);
                     });
                     targetElement.appendChild(fragment);
                 }
-                function renderAllDirections(data) {
-                    displayEstimateTimes(data, 1, stationListGoContent);
-                    displayEstimateTimes(data, 2, stationListBackContent);
+                function renderAllDirections(data, isOffline = false) {
+                    displayEstimateTimes(data, 1, stationListGoContent, isOffline);
+                    displayEstimateTimes(data, 2, stationListBackContent, isOffline);
                 }
+
+                function renderOfflineUncachedState() {
+                    trackerLoading.style.display = 'none';
+                    stationListGoContent.innerHTML = '';
+                    stationListBackContent.innerHTML = '';
+                    goDirectionButton.parentElement.style.display = 'none';
+                    const offlineNotice = document.getElementById('offlineNotice');
+                    offlineNotice.textContent = translations[currentLang].networkErrorOfflineView;
+                    offlineNotice.classList.remove('hidden');
+                }
+
                 async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
                     if (isInitialLoad) {
                         trackerLoading.style.display = 'block';
@@ -2601,14 +2674,25 @@
                         stationListBackContent.innerHTML = '';
                         stationListGo.classList.add('hidden');
                         stationListBack.classList.add('hidden');
+                        document.getElementById('offlineNotice').classList.add('hidden');
                     }
-                    errorMessageDiv.style.display = 'none'; 
                     updateCountdownButton.disabled = true;
+
                     try {
                         const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
                         if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
+                        
                         currentRouteData = result.data.route;
-                        renderAllDirections(currentRouteData);
+                        
+                        try {
+                            let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
+                            cachedDetails[routeId] = currentRouteData;
+                            localStorage.setItem('cachedRouteDetails', JSON.stringify(cachedDetails));
+                        } catch (e) {
+                            console.error("Error saving route details to localStorage", e);
+                        }
+
+                        renderAllDirections(currentRouteData, false);
                         updateDirectionButtons();
                         stationListGo.className = 'station-list-container';
                         stationListBack.className = 'station-list-container';
@@ -2628,8 +2712,23 @@
                             }
                         }
                     } catch (error) {
-                        errorMessageText.textContent = error.message;
-                        errorMessageDiv.style.display = 'block';
+                        console.error("Failed to fetch route details:", error);
+                        
+                        // --- OFFLINE FALLBACK LOGIC ---
+                        let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
+                        const cachedData = cachedDetails[routeId];
+                        
+                        if (cachedData) {
+                            console.log(`Displaying cached data for route ${routeId}`);
+                            currentRouteData = cachedData;
+                            renderAllDirections(cachedData, true); // true indicates offline rendering
+                            updateDirectionButtons();
+                            stationListGo.classList.remove('hidden');
+                        } else {
+                            console.log(`No cached data for route ${routeId}. Displaying limited offline view.`);
+                            currentRouteData = null;
+                            renderOfflineUncachedState();
+                        }
                     } finally {
                         trackerLoading.style.display = 'none';
                         updateCountdownButton.disabled = false;
@@ -3047,7 +3146,7 @@
                 };
                 async function fetchAnnouncements() {
                     loadFavorites(); 
-                    if (favoriteData.favorites.length === 0) {
+                    if (favoriteData.favorites.length === 0 && navigator.onLine) {
                         announcementLoading.classList.add('hidden');
                         noAnnouncementsMessage.classList.remove('hidden');
                         announcementContent.innerHTML = '';
@@ -3115,18 +3214,29 @@
                         renderAnnouncements(Array.from(groupedMessages.values()));
                     } catch (error) {
                         console.error("取得訊息公告時發生錯誤:", error);
-                        announcementContent.innerHTML = `<p class="text-center py-4 text-red-500">${translations[currentLang].weatherLoadError}</p>`;
+                        // Do not display an error here, let the network error announcement handle it
                     } finally {
                         announcementLoading.classList.add('hidden');
                         announcementsDataLoaded = true;
                     }
                 }
                 function renderAnnouncements(messages) {
+                    // This function now only renders messages, not errors
+                    const announcementContent = document.getElementById('announcementContent');
+                    const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+                    const existingError = announcementContent.querySelector('.error-announcement');
                     announcementContent.innerHTML = '';
+                    if (existingError) {
+                        announcementContent.appendChild(existingError);
+                    }
+
                     if (messages.length === 0) {
-                        noAnnouncementsMessage.classList.remove('hidden');
-                        announcementContent.appendChild(noAnnouncementsMessage);
+                        if (!existingError) {
+                             noAnnouncementsMessage.classList.remove('hidden');
+                             announcementContent.appendChild(noAnnouncementsMessage);
+                        }
                     } else {
+                        noAnnouncementsMessage.classList.add('hidden');
                         messages.forEach(msg => {
                             const messageCard = document.createElement('div');
                             messageCard.className = 'announcement-item bg-blue-100 dark:bg-slate-700 p-3 rounded-lg shadow-sm mb-3 border border-blue-200 dark:border-slate-600';
@@ -3462,8 +3572,16 @@
                 const pageFromUrl = urlParams.get('page');
                 const routeIdFromUrl = urlParams.get('route');
                 let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+                
+                // Ensure initialization logic is robust
+                try {
+                    await initRouteSelection(); 
+                } catch(e) {
+                    console.error("Critical error during initial route loading.", e);
+                    // App can still proceed because initRouteSelection now handles its own errors
+                }
+
                 if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
-                    await initRouteSelection();
                     const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                     if (route) {
                         navigateToTracker(route.id, route.name, route.description, true, null, 1);
@@ -3473,6 +3591,7 @@
                 } else {
                     await showPage(initialPageId, initialPageId !== 'homePage');
                 }
+                
                 handleHashChange(false);
                 updateNavHighlight(); 
                 countdownInterval = setInterval(() => {
