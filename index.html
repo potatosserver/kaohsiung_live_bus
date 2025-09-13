@@ -1398,6 +1398,7 @@
             
             async function initializeApp() {
                 try { 
+                    // --- START: SHARED SCOPE FOR CONSTANTS, VARIABLES, AND HELPERS ---
                     const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
                     const HEADERS = {
                         'Content-Type': 'application/json',
@@ -1887,19 +1888,7 @@
                         }
                         updateMrtIframeSrc();
                     }
-                    darkModeToggle.addEventListener('change', () => {
-                        if (darkModeToggle.checked) {
-                            body.classList.add('dark-mode');
-                            localStorage.setItem('darkMode', 'true');
-                        } else {
-                            body.classList.remove('dark-mode');
-                            localStorage.setItem('darkMode', 'false');
-                        }
-                        updateMrtIframeSrc();
-                    });
-                    splashScreenToggle.addEventListener('change', () => {
-                        localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
-                    });
+                    
                     async function setLanguage(lang) {
                         if (lang === currentLang) return;
                         currentLang = lang;
@@ -1966,9 +1955,7 @@
                             countdownTimer.updateDisplay();
                         }
                     }
-                    languageSelect.addEventListener('change', async (e) => {
-                        await setLanguage(e.target.value);
-                    });
+                    
                     async function fetchAPI(query, variables) {
                         try {
                             const response = await fetch(API_URL, {
@@ -2169,17 +2156,7 @@
                             favoriteActionButton.classList.add('hidden');
                         }, { once: true });
                     }
-                    favoriteActionButton.addEventListener('click', () => {
-                        if (currentStationContext) {
-                            const isCurrentlyFavorite = isFavorite(currentStationContext.routeId, currentStationContext.stationId, currentStationContext.direction);
-                            if (isCurrentlyFavorite) {
-                                removeFavorite(currentStationContext);
-                            } else {
-                                showSelectGroupModal(currentStationContext);
-                            }
-                            hideFavoriteButton();
-                        }
-                    });
+                    
                     async function showPage(pageId, pushState = true) {
                         if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                             if (pageId === 'routeSelectionPage') {
@@ -2257,25 +2234,7 @@
                             updateMrtIframeSrc();
                         }
                     }
-                    window.addEventListener('popstate', async (event) => {
-                        handleHashChange(true); 
-                        const fromPage = activePage;
-                        const toState = event.state;
-                        const toPage = toState ? toState.page : null;
-                        const mainPagesIds = ['routeSelectionPage', 'busTrackerPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
-                        if (toPage && toPage === fromPage) {
-                            return;
-                        }
-                        if (mainPagesIds.includes(fromPage)) {
-                            await showPage('homePage', false);
-                            return;
-                        }
-                        if (toPage) {
-                            await showPage(toPage, false);
-                        } else {
-                            await showPage('homePage', false);
-                        }
-                    });
+                    
                     function resetSearch() {
                         selectedCategoryPrefix = '';
                         routeSearchInput.value = '';
@@ -2445,38 +2404,7 @@
                         }
                         displayRoutes(filteredRoutes);
                     }
-                    filterKeyboard.addEventListener('click', (e) => {
-                        const button = e.target.closest('button');
-                        if (!button) return;
-                        const value = button.dataset.filter;
-                        const type = button.dataset.type;
-                        button.classList.add('active-keyboard-button');
-                        setTimeout(() => {
-                            button.classList.remove('active-keyboard-button');
-                        }, 150);
-                        if (type === 'category') {
-                            let searchPrefix;
-                            const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
-                            if(categoryObj && translations[currentLang][categoryObj.i18nKey]){
-                                 searchPrefix = translations[currentLang][categoryObj.i18nKey];
-                            } else {
-                                 searchPrefix = button.textContent;
-                            }
-                            selectedCategoryPrefix = searchPrefix;
-                            categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
-                            routeSearchInput.value = '';
-                        } else if (type === 'number') {
-                            routeSearchInput.value += value;
-                        } else if (type === 'action') {
-                            if (value === 'reset') {
-                                resetSearch();
-                            } else if (value === 'backspace') {
-                                routeSearchInput.value = routeSearchInput.value.slice(0, -1);
-                            }
-                        }
-                        const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
-                        applySearch(fullSearchTerm);
-                    });
+                    
                     function updateDirectionButtons() {
                         if (!currentRouteData) {
                             goDirectionButton.parentElement.style.display = 'none';
@@ -3352,7 +3280,7 @@
 
                         selectGroupModal.classList.add('show');
                     }
-                    closeSelectGroupModal.addEventListener('click', () => selectGroupModal.classList.remove('show'));
+                    
                     function renderManageGroupList() {
                          manageGroupsModalBody.innerHTML = '';
                          favoriteData.groups.filter(g => g.id !== 'all').forEach(group => {
@@ -3433,131 +3361,7 @@
                             renderManageGroupList();
                         }
                     }
-                    closeManageGroupsModal.addEventListener('click', closeManageGroupsModalAndRefresh);
-                    addNewGroupBtn.addEventListener('click', addNewGroup);
-                    goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
-                    backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
-                    const estimateTimesSection = document.getElementById('estimateTimesSection');
-                    let touchStartX, touchStartY, touchEndX, touchEndY;
-                    estimateTimesSection.addEventListener('touchstart', (e) => {
-                        if (e.touches.length !== 1) return;
-                        touchStartX = e.touches[0].clientX;
-                        touchStartY = e.touches[0].clientY;
-                        touchEndX = 0;
-                        touchEndY = 0;
-                    }, { passive: true });
-                    estimateTimesSection.addEventListener('touchmove', (e) => {
-                        if (e.touches.length !== 1) return;
-                        touchEndX = e.touches[0].clientX;
-                        touchEndY = e.touches[0].clientY;
-                    }, { passive: true });
-                    estimateTimesSection.addEventListener('touchend', () => {
-                        if (touchEndX === 0) return;
-                        const diffX = touchStartX - touchEndX;
-                        const diffY = touchStartY - touchEndY;
-                        if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
-                            handleDirectionToggle(diffX > 0 ? 2 : 1);
-                        }
-                        touchStartX = 0;
-                        touchStartY = 0;
-                        touchEndX = 0;
-                        touchEndY = 0;
-                    });
-                    updateCountdownButton.addEventListener('click', () => {
-                        countdownTimer.update();
-                    });
-                    mainNav.addEventListener('click', (e) => {
-                        const button = e.target.closest('button');
-                        if (!button) return;
-                        const page = button.dataset.page;
-                        if (page === 'dynamic') {
-                            showPage('routeSelectionPage');
-                        }
-                        else if (page === 'favoriteStations') {
-                            showPage('favoriteStationsPage');
-                        }
-                        else if (page === 'mrt') {
-                            showPage('mrtPage');
-                        }
-                        else if (page === 'home') {
-                            showPage('homePage');
-                        }
-                        else if (page === 'settings') {
-                            showPage('settingsPage');
-                        }
-                    });
-                    defaultStartPageSelect.addEventListener('change', () => {
-                        const newDefault = defaultStartPageSelect.value;
-                        localStorage.setItem('defaultStartPage', newDefault);
-                        defaultStartPage = newDefault;
-                    });
-                    updateIntervalSelect.addEventListener('change', () => {
-                        const newInterval = parseInt(updateIntervalSelect.value, 10);
-                        updateInterval = newInterval;
-                        localStorage.setItem('updateInterval', newInterval);
-                        if (busTrackerPage.classList.contains('active')) {
-                            countdownTimer.reset();
-                        }
-                    });
-                    document.addEventListener('click', (e) => {
-                        if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
-                            hideFavoriteButton();
-                        }
-                    });
-                    favoritePage.addEventListener('touchstart', e => {
-                        if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
-                        favTouchStartX = e.changedTouches[0].screenX;
-                        favTouchStartY = e.changedTouches[0].screenY; 
-                    }, { passive: true });
-                    favoritePage.addEventListener('touchend', e => {
-                        if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
-                        favTouchEndX = e.changedTouches[0].screenX;
-                        favTouchEndY = e.changedTouches[0].screenY; 
-                        handleFavoriteSwipe();
-                    }, { passive: true });
-                    function handleFavoriteSwipe() {
-                        const swipeThreshold = 50; 
-                        if (favTouchEndX === 0 || favTouchEndY === 0) return; 
-                        const diffX = favTouchEndX - favTouchStartX;
-                        const diffY = favTouchEndY - favTouchStartY;
-                        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
-                            const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
-                            const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
-                            if (currentGroupIndex === -1) return;
-                            let nextGroupIndex;
-                            if (diffX < 0) {
-                                nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
-                            } else { 
-                                nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
-                            }
-                            activeGroupId = groupTabsIds[nextGroupIndex];
-                            displayFavoriteStations();
-                        }
-                        favTouchStartX = 0;
-                        favTouchStartY = 0;
-                        favTouchEndX = 0;
-                        favTouchEndY = 0;
-                    }
-                    applyInitialTheme();
-                    const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
-                    splashScreenToggle.checked = splashScreenEnabled;
-                    currentLang = localStorage.getItem("lang") || "zh";
-                    languageSelect.value = currentLang;
-                    updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
-                    updateIntervalSelect.value = updateInterval;
-                    countdownTimer.remaining = updateInterval;
-                    loadFavorites(); 
-                    applyTranslations(); 
-                    defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
-                    defaultStartPageSelect.value = defaultStartPage;
-                    adjustContentPadding();
-                    window.addEventListener('resize', () => {
-                        adjustContentPadding();
-                        if (busTrackerPage.classList.contains('active')) {
-                            updateDirectionButtons();
-                        }
-                    });
-                    window.addEventListener('hashchange', () => handleHashChange(false));
+                    
                     const mapPageNameToId = (name) => {
                         switch (name) {
                             case 'home': return 'homePage';
@@ -3569,61 +3373,299 @@
                             default: return null;
                         }
                     };
-                    
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const pageFromUrl = urlParams.get('page');
-                    const routeIdFromUrl = urlParams.get('route');
-                    let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+                    // --- END: SHARED SCOPE ---
 
-                    // --- NEW INITIALIZATION LOGIC ---
-                    // 1. Show a page first, no matter what.
-                    await showPage(initialPageId, initialPageId !== 'homePage');
-                    
-                    // 2. Then, attempt to load data.
-                    await initRouteSelection();
-                    
-                    // 3. If URL params specify a route, navigate to it now that we have route data.
-                    if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
-                        const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
-                        if (route) {
-                            navigateToTracker(route.id, route.name, route.description, false, null, 1);
-                        } else {
-                            // If route not found (maybe bad link), default to the route selection page.
-                            await showPage('routeSelectionPage', true);
+
+                    // --- START: NEW INITIALIZATION FUNCTIONS ---
+
+                    /**
+                     * Initializes the UI components, sets up event listeners, and displays the initial page shell.
+                     * This function does not perform any network requests and executes quickly.
+                     */
+                    async function initializeAppUI() {
+                        applyInitialTheme();
+                        
+                        const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
+                        splashScreenToggle.checked = splashScreenEnabled;
+
+                        currentLang = localStorage.getItem("lang") || "zh";
+                        languageSelect.value = currentLang;
+                        updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
+                        updateIntervalSelect.value = updateInterval;
+                        countdownTimer.remaining = updateInterval;
+                        
+                        loadFavorites(); 
+                        applyTranslations(); 
+                        
+                        defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
+                        defaultStartPageSelect.value = defaultStartPage;
+
+                        // Event Listeners Setup
+                        darkModeToggle.addEventListener('change', () => {
+                            if (darkModeToggle.checked) {
+                                body.classList.add('dark-mode');
+                                localStorage.setItem('darkMode', 'true');
+                            } else {
+                                body.classList.remove('dark-mode');
+                                localStorage.setItem('darkMode', 'false');
+                            }
+                            updateMrtIframeSrc();
+                        });
+                        splashScreenToggle.addEventListener('change', () => {
+                            localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
+                        });
+                        languageSelect.addEventListener('change', async (e) => {
+                            await setLanguage(e.target.value);
+                        });
+                        favoriteActionButton.addEventListener('click', () => {
+                            if (currentStationContext) {
+                                const isCurrentlyFavorite = isFavorite(currentStationContext.routeId, currentStationContext.stationId, currentStationContext.direction);
+                                if (isCurrentlyFavorite) {
+                                    removeFavorite(currentStationContext);
+                                } else {
+                                    showSelectGroupModal(currentStationContext);
+                                }
+                                hideFavoriteButton();
+                            }
+                        });
+                        window.addEventListener('popstate', async (event) => {
+                            handleHashChange(true); 
+                            const fromPage = activePage;
+                            const toState = event.state;
+                            const toPage = toState ? toState.page : null;
+                            const mainPagesIds = ['routeSelectionPage', 'busTrackerPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
+                            if (toPage && toPage === fromPage) {
+                                return;
+                            }
+                            if (mainPagesIds.includes(fromPage)) {
+                                await showPage('homePage', false);
+                                return;
+                            }
+                            if (toPage) {
+                                await showPage(toPage, false);
+                            } else {
+                                await showPage('homePage', false);
+                            }
+                        });
+                        filterKeyboard.addEventListener('click', (e) => {
+                            const button = e.target.closest('button');
+                            if (!button) return;
+                            const value = button.dataset.filter;
+                            const type = button.dataset.type;
+                            button.classList.add('active-keyboard-button');
+                            setTimeout(() => {
+                                button.classList.remove('active-keyboard-button');
+                            }, 150);
+                            if (type === 'category') {
+                                let searchPrefix;
+                                const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
+                                if(categoryObj && translations[currentLang][categoryObj.i18nKey]){
+                                     searchPrefix = translations[currentLang][categoryObj.i18nKey];
+                                } else {
+                                     searchPrefix = button.textContent;
+                                }
+                                selectedCategoryPrefix = searchPrefix;
+                                categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
+                                routeSearchInput.value = '';
+                            } else if (type === 'number') {
+                                routeSearchInput.value += value;
+                            } else if (type === 'action') {
+                                if (value === 'reset') {
+                                    resetSearch();
+                                } else if (value === 'backspace') {
+                                    routeSearchInput.value = routeSearchInput.value.slice(0, -1);
+                                }
+                            }
+                            const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
+                            applySearch(fullSearchTerm);
+                        });
+                        closeSelectGroupModal.addEventListener('click', () => selectGroupModal.classList.remove('show'));
+                        closeManageGroupsModal.addEventListener('click', closeManageGroupsModalAndRefresh);
+                        addNewGroupBtn.addEventListener('click', addNewGroup);
+                        goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
+                        backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
+                        const estimateTimesSection = document.getElementById('estimateTimesSection');
+                        let touchStartX, touchStartY, touchEndX, touchEndY;
+                        estimateTimesSection.addEventListener('touchstart', (e) => {
+                            if (e.touches.length !== 1) return;
+                            touchStartX = e.touches[0].clientX;
+                            touchStartY = e.touches[0].clientY;
+                            touchEndX = 0;
+                            touchEndY = 0;
+                        }, { passive: true });
+                        estimateTimesSection.addEventListener('touchmove', (e) => {
+                            if (e.touches.length !== 1) return;
+                            touchEndX = e.touches[0].clientX;
+                            touchEndY = e.touches[0].clientY;
+                        }, { passive: true });
+                        estimateTimesSection.addEventListener('touchend', () => {
+                            if (touchEndX === 0) return;
+                            const diffX = touchStartX - touchEndX;
+                            const diffY = touchStartY - touchEndY;
+                            if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+                                handleDirectionToggle(diffX > 0 ? 2 : 1);
+                            }
+                            touchStartX = 0;
+                            touchStartY = 0;
+                            touchEndX = 0;
+                            touchEndY = 0;
+                        });
+                        updateCountdownButton.addEventListener('click', () => {
+                            countdownTimer.update();
+                        });
+                        mainNav.addEventListener('click', (e) => {
+                            const button = e.target.closest('button');
+                            if (!button) return;
+                            const page = button.dataset.page;
+                            if (page === 'dynamic') {
+                                showPage('routeSelectionPage');
+                            }
+                            else if (page === 'favoriteStations') {
+                                showPage('favoriteStationsPage');
+                            }
+                            else if (page === 'mrt') {
+                                showPage('mrtPage');
+                            }
+                            else if (page === 'home') {
+                                showPage('homePage');
+                            }
+                            else if (page === 'settings') {
+                                showPage('settingsPage');
+                            }
+                        });
+                        defaultStartPageSelect.addEventListener('change', () => {
+                            const newDefault = defaultStartPageSelect.value;
+                            localStorage.setItem('defaultStartPage', newDefault);
+                            defaultStartPage = newDefault;
+                        });
+                        updateIntervalSelect.addEventListener('change', () => {
+                            const newInterval = parseInt(updateIntervalSelect.value, 10);
+                            updateInterval = newInterval;
+                            localStorage.setItem('updateInterval', newInterval);
+                            if (busTrackerPage.classList.contains('active')) {
+                                countdownTimer.reset();
+                            }
+                        });
+                        document.addEventListener('click', (e) => {
+                            if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
+                                hideFavoriteButton();
+                            }
+                        });
+                        let favTouchStartX = 0, favTouchStartY = 0;
+                        let favTouchEndX = 0, favTouchEndY = 0;
+                        favoritePage.addEventListener('touchstart', e => {
+                            if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
+                            favTouchStartX = e.changedTouches[0].screenX;
+                            favTouchStartY = e.changedTouches[0].screenY; 
+                        }, { passive: true });
+                        favoritePage.addEventListener('touchend', e => {
+                            if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
+                            favTouchEndX = e.changedTouches[0].screenX;
+                            favTouchEndY = e.changedTouches[0].screenY; 
+                            handleFavoriteSwipe();
+                        }, { passive: true });
+                        function handleFavoriteSwipe() {
+                            const swipeThreshold = 50; 
+                            if (favTouchEndX === 0 || favTouchEndY === 0) return; 
+                            const diffX = favTouchEndX - favTouchStartX;
+                            const diffY = favTouchEndY - favTouchStartY;
+                            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+                                const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
+                                const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
+                                if (currentGroupIndex === -1) return;
+                                let nextGroupIndex;
+                                if (diffX < 0) {
+                                    nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
+                                } else { 
+                                    nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
+                                }
+                                activeGroupId = groupTabsIds[nextGroupIndex];
+                                displayFavoriteStations();
+                            }
+                            favTouchStartX = 0;
+                            favTouchStartY = 0;
+                            favTouchEndX = 0;
+                            favTouchEndY = 0;
                         }
+                        
+                        adjustContentPadding();
+                        window.addEventListener('resize', () => {
+                            adjustContentPadding();
+                            if (busTrackerPage.classList.contains('active')) {
+                                updateDirectionButtons();
+                            }
+                        });
+                        window.addEventListener('hashchange', () => handleHashChange(false));
+                        
+                        // Determine and show initial page
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const pageFromUrl = urlParams.get('page');
+                        let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+                        await showPage(initialPageId, initialPageId !== 'homePage');
+
+                        handleHashChange(false);
+                        updateNavHighlight(); 
+                        
+                        countdownInterval = setInterval(() => {
+                            if (busTrackerPage.classList.contains('active') && navigator.onLine) {
+                                updateCountdownButton.style.display = "flex";
+                                countdownTimer.remaining--;
+                                if (countdownTimer.remaining <= 0) {
+                                    countdownTimer.update();
+                                }
+                                countdownTimer.updateDisplay();
+                            } else {
+                                updateCountdownButton.style.display = "none";
+                            }
+                        }, 1000);
+
+                        window.addEventListener('online', () => {
+                            if (busTrackerPage.classList.contains('active')) {
+                                updateCountdownButton.style.display = "flex";
+                                countdownTimer.update();
+                            }
+                        });
+                        window.addEventListener('offline', () => {
+                            updateCountdownButton.style.display = "none";
+                        });
+                        document.addEventListener('visibilitychange', () => {
+                            if (document.visibilityState === 'visible') {
+                                updateNavHighlight();
+                                if (busTrackerPage.classList.contains('active') && navigator.onLine) {
+                                    countdownTimer.update();
+                                }
+                            }
+                        });
                     }
 
-                    handleHashChange(false);
-                    updateNavHighlight(); 
-                    countdownInterval = setInterval(() => {
-                        if (busTrackerPage.classList.contains('active') && navigator.onLine) {
-                            updateCountdownButton.style.display = "flex";
-                            countdownTimer.remaining--;
-                            if (countdownTimer.remaining <= 0) {
-                                countdownTimer.update();
-                            }
-                            countdownTimer.updateDisplay();
-                        } else {
-                            updateCountdownButton.style.display = "none";
-                        }
-                    }, 1000);
-                    window.addEventListener('online', () => {
-                        if (busTrackerPage.classList.contains('active')) {
-                            updateCountdownButton.style.display = "flex";
-                            countdownTimer.update();
-                        }
-                    });
-                    window.addEventListener('offline', () => {
-                        updateCountdownButton.style.display = "none";
-                    });
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'visible') {
-                            updateNavHighlight();
-                            if (busTrackerPage.classList.contains('active') && navigator.onLine) {
-                                countdownTimer.update();
+                    /**
+                     * Loads initial data required for the app, such as the list of all bus routes.
+                     * This function is asynchronous and may take some time to complete.
+                     */
+                    async function loadInitialData() {
+                        await initRouteSelection();
+                        
+                        // Handle navigation if a specific route is in the URL
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const pageFromUrl = urlParams.get('page');
+                        const routeIdFromUrl = urlParams.get('route');
+                        let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+
+                        if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                            const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
+                            if (route) {
+                                navigateToTracker(route.id, route.name, route.description, false, null, 1);
+                            } else {
+                                // If route not found (maybe bad link), default to the route selection page.
+                                await showPage('routeSelectionPage', true);
                             }
                         }
-                    });
+                    }
+                    
+                    // --- NEW STARTUP SEQUENCE ---
+                    await initializeAppUI(); // Show UI immediately
+                    await loadInitialData(); // Load data in the background
+                    
                 } catch (error) {
                     console.error("A critical error occurred during initialization and was caught by the safety net:", error);
                     const splash = document.getElementById('splashScreen');
@@ -3655,7 +3697,6 @@
             } 
         });
     </script>
-    </script>
 
     <!-- START: 在這裡加入 Service Worker 註冊碼 -->
     <script>
@@ -3674,6 +3715,3 @@
 
 </body>
 </html>
-</body>
-</html>
-
