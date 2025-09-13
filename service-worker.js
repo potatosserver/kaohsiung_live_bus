@@ -1,14 +1,11 @@
-// service-worker.js (修改後的版本)
-
 const CACHE_NAME = 'kaohsiung-bus-cache-v1';
 const CORE_ASSETS = [
-    './', // 快取根目錄，對應 ibus.html
-    './index.html', // 明確快取主檔案
-    './manifest.json',
-    './icons/icon.ico'
+    '/', // 或者直接用 '/index.html'
+    '/index.html',
+    '/manifest.json',
+    '/icons/icon.ico'
 ];
 
-// 安裝 Service Worker 並快取核心檔案
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
