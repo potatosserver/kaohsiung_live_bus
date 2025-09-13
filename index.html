@@ -1333,9 +1333,9 @@
             };
 
             if (showSplashScreen) {
-                // ... (splash screen animation code remains the same)
-                 function startIconPhysics() {
+                function startIconPhysics() {
                     const container = document.getElementById('icons-container');
+                    if (!container) return;
                     const iconNames = [
                         'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
                         'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
@@ -1397,7 +1397,6 @@
             }
             
             async function initializeApp() {
-                // --- MODIFICATION START: ULTIMATE SAFETY NET ---
                 try { 
                     const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
                     const HEADERS = {
@@ -2222,7 +2221,6 @@
                         }
                         if (pageId === 'routeSelectionPage') {
                             resetSearch();
-                            await initRouteSelection();
                             filterKeyboardContainer.style.display = 'block';
                             updateCountdownButton.style.display = 'none';
                             adjustContentPadding();
@@ -3572,24 +3570,29 @@
                         }
                     };
                     
-                    await initRouteSelection(); 
-
                     const urlParams = new URLSearchParams(window.location.search);
                     const pageFromUrl = urlParams.get('page');
                     const routeIdFromUrl = urlParams.get('route');
                     let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
+                    // --- NEW INITIALIZATION LOGIC ---
+                    // 1. Show a page first, no matter what.
+                    await showPage(initialPageId, initialPageId !== 'homePage');
+                    
+                    // 2. Then, attempt to load data.
+                    await initRouteSelection();
+                    
+                    // 3. If URL params specify a route, navigate to it now that we have route data.
                     if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
                         const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                         if (route) {
-                            navigateToTracker(route.id, route.name, route.description, true, null, 1);
+                            navigateToTracker(route.id, route.name, route.description, false, null, 1);
                         } else {
+                            // If route not found (maybe bad link), default to the route selection page.
                             await showPage('routeSelectionPage', true);
                         }
-                    } else {
-                        await showPage(initialPageId, initialPageId !== 'homePage');
                     }
-                    
+
                     handleHashChange(false);
                     updateNavHighlight(); 
                     countdownInterval = setInterval(() => {
@@ -3622,16 +3625,13 @@
                         }
                     });
                 } catch (error) {
-                    // --- MODIFICATION START: CATCH BLOCK FOR ULTIMATE SAFETY NET ---
                     console.error("A critical error occurred during initialization and was caught by the safety net:", error);
                     const splash = document.getElementById('splashScreen');
                     if (splash) splash.remove();
                     
-                    // Manually ensure the homepage is visible with an error message
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.getElementById('homePage').classList.add('active');
                     
-                    // Translate and show error message
                     const lang = localStorage.getItem("lang") || "zh";
                     const criticalErrorTranslations = {
                         zh: { title: '網路連線失敗', message: '無法獲取公車資料，功能將受限。請檢查網路後重試。'},
@@ -3647,10 +3647,11 @@
                         </h3>
                         <p class="text-sm text-red-700 dark:text-red-300 mt-1">${criticalErrorTranslations[lang].message}</p>
                     `;
-                    announcementContent.innerHTML = ''; // Clear any loading spinners
-                    announcementContent.appendChild(errorCard);
+                    if(announcementContent) {
+                        announcementContent.innerHTML = ''; 
+                        announcementContent.appendChild(errorCard);
+                    }
                 }
-                // --- MODIFICATION END ---
             } 
         });
     </script>
