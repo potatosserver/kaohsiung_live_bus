@@ -84,7 +84,9 @@ self.addEventListener('fetch', (event) => {
             caches.open(DYNAMIC_CACHE_NAME).then(async (cache) => {
                 const cachedResponse = await cache.match(request);
                 const fetchPromise = fetch(request).then((networkResponse) => {
-                    cache.put(request, networkResponse.clone());
+                    if (request.method === 'GET') {
+                            cache.put(request, networkResponse.clone());
+                    }    
                     return networkResponse;
                 }).catch(err => {
                     console.warn(`Service Worker: Network fetch failed for ${request.url}.`, err);
