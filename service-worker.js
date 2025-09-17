@@ -1,8 +1,8 @@
-// service-worker.js (修正版)
+// service-worker.js (最終穩健版)
 
-// 版本號保持或增加，以觸發更新
-const CORE_CACHE_NAME = 'kaohsiung-bus-core-v5';
-const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v5';
+// 再次提升版本號，確保 Service Worker 會更新
+const CORE_CACHE_NAME = 'kaohsiung-bus-core-v6';
+const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v6';
 
 const CORE_ASSETS = [
     '/index.html',
@@ -45,32 +45,33 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(request.url);
 
     // 【核心修正】對導航請求（App的HTML外殼）採用 "網路優先，快取備援" 策略
-    // 這可以解決首次啟動時，快取尚未建立完成導致的 ERR_FAILED 問題。
     if (request.mode === 'navigate') {
         event.respondWith(
             (async () => {
                 try {
-                    // 1. 首先嘗試從網路獲取
+                    // 1. 優先嘗試從網路獲取頁面
                     const networkResponse = await fetch(request);
 
-                    // 2. 如果成功，將其存入快取並回傳
+                    // 2. 如果成功，將最新版本存入快取以備不時之需
                     const cache = await caches.open(CORE_CACHE_NAME);
-                    // 為了保持一致性，我們總是將導航回應存為 /index.html
+                    // 將回應存為 /index.html，以確保離線時有一個固定的檔案可以讀取
                     cache.put('/index.html', networkResponse.clone());
+                    
+                    // 3. 回傳從網路取得的最新頁面
                     return networkResponse;
                 } catch (error) {
-                    // 3. 如果網路請求失敗（例如離線），則從快取中提供頁面
-                    console.log('Service Worker: Network fetch failed for navigation, serving from cache.');
+                    // 4. 如果網路請求失敗（代表使用者離線），則從快取提供頁面
+                    console.log('Fetch failed; returning offline page from cache.');
                     const cache = await caches.open(CORE_CACHE_NAME);
-                    // 嘗試匹配原始請求，如果失敗再嘗試匹配 /index.html 作為備援
-                    return await cache.match(request) || await cache.match('/index.html');
+                    // 直接回傳快取的 index.html 內容，這不是重新導向，因此不會造成迴圈
+                    return await cache.match('/index.html');
                 }
             })()
         );
         return;
     }
 
-    // 對於 API 和第三方資源，繼續採用 "Stale-While-Revalidate" 策略，以獲得最佳效能
+    // 對於 API 和第三方資源，繼續採用 "Stale-While-Revalidate" 策略
     if (url.hostname.includes('ibus.tbkc.gov.tw') ||
         url.hostname.includes('api.open-meteo.com') ||
         url.hostname.includes('fonts.gstatic.com') ||
@@ -82,7 +83,7 @@ self.addEventListener('fetch', (event) => {
                 const fetchPromise = fetch(request).then((networkResponse) => {
                     if (request.method === 'GET') {
                         cache.put(request, networkResponse.clone());
-                    }
+                    }    
                     return networkResponse;
                 }).catch(err => {
                     console.warn(`Service Worker: Network fetch failed for ${request.url}.`, err);
