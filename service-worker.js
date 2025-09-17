@@ -1,20 +1,19 @@
-// service-worker.js (已採用 Stale-While-Revalidate 並修復離線導航問題)
+// service-worker.js (專業修復與強化版)
 
-const CORE_CACHE_NAME = 'kaohsiung-bus-core-v2'; // <--- 版本升級!
-const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v2'; // <--- 版本升級!
+// 1. 提升版本號以觸發更新
+const CORE_CACHE_NAME = 'kaohsiung-bus-core-v3';
+const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v3';
 
-// 應用程式核心檔案 (App Shell) - 移除了模糊的 '/'
+// 2. 核心 App Shell 應只包含最關鍵、無外部依賴的檔案
 const CORE_ASSETS = [
-    '/index.html', // 明确指定 index.html 作為唯一的入口點
+    '/index.html',
     '/manifest.json',
     '/icons/icon.ico',
     '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
-    // 預先快取關鍵的 CDN 資源
-    'https://cdn.tailwindcss.com'
+    '/icons/icon-512x512.png'
 ];
 
-// 1. 安裝 Service Worker 並快取核心檔案
+// 安裝 Service Worker 並快取核心檔案
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CORE_CACHE_NAME).then((cache) => {
@@ -24,7 +23,7 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// 2. 啟用 Service Worker 並清理舊快取
+// 啟用 Service Worker 並清理舊快取
 self.addEventListener('activate', (event) => {
     const cacheWhitelist = [CORE_CACHE_NAME, DYNAMIC_CACHE_NAME];
 
@@ -32,7 +31,6 @@ self.addEventListener('activate', (event) => {
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    // 如果快取名稱不在白名單中，就將其刪除
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
                         console.log('Service Worker: Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
@@ -43,29 +41,40 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 3. 攔截網路請求，並根據請求類型採用不同快取策略
+// 攔截網路請求
 self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-    const request = event.request;
+    const { request } = event;
+    const url = new URL(request.url);
 
-    // 【關鍵修正】 - 優先處理導航請求
-    // 如果這是一個頁面導航請求 (使用者想打開一個頁面)
+    // 3. 【核心修復】對導航請求採用「網路優先，快取備援」策略
+    // 這確保使用者永遠能拿到最新的 index.html，同時在離線時能完美運作
     if (request.mode === 'navigate') {
-        // 我們統一回傳快取的 index.html，這能處理所有對根目錄或子路徑的直接訪問
         event.respondWith(
-            caches.match('/index.html').then(response => {
-                return response || fetch('/index.html'); // 如果快取沒有，還是嘗試從網路獲取
-            })
+            (async () => {
+                try {
+                    // 先嘗試從網路獲取最新的 index.html
+                    const networkResponse = await fetch(request);
+                    // 成功後，放入核心快取中更新
+                    const cache = await caches.open(CORE_CACHE_NAME);
+                    cache.put('/index.html', networkResponse.clone());
+                    return networkResponse;
+                } catch (error) {
+                    // 網路請求失敗（離線），從快取中取得備援
+                    console.log('Service Worker: Serving app shell from cache.');
+                    return await caches.match('/index.html');
+                }
+            })()
         );
-        return; // 結束後續處理
+        return;
     }
 
-    // 策略一：API 請求、字型等動態資源，採用「Stale-While-Revalidate (先用快取，背景更新)」
+    // 4. 對於 API 和第三方資源，採用「Stale-While-Revalidate」策略
+    // 立即從快取回應以加速載入，同時在背景更新快取
     if (url.hostname.includes('ibus.tbkc.gov.tw') ||
         url.hostname.includes('api.open-meteo.com') ||
         url.hostname.includes('fonts.gstatic.com') ||
-        url.hostname.includes('fonts.googleapis.com')) {
-        
+        url.hostname.includes('fonts.googleapis.com') ||
+        url.hostname.includes('cdn.tailwindcss.com')) {
         event.respondWith(
             caches.open(DYNAMIC_CACHE_NAME).then(async (cache) => {
                 const cachedResponse = await cache.match(request);
@@ -74,25 +83,24 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse;
                 }).catch(err => {
                     console.warn(`Service Worker: Network fetch failed for ${request.url}.`, err);
-                    if (request.destination === 'style') {
-                        return new Response('', {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: { 'Content-Type': 'text/css' }
-                        });
+                    // 【強化】如果字型或樣式請求失敗，回傳一個空的成功回應，避免阻擋頁面渲染
+                    if (request.destination === 'style' || request.destination === 'font') {
+                        return new Response('', { status: 200, headers: { 'Content-Type': 'text/css' } });
                     }
-                    return; // 對於其他請求，若失敗且快取中沒有，則回傳 undefined
+                    // 如果是 API 失敗，讓瀏覽器處理錯誤
                 });
+
                 return cachedResponse || fetchPromise;
             })
         );
         return;
     }
 
-    // 策略二：對於非導航、非API的核心檔案 (如 manifest.json, icons)，採用「快取優先」
+    // 5. 對於其他同源靜態資源（如未來新增的 JS, CSS），採用「快取優先」策略
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
             return cachedResponse || fetch(request).then((networkResponse) => {
+                // 動態加入快取
                 return caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
                     cache.put(request, networkResponse.clone());
                     return networkResponse;
