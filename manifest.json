@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "short_name": "高雄等公車",
   "description": "一個簡單、美觀、低流量的高雄公車查詢器",
-  "start_url": "./index.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0056b3",
