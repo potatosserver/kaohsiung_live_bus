@@ -1,8 +1,8 @@
-// service-worker.js (最終專業修復版 - 採用 Stale-While-Revalidate)
+// service-worker.js (最終、最穩健的修正版)
 
-// 1. 再次提升版本號，確保瀏覽器觸發更新
-const CORE_CACHE_NAME = 'kaohsiung-bus-core-v4';
-const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v4';
+// 1. 再次提升版本號，確保更新
+const CORE_CACHE_NAME = 'kaohsiung-bus-core-v5';
+const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v5';
 
 const CORE_ASSETS = [
     '/index.html',
@@ -44,25 +44,32 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // 2. 【核心修復】對導航請求採用 "Stale-While-Revalidate" 策略
+    // 2. 【核心最終修正】對導航請求採用 "Stale-While-Revalidate" 策略，並使用原始請求
     if (request.mode === 'navigate') {
         event.respondWith(
-            caches.open(CORE_CACHE_NAME).then(async (cache) => {
-                // 立即從快取提供頁面，達到最快速度
-                const cachedResponse = await cache.match('/index.html');
-
-                // 同時，在背景從網路獲取最新版本並更新快取
-                const fetchPromise = fetch('/index.html').then((networkResponse) => {
-                    cache.put('/index.html', networkResponse.clone());
-                    return networkResponse;
-                }).catch(err => {
-                    // 離線時網路請求失敗是正常的，靜默處理即可
-                    console.log('Service Worker: Navigation fetch failed, serving stale content.');
-                });
-
-                // 如果快取存在，立即回傳；如果快取不存在（首次訪問），則等待網路回應
+            (async () => {
+                const cache = await caches.open(CORE_CACHE_NAME);
+                
+                // 立即從快取提供頁面
+                // **修正點**: 我們優先匹配原始請求，如果失敗（例如請求的是 /），再嘗試匹配 /index.html 作為備援
+                const cachedResponse = await cache.match(request) || await cache.match('/index.html');
+                
+                // 在背景從網路獲取最新版本並更新快取
+                const fetchPromise = fetch(request)
+                    .then((networkResponse) => {
+                        // **修正點**: 使用原始請求的 URL 作為 key 來更新快取
+                        // 通常我們統一將導航請求的快取存為 /index.html，以保持一致性
+                        cache.put('/index.html', networkResponse.clone());
+                        return networkResponse;
+                    })
+                    .catch(() => {
+                        // 離線時網路請求失敗，靜默處理
+                        console.log('Service Worker: Navigation fetch failed, serving stale content.');
+                    });
+                
+                // 如果快取存在，立即回傳；否則等待網路回應
                 return cachedResponse || await fetchPromise;
-            })
+            })()
         );
         return;
     }
@@ -80,7 +87,7 @@ self.addEventListener('fetch', (event) => {
                     cache.put(request, networkResponse.clone());
                     return networkResponse;
                 }).catch(err => {
-                    console.warn(`Service Worker: Network fetch failed for ${request.url}.`);
+                    console.warn(`Service Worker: Network fetch failed for ${request.url}.`, err);
                 });
 
                 return cachedResponse || fetchPromise;
