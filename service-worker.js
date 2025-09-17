@@ -1,12 +1,11 @@
-// service-worker.js (採用 Stale-While-Revalidate 優化策略，並已修正離線啟動問題)
+// service-worker.js (已採用 Stale-While-Revalidate 並修復離線導航問題)
 
-// 定義快取名稱，核心檔案和動態資料分開存放
-const CORE_CACHE_NAME = 'kaohsiung-bus-core-v1';
-const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v1';
+const CORE_CACHE_NAME = 'kaohsiung-bus-core-v2'; // <--- 版本升級!
+const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v2'; // <--- 版本升級!
 
-// 應用程式核心檔案 (App Shell)
+// 應用程式核心檔案 (App Shell) - 移除了模糊的 '/'
 const CORE_ASSETS = [
-    '/index.html', // 明确指定 index.html
+    '/index.html', // 明确指定 index.html 作為唯一的入口點
     '/manifest.json',
     '/icons/icon.ico',
     '/icons/icon-192x192.png',
@@ -49,31 +48,32 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     const request = event.request;
 
+    // 【關鍵修正】 - 優先處理導航請求
+    // 如果這是一個頁面導航請求 (使用者想打開一個頁面)
+    if (request.mode === 'navigate') {
+        // 我們統一回傳快取的 index.html，這能處理所有對根目錄或子路徑的直接訪問
+        event.respondWith(
+            caches.match('/index.html').then(response => {
+                return response || fetch('/index.html'); // 如果快取沒有，還是嘗試從網路獲取
+            })
+        );
+        return; // 結束後續處理
+    }
+
     // 策略一：API 請求、字型等動態資源，採用「Stale-While-Revalidate (先用快取，背景更新)」
-    // 這能提供極速的載入體驗，同時確保資料能適時更新。
-    if (url.hostname.includes('ibus.tbkc.gov.tw') ||      // 高雄公車 API
-        url.hostname.includes('api.open-meteo.com') ||    // 天氣 API
-        url.hostname.includes('fonts.gstatic.com') ||     // Google Fonts 字型檔
-        url.hostname.includes('fonts.googleapis.com')) {  // Google Fonts CSS
+    if (url.hostname.includes('ibus.tbkc.gov.tw') ||
+        url.hostname.includes('api.open-meteo.com') ||
+        url.hostname.includes('fonts.gstatic.com') ||
+        url.hostname.includes('fonts.googleapis.com')) {
         
         event.respondWith(
             caches.open(DYNAMIC_CACHE_NAME).then(async (cache) => {
-                // 1. 立即從快取中取得回應
                 const cachedResponse = await cache.match(request);
-
-                // 2. 在背景中發起網路請求，並在成功後更新快取
                 const fetchPromise = fetch(request).then((networkResponse) => {
                     cache.put(request, networkResponse.clone());
                     return networkResponse;
                 }).catch(err => {
                     console.warn(`Service Worker: Network fetch failed for ${request.url}.`, err);
-                    
-                    // ====================== 【關鍵修正】 ======================
-                    // 當網路請求失敗時，必須提供一個有效的備用回應，
-                    // 尤其是對於像 CSS 這樣的渲染阻斷資源。
-                    // 如果請求的是 CSS 檔案 (例如 Google Fonts 的 CSS)，
-                    // 回傳一個空的、狀態為 200 的 CSS 回應。
-                    // 這會告訴瀏覽器「檔案已成功載入但內容為空」，從而避免渲染被阻斷。
                     if (request.destination === 'style') {
                         return new Response('', {
                             status: 200,
@@ -81,30 +81,18 @@ self.addEventListener('fetch', (event) => {
                             headers: { 'Content-Type': 'text/css' }
                         });
                     }
-                    // 對於其他非關鍵請求（如 API 或字型檔案），如果失敗，
-                    // 則不回傳任何東西 (undefined)，讓後續邏輯依賴快取。
-                    // ==========================================================
+                    return; // 對於其他請求，若失敗且快取中沒有，則回傳 undefined
                 });
-
-                // 3. 如果快取中有資料，立即回傳舊資料；否則等待網路請求完成
-                // 這確保了即使離線，只要有舊快取，使用者就能看到內容。
-                // 如果連快取都沒有（首次離線），修正後的 fetchPromise 也能處理這種情況。
                 return cachedResponse || fetchPromise;
             })
         );
         return;
     }
 
-    // 策略二：對於核心檔案 (App Shell) 和其他 CDN 資源，採用「快取優先」
-    // (先從快取讀取，找不到才從網路抓取)
+    // 策略二：對於非導航、非API的核心檔案 (如 manifest.json, icons)，採用「快取優先」
     event.respondWith(
         caches.match(request).then((cachedResponse) => {
-            // 如果快取中有，直接回傳
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            // 如果快取中沒有，則從網路獲取，並存入動態快取
-            return fetch(request).then((networkResponse) => {
+            return cachedResponse || fetch(request).then((networkResponse) => {
                 return caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
                     cache.put(request, networkResponse.clone());
                     return networkResponse;
