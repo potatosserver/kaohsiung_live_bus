@@ -1,11 +1,10 @@
-// service-worker.js (採用 Stale-While-Revalidate 優化策略)
+// service-worker.js (採用 Stale-While-Revalidate 優化策略，並已修正離線啟動問題)
 
 // 定義快取名稱，核心檔案和動態資料分開存放
 const CORE_CACHE_NAME = 'kaohsiung-bus-core-v1';
 const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v1';
 
 // 應用程式核心檔案 (App Shell)
-// 注意：移除了 Google Fonts，因為它們最好也由 Stale-While-Revalidate 策略處理
 const CORE_ASSETS = [
     '/',
     '/index.html', // 明确指定 index.html
@@ -55,8 +54,8 @@ self.addEventListener('fetch', (event) => {
     // 這能提供極速的載入體驗，同時確保資料能適時更新。
     if (url.hostname.includes('ibus.tbkc.gov.tw') ||      // 高雄公車 API
         url.hostname.includes('api.open-meteo.com') ||    // 天氣 API
-        url.hostname.includes('fonts.gstatic.com') ||     // Google Fonts
-        url.hostname.includes('fonts.googleapis.com')) {
+        url.hostname.includes('fonts.gstatic.com') ||     // Google Fonts 字型檔
+        url.hostname.includes('fonts.googleapis.com')) {  // Google Fonts CSS
         
         event.respondWith(
             caches.open(DYNAMIC_CACHE_NAME).then(async (cache) => {
@@ -69,10 +68,28 @@ self.addEventListener('fetch', (event) => {
                     return networkResponse;
                 }).catch(err => {
                     console.warn(`Service Worker: Network fetch failed for ${request.url}.`, err);
+                    
+                    // ====================== 【關鍵修正】 ======================
+                    // 當網路請求失敗時，必須提供一個有效的備用回應，
+                    // 尤其是對於像 CSS 這樣的渲染阻斷資源。
+                    // 如果請求的是 CSS 檔案 (例如 Google Fonts 的 CSS)，
+                    // 回傳一個空的、狀態為 200 的 CSS 回應。
+                    // 這會告訴瀏覽器「檔案已成功載入但內容為空」，從而避免渲染被阻斷。
+                    if (request.destination === 'style') {
+                        return new Response('', {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: { 'Content-Type': 'text/css' }
+                        });
+                    }
+                    // 對於其他非關鍵請求（如 API 或字型檔案），如果失敗，
+                    // 則不回傳任何東西 (undefined)，讓後續邏輯依賴快取。
+                    // ==========================================================
                 });
 
                 // 3. 如果快取中有資料，立即回傳舊資料；否則等待網路請求完成
                 // 這確保了即使離線，只要有舊快取，使用者就能看到內容。
+                // 如果連快取都沒有（首次離線），修正後的 fetchPromise 也能處理這種情況。
                 return cachedResponse || fetchPromise;
             })
         );
