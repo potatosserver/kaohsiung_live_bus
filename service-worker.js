@@ -6,7 +6,6 @@ const DYNAMIC_CACHE_NAME = 'kaohsiung-bus-dynamic-v1';
 
 // 應用程式核心檔案 (App Shell)
 const CORE_ASSETS = [
-    '/',
     '/index.html', // 明确指定 index.html
     '/manifest.json',
     '/icons/icon.ico',
