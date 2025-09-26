@@ -937,6 +937,11 @@
         body.dark-mode .message-announcement-card .announcement-item p {
             color: #cbd5e1; 
         }
+        .message-announcement-card .announcement-item p {
+            white-space: pre-wrap; 
+            overflow-wrap: break-word; 
+            word-break: break-word; 
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -3039,7 +3044,6 @@
                             weatherErrorMessageElement.textContent = translations[currentLang].weatherLoadError;
                             weatherErrorMessageElement.classList.remove('hidden');
                             weatherDataLoaded = false; 
-
                         } finally {
                             weatherLoadingElement.classList.add('hidden');
                         }
