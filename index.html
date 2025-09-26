@@ -1319,7 +1319,6 @@
                 body.classList.add('dark-mode');
             }
             const showSplashScreen = localStorage.getItem('splashScreenEnabled') !== 'false'; 
-            
             const startApp = () => {
                 const splashScreen = document.getElementById('splashScreen');
                 if(splashScreen) {
@@ -1331,7 +1330,6 @@
                 }
                 initializeApp(); 
             };
-
             if (showSplashScreen) {
                 function startIconPhysics() {
                     const container = document.getElementById('icons-container');
@@ -1395,10 +1393,8 @@
                 }
                 initializeApp();
             }
-            
             async function initializeApp() {
                 try { 
-                    // --- START: SHARED SCOPE FOR CONSTANTS, VARIABLES, AND HELPERS ---
                     const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
                     const HEADERS = {
                         'Content-Type': 'application/json',
@@ -1826,7 +1822,6 @@
                             }
                         }`
                     };
-
                     function updateNavHighlight() {
                         document.querySelectorAll('#mainNav button').forEach(button => {
                             button.classList.remove('active-nav');
@@ -1840,7 +1835,6 @@
                             navButton.classList.add('active-nav');
                         }
                     }
-
                     function checkMarqueeOverflow(container, textElement, originalText) {
                         if (!container || !textElement) return;
                         container.style.flexGrow = '1';
@@ -1888,7 +1882,6 @@
                         }
                         updateMrtIframeSrc();
                     }
-                    
                     async function setLanguage(lang) {
                         if (lang === currentLang) return;
                         currentLang = lang;
@@ -1955,7 +1948,6 @@
                             countdownTimer.updateDisplay();
                         }
                     }
-                    
                     async function fetchAPI(query, variables) {
                         try {
                             const response = await fetch(API_URL, {
@@ -2156,7 +2148,6 @@
                             favoriteActionButton.classList.add('hidden');
                         }, { once: true });
                     }
-                    
                     async function showPage(pageId, pushState = true) {
                         if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
                             if (pageId === 'routeSelectionPage') {
@@ -2216,9 +2207,7 @@
                                 container.style.paddingBottom = '90px';
                             }
                         }
-                        
                         updateNavHighlight();
-
                         if (pageId === 'favoriteStationsPage') {
                             await displayFavoriteStations();
                             if (!favoriteUpdateInterval) {
@@ -2234,7 +2223,6 @@
                             updateMrtIframeSrc();
                         }
                     }
-                    
                     function resetSearch() {
                         selectedCategoryPrefix = '';
                         routeSearchInput.value = '';
@@ -2247,24 +2235,18 @@
                         const announcementContent = document.getElementById('announcementContent');
                         const announcementLoading = document.getElementById('announcementLoading');
                         const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
-
                         announcementLoading.style.display = 'none';
                         noAnnouncementsMessage.style.display = 'none';
-
                         const existingError = announcementContent.querySelector('.error-announcement');
                         if (existingError) return;
-
                         const errorCard = document.createElement('div');
                         errorCard.className = 'error-announcement announcement-item bg-red-100 dark:bg-red-900 p-3 rounded-lg shadow-sm mb-3 border border-red-300 dark:border-red-700';
-
                         const title = isCritical
                             ? (translations[currentLang].networkErrorCriticalTitle)
                             : (translations[currentLang].networkErrorWarningTitle);
-                        
                         const message = isCritical
                             ? (translations[currentLang].networkErrorCriticalMessage)
                             : (translations[currentLang].networkErrorWarningMessage);
-
                         errorCard.innerHTML = `
                             <h3 class="font-semibold text-red-800 dark:text-red-200 flex items-center">
                                 <span class="material-icons-outlined mr-2">wifi_off</span>
@@ -2274,23 +2256,19 @@
                         `;
                         announcementContent.prepend(errorCard);
                     }
-
                     async function initRouteSelection() {
                         try {
                             if (allRoutes.length > 0 && routeDataLang === currentLang) {
                                 displayInitialPrompt();
                                 return;
                             }
-
                             initialLoading.style.display = 'block';
                             routeListContainer.innerHTML = '';
-                            
                             const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang });
                             allRoutes = data.data.routes.edges
                                 .map(edge => edge.node)
                                 .filter(route => route.id !== 0)
                                 .sort((a, b) => a.seq - b.seq);
-                            
                             try {
                                 localStorage.setItem('cachedRoutes', JSON.stringify(allRoutes));
                                 localStorage.setItem('cachedRoutesLang', currentLang);
@@ -2298,7 +2276,6 @@
                                 console.error("Error saving routes to localStorage", e);
                             }
                             displayInitialPrompt();
-
                         } catch (fetchError) {
                             console.warn("API fetch failed. Attempting to load from cache.", fetchError);
                             try {
@@ -2404,7 +2381,6 @@
                         }
                         displayRoutes(filteredRoutes);
                     }
-                    
                     function updateDirectionButtons() {
                         if (!currentRouteData) {
                             goDirectionButton.parentElement.style.display = 'none';
@@ -2462,7 +2438,6 @@
                         let timeDisplay;
                         let pillBgColorClass;
                         let busIdDisplayHtml = '';
-                        
                         if (isOffline) {
                             timeDisplay = translations[currentLang].offlineStatus;
                             pillBgColorClass = 'bg-slate-200';
@@ -2499,7 +2474,6 @@
                                 pillBgColorClass = 'bg-slate-200';
                             }
                         }
-
                         const stationCard = document.createElement('div');
                         stationCard.className = 'station-item';
                         stationCard.dataset.stationId = estimate.id;
@@ -2588,7 +2562,6 @@
                         displayEstimateTimes(data, 1, stationListGoContent, isOffline);
                         displayEstimateTimes(data, 2, stationListBackContent, isOffline);
                     }
-
                     function renderOfflineUncachedState() {
                         trackerLoading.style.display = 'none';
                         stationListGoContent.innerHTML = '';
@@ -2598,7 +2571,6 @@
                         offlineNotice.textContent = translations[currentLang].networkErrorOfflineView;
                         offlineNotice.classList.remove('hidden');
                     }
-
                     async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
                         if (isInitialLoad) {
                             trackerLoading.style.display = 'block';
@@ -2609,13 +2581,10 @@
                             document.getElementById('offlineNotice').classList.add('hidden');
                         }
                         updateCountdownButton.disabled = true;
-
                         try {
                             const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
                             if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
-                            
                             currentRouteData = result.data.route;
-                            
                             try {
                                 let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
                                 cachedDetails[routeId] = currentRouteData;
@@ -2623,7 +2592,6 @@
                             } catch (e) {
                                 console.error("Error saving route details to localStorage", e);
                             }
-
                             renderAllDirections(currentRouteData, false);
                             updateDirectionButtons();
                             stationListGo.className = 'station-list-container';
@@ -2645,14 +2613,12 @@
                             }
                         } catch (error) {
                             console.error("Failed to fetch route details:", error);
-                            
                             let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
                             const cachedData = cachedDetails[routeId];
-                            
                             if (cachedData) {
                                 console.log(`Displaying cached data for route ${routeId}`);
                                 currentRouteData = cachedData;
-                                renderAllDirections(cachedData, true); // true indicates offline rendering
+                                renderAllDirections(cachedData, true); 
                                 updateDirectionButtons();
                                 stationListGo.classList.remove('hidden');
                             } else {
@@ -3158,7 +3124,6 @@
                         if (existingError) {
                             announcementContent.appendChild(existingError);
                         }
-
                         if (messages.length === 0) {
                             if (!existingError) {
                                  noAnnouncementsMessage.classList.remove('hidden');
@@ -3243,7 +3208,6 @@
                     function showSelectGroupModal(stationData) {
                         currentStationContext = stationData;
                         selectGroupModalBody.innerHTML = '';
-                        
                         favoriteData.groups.forEach(group => {
                             const btn = document.createElement('button');
                             btn.className = 'w-full text-left py-3 px-4 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600';
@@ -3254,11 +3218,9 @@
                             });
                             selectGroupModalBody.appendChild(btn);
                         });
-
                         const hr = document.createElement('hr');
                         hr.className = 'my-2 border-slate-200 dark:border-slate-600';
                         selectGroupModalBody.appendChild(hr);
-
                         const addNewGroupBtnInModal = document.createElement('button');
                         addNewGroupBtnInModal.className = 'w-full flex items-center justify-center text-left py-3 px-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 font-medium';
                         addNewGroupBtnInModal.innerHTML = `<span class="material-icons-outlined mr-2">add</span> ${translations[currentLang].addNewGroup}`;
@@ -3277,10 +3239,8 @@
                             }
                         });
                         selectGroupModalBody.appendChild(addNewGroupBtnInModal);
-
                         selectGroupModal.classList.add('show');
                     }
-                    
                     function renderManageGroupList() {
                          manageGroupsModalBody.innerHTML = '';
                          favoriteData.groups.filter(g => g.id !== 'all').forEach(group => {
@@ -3361,7 +3321,6 @@
                             renderManageGroupList();
                         }
                     }
-                    
                     const mapPageNameToId = (name) => {
                         switch (name) {
                             case 'home': return 'homePage';
@@ -3373,34 +3332,19 @@
                             default: return null;
                         }
                     };
-                    // --- END: SHARED SCOPE ---
-
-
-                    // --- START: NEW INITIALIZATION FUNCTIONS ---
-
-                    /**
-                     * Initializes the UI components, sets up event listeners, and displays the initial page shell.
-                     * This function does not perform any network requests and executes quickly.
-                     */
                     async function initializeAppUI() {
                         applyInitialTheme();
-                        
                         const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
                         splashScreenToggle.checked = splashScreenEnabled;
-
                         currentLang = localStorage.getItem("lang") || "zh";
                         languageSelect.value = currentLang;
                         updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
                         updateIntervalSelect.value = updateInterval;
                         countdownTimer.remaining = updateInterval;
-                        
                         loadFavorites(); 
                         applyTranslations(); 
-                        
                         defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
                         defaultStartPageSelect.value = defaultStartPage;
-
-                        // Event Listeners Setup
                         darkModeToggle.addEventListener('change', () => {
                             if (darkModeToggle.checked) {
                                 body.classList.add('dark-mode');
@@ -3430,21 +3374,17 @@
                         });
                         window.addEventListener('popstate', async (event) => {
                             handleHashChange(true); 
-                            const fromPage = activePage;
-                            const toState = event.state;
-                            const toPage = toState ? toState.page : null;
-                            const mainPagesIds = ['routeSelectionPage', 'busTrackerPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'];
-                            if (toPage && toPage === fromPage) {
-                                return;
+                            const pageWeAreLeaving = activePage; 
+                            const destinationState = event.state;
+                            const destinationPageId = destinationState ? destinationState.page : 'homePage'; 
+                            if (pageWeAreLeaving === 'busTrackerPage') {
+                                await showPage(destinationPageId, false); 
                             }
-                            if (mainPagesIds.includes(fromPage)) {
+                            else if (['routeSelectionPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'].includes(pageWeAreLeaving)) {
                                 await showPage('homePage', false);
-                                return;
                             }
-                            if (toPage) {
-                                await showPage(toPage, false);
-                            } else {
-                                await showPage('homePage', false);
+                            else {
+                                await showPage(destinationPageId, false);
                             }
                         });
                         filterKeyboard.addEventListener('click', (e) => {
@@ -3587,7 +3527,6 @@
                             favTouchEndX = 0;
                             favTouchEndY = 0;
                         }
-                        
                         adjustContentPadding();
                         window.addEventListener('resize', () => {
                             adjustContentPadding();
@@ -3596,16 +3535,12 @@
                             }
                         });
                         window.addEventListener('hashchange', () => handleHashChange(false));
-                        
-                        // Determine and show initial page
                         const urlParams = new URLSearchParams(window.location.search);
                         const pageFromUrl = urlParams.get('page');
                         let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
                         await showPage(initialPageId, initialPageId !== 'homePage');
-
                         handleHashChange(false);
                         updateNavHighlight(); 
-                        
                         countdownInterval = setInterval(() => {
                             if (busTrackerPage.classList.contains('active') && navigator.onLine) {
                                 updateCountdownButton.style.display = "flex";
@@ -3618,7 +3553,6 @@
                                 updateCountdownButton.style.display = "none";
                             }
                         }, 1000);
-
                         window.addEventListener('online', () => {
                             if (busTrackerPage.classList.contains('active')) {
                                 updateCountdownButton.style.display = "flex";
@@ -3637,43 +3571,29 @@
                             }
                         });
                     }
-
-                    /**
-                     * Loads initial data required for the app, such as the list of all bus routes.
-                     * This function is asynchronous and may take some time to complete.
-                     */
                     async function loadInitialData() {
                         await initRouteSelection();
-                        
-                        // Handle navigation if a specific route is in the URL
                         const urlParams = new URLSearchParams(window.location.search);
                         const pageFromUrl = urlParams.get('page');
                         const routeIdFromUrl = urlParams.get('route');
                         let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
-
                         if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
                             const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                             if (route) {
                                 navigateToTracker(route.id, route.name, route.description, false, null, 1);
                             } else {
-                                // If route not found (maybe bad link), default to the route selection page.
                                 await showPage('routeSelectionPage', true);
                             }
                         }
                     }
-                    
-                    // --- NEW STARTUP SEQUENCE ---
-                    await initializeAppUI(); // Show UI immediately
-                    await loadInitialData(); // Load data in the background
-                    
+                    await initializeAppUI(); 
+                    await loadInitialData(); 
                 } catch (error) {
                     console.error("A critical error occurred during initialization and was caught by the safety net:", error);
                     const splash = document.getElementById('splashScreen');
                     if (splash) splash.remove();
-                    
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.getElementById('homePage').classList.add('active');
-                    
                     const lang = localStorage.getItem("lang") || "zh";
                     const criticalErrorTranslations = {
                         zh: { title: '網路連線失敗', message: '無法獲取公車資料，功能將受限。請檢查網路後重試。'},
@@ -3697,8 +3617,6 @@
             } 
         });
     </script>
-
-    <!-- START: 在這裡加入 Service Worker 註冊碼 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -3712,6 +3630,5 @@
             });
         }
     </script>
-
 </body>
 </html>
