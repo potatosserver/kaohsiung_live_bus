@@ -3030,6 +3030,7 @@
                                 weatherDescriptionElement.textContent = weatherDescription;
                                 weatherIconElement.textContent = weatherIcon;
                                 weatherInfoElement.classList.remove('hidden');
+                                weatherDataLoaded = true; 
                             } else {
                                 throw new Error(translations[currentLang].weatherLoadError);
                             }
@@ -3037,6 +3038,8 @@
                             console.error("取得天氣資料時發生錯誤:", error);
                             weatherErrorMessageElement.textContent = translations[currentLang].weatherLoadError;
                             weatherErrorMessageElement.classList.remove('hidden');
+                            weatherDataLoaded = false; 
+
                         } finally {
                             weatherLoadingElement.classList.add('hidden');
                         }
