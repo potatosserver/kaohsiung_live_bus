@@ -7,8 +7,13 @@
     <meta name="description" content="一個專為高雄市公車設計的簡單、美觀且低流量站點搜尋器，提供快速查詢路線資訊功能，滿足即時需求，適合所有用戶使用。">
     <meta name="keywords" content="高雄市公車, 高雄公車, 高雄市公車即時資訊, 公車即時資訊, 公車式小黃, 公車小黃, 幹線, 幹線公車, 快線, 快線公車, 紅線公車, 橘線公車, 黃線公車, 綠線公車, Github, github.io" />
     <meta property="og:site_name" content="高雄即時公車動態" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>高雄市公車動態查詢器 : 一個簡單、美觀、低流量的高雄公車查詢器</title>
+
+    <!-- Leaflet.js (for Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script type="application/ld+json">
     {
     "@context": "https://schema.org",
@@ -28,6 +33,10 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/x-icon" href="/icons/icon.ico" />
     <style>
+        :root {
+            --go-color: #3b82f6; /* Blue for Go */
+            --back-color: #ef4444; /* Red for Back */
+        }
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             background-color: #f1f5f9;
@@ -36,7 +45,9 @@
             -webkit-user-select: none; 
             -moz-user-select: none; 
             -ms-user-select: none; 
-            transition: background-color 0.3s ease, color 0.3s ease; 
+            transition: background-color 0.3s ease, color 0.3s ease;
+            height: 100vh;
+            overflow: hidden;
         }
         body.is-dragging-item {
             overflow: hidden; 
@@ -55,9 +66,11 @@
         }
         .page {
             display: none;
+            height: 100%;
+            flex-direction: column;
         }
         .page.active {
-            display: block;
+            display: flex;
         }
         #estimateTimesSection {
             position: relative;
@@ -327,7 +340,6 @@
         .station-dot {
             width: 12px;
             height: 12px;
-            background-color: #3b82f6;
             border-radius: 50%;
         }
         .station-content {
@@ -789,6 +801,78 @@
         .direction-button .marquee-text.is-overflowing {
             animation: marquee-scroll 10s linear infinite;
         }
+
+        /* --- MAP.HTML MERGED STYLES START --- */
+        #busTrackerPage .container { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 70px; }
+        #content-wrapper { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+        #map {
+            flex-grow: 1;
+            width: 100%;
+            background-color: #e5e7eb;
+        }
+        #busTrackerPage #estimateTimesSection {
+            flex-shrink: 0;
+            height: 40vh; /* Initial height */
+            background-color: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+        }
+        body.dark-mode #busTrackerPage #estimateTimesSection {
+            background-color: #0f172a;
+        }
+        #busTrackerPage .station-list-container {
+            height: 100%;
+            overflow-y: auto;
+            padding: 1rem 1rem 1rem 1rem;
+        }
+        #dragHandle {
+            flex-shrink: 0;
+            height: 20px;
+            width: 100%;
+            cursor: ns-resize;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f1f5f9;
+            touch-action: none;
+        }
+        body.dark-mode #dragHandle {
+            background-color: #0f172a;
+        }
+        #dragHandle::before {
+            content: '';
+            width: 80px;
+            height: 5px;
+            background: #cbd5e1;
+            border-radius: 2.5px;
+        }
+        body.dark-mode #dragHandle::before {
+            background: #475569;
+        }
+        .bus-icon {
+            display: flex; justify-content: center; align-items: center; color: white; border-radius: 50%; width: 32px; height: 32px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 2px solid white;
+        }
+        .bus-icon.go-bus { background-color: var(--back-color); } /* 去程公車圖示改為紅色 */
+        .bus-icon.back-bus { background-color: var(--go-color); } /* 返程公車圖示改為藍色 */
+        .bus-icon .material-icons-outlined { font-size: 22px; }
+        .station-number-icon {
+            display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; font-size: 12px;
+            line-height: 1; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .station-number-icon.go-station { background-color: var(--go-color); }
+        .station-number-icon.back-station { background-color: var(--back-color); }
+        .leaflet-popup-content { margin: 12px; font-size: 14px; }
+        .popup-header { font-weight: bold; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        .eta-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+        .eta-tag { display: inline-flex; align-items: center; background-color: #27ae60; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.9em; }
+        .eta-tag .bus-id { font-weight: bold; margin-right: 6px; background-color: rgba(0,0,0,0.15); padding: 2px 6px; border-radius: 10px; }
+        .eta-approaching { background-color: #c0392b; }
+        .eta-soon { background-color: #f39c12; }
+        .no-data { color: #95a5a6; font-style: italic; }
+        .station-list-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        /* --- MAP.HTML MERGED STYLES END --- */
+
         body.dark-mode {
             background-color: #0f172a; 
             color: #e2e8f0; 
@@ -846,6 +930,8 @@
         body.dark-mode .direction-button { background-color: transparent; color: #60a5fa; }
         body.dark-mode .direction-button.bg-blue-500 { background-color: #60a5fa; color: #1e293b; }
         body.dark-mode .station-icon-container { background-color: #0f172a; }
+        .station-dot.go-station { background-color: var(--go-color); }
+        .station-dot.back-station { background-color: var(--back-color); }
         body.dark-mode .station-dot { background-color: #60a5fa; }
         body.dark-mode .station-content { background-color: #1e293b; }
         body.dark-mode .time-pill.bg-slate-200 { background-color: #334155; color: #cbd5e1; }
@@ -1009,41 +1095,49 @@
         </div>
     </div>
     <div id="busTrackerPage" class="page">
-        <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
-            <div class="flex-shrink-0">
-                <header class="flex items-center justify-between mb-4">
-                    </header>
+        <div class="container mx-auto max-w-4xl">
+             <header class="p-4 flex-shrink-0">
                 <div class="flex items-center justify-center mb-2">
                     <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
                 </div>
-                <p id="routeDescription" class="text-sm text-slate-500 text-center mb-6"></p>
-                <div class="direction-toggle-group flex justify-center mb-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">
-                    <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold transition-colors" data-direction="1">
+                <p id="routeDescription" class="text-sm text-slate-500 text-center mb-4"></p>
+    <div class="direction-toggle-group flex justify-center my-4 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">                    <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold" data-direction="1">
                         <span class="static-text" data-i18n="goDirection">去程</span>
                         <span class="marquee-container">
                             <span class="marquee-text"></span>
                         </span>
                     </button>
-                    <button id="backDirectionButton" class="direction-button flex-1 p-2 font-semibold transition-colors" data-direction="2">
+                    <button id="backDirectionButton" class="direction-button flex-1 p-2 font-semibold" data-direction="2">
                         <span class="static-text" data-i18n="backDirection">返程</span>
                         <span class="marquee-container">
                             <span class="marquee-text"></span>
                         </span>
                     </button>
                 </div>
-            </div>
-            <div id="estimateTimesSection" class="flex-grow relative overflow-hidden" style="touch-action: pan-y;">
-                <div id="trackerLoading" class="text-center py-20 hidden">
-                    <div class="loading-spinner mx-auto"></div>
-                    <p class="mt-4 text-slate-600 text-sm" data-i18n="loadingBusData">正在載入路線動態...</p>
+            </header>
+            
+            <div id="content-wrapper">
+                <div id="map"></div>
+                <div id="estimateTimesSection">
+                    <div id="dragHandle"></div>
+                    <div class="relative flex-grow min-h-0">
+                         <div id="trackerLoading" class="absolute inset-0 bg-white/70 dark:bg-slate-800/70 z-20 items-center justify-center hidden">
+                            <div class="loading-spinner mx-auto"></div>
+                            <p class="mt-4 text-slate-600 text-sm" data-i18n="loadingBusData">正在載入路線動態...</p>
+                        </div>
+                        <div id="stationListGo" class="station-list-wrapper">
+                            <div class="station-list-container">
+                                <div id="stationListGoContent"></div>
+                            </div>
+                        </div>
+                        <div id="stationListBack" class="station-list-wrapper hidden">
+                             <div class="station-list-container">
+                                <div id="stationListBackContent"></div>
+                            </div>
+                        </div>
+                         <p id="offlineNotice" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="networkErrorOfflineView"></p>
+                    </div>
                 </div>
-                <div id="stationListGo" class="station-list-container hidden">
-                    <div id="stationListGoContent" class="space-y-3"></div>
-                </div>
-                <div id="stationListBack" class="station-list-container hidden">
-                    <div id="stationListBackContent" class="space-y-3"></div>
-                </div>
-                <p id="offlineNotice" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="networkErrorOfflineView"></p>
             </div>
         </div>
     </div>
@@ -1509,6 +1603,13 @@
                     let startYTouch = 0;
                     let startTop = 0;
                     let favoriteUpdateInterval = null;
+
+                    // --- MAP-RELATED VARIABLES ---
+                    let map = null;
+                    let goLayerGroup, backLayerGroup, goBusLayerGroup, backBusLayerGroup;
+                    let isFirstMapLoad = true;
+                    let busMarkers = {};
+                    
                     const translations = {
                         zh: {
                             appTitle: '高雄公車 App',
@@ -1803,13 +1904,20 @@
                                 }
                             }
                         }`,
-                        QUERY_ROUTE_DETAILS: `query QUERY_ESTIMATE_TIMES($routeId: Int!, $lang: String!) {
-                            route(xno: $routeId, lang: $lang) {
-                                opType, departure, destination
-                                estimateTimes { edges { node { id, goBack, comeTime, etas { busId, etaTime } } } }
-                                stations { edges { ivrNo, node { id, name } } }
+                        QUERY_ROUTE_DETAILS: `
+                            fragment estimateTimesFragment on EstimateTimeConnection { edges { node { id, goBack, comeTime, etas { busId, etaTime } } } }
+                            fragment mapMarkerStationsFragment on RouteStationConnection { edges { goBack, orderNo, node { id, name, lat, lon } } }
+                            fragment busesFragment on RouteBusConnection { edges { goBack, node { id, lat, lon } } }
+                            query QUERY_ROUTE_FOR_MAP_CONTENT($routeId: Int!, $lang: String!) {
+                                route(xno: $routeId, lang: $lang) {
+                                    opType, departure, destination
+                                    routePoint { go, back }
+                                    estimateTimes { ...estimateTimesFragment }
+                                    stations { ...mapMarkerStationsFragment }
+                                    buses { ...busesFragment }
+                                }
                             }
-                        }`,
+                        `,
                         QUERY_CLOGS: `query QUERY_CLOGS($routeId: Int!) {
                             clogMessages(xno: $routeId) {
                                 edges {
@@ -1827,6 +1935,11 @@
                             }
                         }`
                     };
+
+                    // --- MAP HELPER FUNCTIONS ---
+                    function decodePolyline(t){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d}
+                    function findClosestPointOnPolyline(t,e){let n=1/0,o=null;for(let r=0;r<e.length-1;r++){const i=L.latLng(e[r]),s=L.latLng(e[r+1]);if(0!==i.distanceTo(s)**2){const a=((t.lat-i.lat)*(s.lat-i.lat)+(t.lng-i.lng)*(s.lng-i.lng))/i.distanceTo(s)**2,l=Math.max(0,Math.min(1,a)),c=L.latLng(i.lat+l*(s.lat-i.lat),i.lng+l*(s.lng-i.lng)),f=t.distanceTo(c);f<n&&(n=f,o=c)}}return o||L.latLng(t)}
+
                     function updateNavHighlight() {
                         document.querySelectorAll('#mainNav button').forEach(button => {
                             button.classList.remove('active-nav');
@@ -2204,6 +2317,10 @@
                             } else {
                                 updateCountdownButton.style.display = 'none';
                             }
+                            // Invalidate map size when showing the page
+                            if(map) {
+                                setTimeout(() => map.invalidateSize(), 10);
+                            }
                         } else {
                             filterKeyboardContainer.style.display = 'none';
                             updateCountdownButton.style.display = 'none';
@@ -2398,22 +2515,34 @@
                         const backStaticText = backDirectionButton.querySelector('.static-text');
                         const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
                         const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
+                        
                         goStaticText.textContent = `${translations[currentLang].goDirection} `;
                         backStaticText.textContent = `${translations[currentLang].backDirection} `;
+                        
                         const goText = currentRouteData.destination;
                         const backText = currentRouteData.departure;
+                        
                         checkMarqueeOverflow(goMarqueeContainer, goMarqueeText, goText);
                         checkMarqueeOverflow(backMarqueeContainer, backMarqueeText, backText);
+
                         if (currentDirection === 1) {
                             goDirectionButton.classList.add('bg-blue-500', 'text-white');
-                            goDirectionButton.classList.remove('bg-white', 'text-blue-500');
-                            backDirectionButton.classList.add('bg-white', 'text-blue-500');
+                            goDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
+                            backDirectionButton.classList.add('bg-transparent', 'text-blue-500');
                             backDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                            if(map) {
+                                goLayerGroup.addTo(map); backLayerGroup.removeFrom(map);
+                                goBusLayerGroup.addTo(map); backBusLayerGroup.removeFrom(map);
+                            }
                         } else {
                             backDirectionButton.classList.add('bg-blue-500', 'text-white');
-                            backDirectionButton.classList.remove('bg-white', 'text-blue-500');
-                            goDirectionButton.classList.add('bg-white', 'text-blue-500');
+                            backDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
+                            goDirectionButton.classList.add('bg-transparent', 'text-blue-500');
                             goDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                             if(map) {
+                                backLayerGroup.addTo(map); goLayerGroup.removeFrom(map);
+                                backBusLayerGroup.addTo(map); goBusLayerGroup.removeFrom(map);
+                            }
                         }
                     }
                     function handleDirectionToggle(newDirection) {
@@ -2425,13 +2554,14 @@
                         const incomingList = (newDirection === 1) ? stationListGo : stationListBack;
                         const slideOutClass = newDirection > currentDirection ? 'slide-out-left' : 'slide-out-right';
                         const slideInClass = newDirection > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
+                        
                         incomingList.classList.remove('hidden');
-                        outgoingList.className = 'station-list-container';
-                        incomingList.className = 'station-list-container';
                         outgoingList.classList.add(slideOutClass);
                         incomingList.classList.add(slideInClass);
+                        
                         currentDirection = newDirection;
                         updateDirectionButtons();
+
                         setTimeout(() => {
                             outgoingList.classList.add('hidden');
                             outgoingList.classList.remove(slideOutClass);
@@ -2439,7 +2569,7 @@
                             isAnimatingDirection = false;
                         }, 300);
                     }
-                    function createStationCard(estimate, stationName, displayedBusIds, direction, isOffline = false) {
+                    function createStationCard(estimate, stationName, displayedBusIds, direction, stationData, isOffline = false) {
                         let timeDisplay;
                         let pillBgColorClass;
                         let busIdDisplayHtml = '';
@@ -2480,15 +2610,19 @@
                             }
                         }
                         const stationCard = document.createElement('div');
-                        stationCard.className = 'station-item';
+                        stationCard.className = 'station-item cursor-pointer';
                         stationCard.dataset.stationId = estimate.id;
                         stationCard.dataset.stationName = stationName;
                         stationCard.dataset.routeId = currentRouteId;
                         stationCard.dataset.routeName = currentRouteName;
+                        if(stationData.node.lat && stationData.node.lon){
+                           stationCard.dataset.lat = stationData.node.lat;
+                           stationCard.dataset.lon = stationData.node.lon;
+                        }
                         const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, direction);
                         const iconHtml = isCurrentlyFavorite
                             ? '<span class="material-icons-outlined text-red-500">favorite</span>'
-                            : '<div class="station-dot"></div>';
+                            : `<div class="station-dot ${direction === 1 ? 'go-station' : 'back-station'}"></div>`;
                         stationCard.innerHTML = `
                             <div class="station-icon-container">
                                 ${iconHtml}
@@ -2502,6 +2636,13 @@
                                 </div>
                                 ${busIdDisplayHtml} </div>
                         `;
+
+                        stationCard.addEventListener('click', (e) => {
+                             if(e.currentTarget.dataset.lat && e.currentTarget.dataset.lon && map){
+                                map.flyTo([e.currentTarget.dataset.lat, e.currentTarget.dataset.lon], 17);
+                             }
+                        });
+
                         stationCard.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
                             const stationData = {
@@ -2549,16 +2690,26 @@
                     function displayEstimateTimes(data, direction, targetElement, isOffline = false) {
                         targetElement.innerHTML = '';
                         const stationMap = new Map(data.stations.edges.map(edge => [edge.node.id, edge.node.name]));
-                        const filteredEstimates = data.estimateTimes.edges.filter(edge => edge.node.goBack === direction);
+                        
+                        const filteredEstimates = data.estimateTimes.edges
+                            .map(edge => ({
+                                ...edge,
+                                stationDetails: data.stations.edges.find(s => s.node.id === edge.node.id && s.goBack === edge.node.goBack)
+                            }))
+                            .filter(edge => edge.node.goBack === direction && edge.stationDetails)
+                            .sort((a,b) => a.stationDetails.orderNo - b.stationDetails.orderNo);
+
                         if (!data || !data.estimateTimes || !data.estimateTimes.edges.length || filteredEstimates.length === 0) {
                             targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                             return;
                         }
+
                         const fragment = document.createDocumentFragment();
                         const displayedBusIds = new Set();
-                        filteredEstimates.forEach(({ node: estimate }) => {
+                        filteredEstimates.forEach((edge) => {
+                            const estimate = edge.node;
                             const stationName = stationMap.get(estimate.id) || `${translations[currentLang].unknownStation} (ID: ${estimate.id})`;
-                            const card = createStationCard(estimate, stationName, displayedBusIds, direction, isOffline);
+                            const card = createStationCard(estimate, stationName, displayedBusIds, direction, edge.stationDetails, isOffline);
                             fragment.appendChild(card);
                         });
                         targetElement.appendChild(fragment);
@@ -2578,18 +2729,26 @@
                     }
                     async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
                         if (isInitialLoad) {
-                            trackerLoading.style.display = 'block';
+                            isFirstMapLoad = true;
+                            trackerLoading.style.display = 'flex';
                             stationListGoContent.innerHTML = '';
                             stationListBackContent.innerHTML = '';
-                            stationListGo.classList.add('hidden');
-                            stationListBack.classList.add('hidden');
                             document.getElementById('offlineNotice').classList.add('hidden');
+                            if (map) {
+                                goLayerGroup.clearLayers();
+                                backLayerGroup.clearLayers();
+                                goBusLayerGroup.clearLayers();
+                                backBusLayerGroup.clearLayers();
+                                busMarkers = {};
+                            }
                         }
                         updateCountdownButton.disabled = true;
+
                         try {
                             const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
                             if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                             currentRouteData = result.data.route;
+                            
                             try {
                                 let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
                                 cachedDetails[routeId] = currentRouteData;
@@ -2597,25 +2756,21 @@
                             } catch (e) {
                                 console.error("Error saving route details to localStorage", e);
                             }
+                            
+                            // Render list and map
                             renderAllDirections(currentRouteData, false);
+                            renderMap(currentRouteData);
+                            
                             updateDirectionButtons();
-                            stationListGo.className = 'station-list-container';
-                            stationListBack.className = 'station-list-container';
-                            if (currentDirection === 1) {
-                                stationListGo.classList.remove('hidden');
-                                stationListBack.classList.add('hidden');
-                            } else {
-                                stationListGo.classList.add('hidden');
-                                stationListBack.classList.remove('hidden');
-                            }
+
                             if (scrollToStationId) {
                                 await new Promise(resolve => setTimeout(resolve, 100));
-                                const targetContainer = currentDirection === 1 ? stationListGo : stationListBack;
-                                const targetStationCard = targetContainer.querySelector(`[data-station-id="${scrollToStationId}"]`);
+                                const targetStationCard = document.querySelector(`.station-list-container [data-station-id="${scrollToStationId}"]`);
                                 if (targetStationCard) {
                                     targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 }
                             }
+
                         } catch (error) {
                             console.error("Failed to fetch route details:", error);
                             let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
@@ -2624,8 +2779,8 @@
                                 console.log(`Displaying cached data for route ${routeId}`);
                                 currentRouteData = cachedData;
                                 renderAllDirections(cachedData, true); 
+                                renderMap(cachedData);
                                 updateDirectionButtons();
-                                stationListGo.classList.remove('hidden');
                             } else {
                                 console.log(`No cached data for route ${routeId}. Displaying limited offline view.`);
                                 currentRouteData = null;
@@ -3152,6 +3307,99 @@
                             });
                         }
                     }
+
+                    // --- MAP RENDERING FUNCTIONS ---
+                    function renderMap(routeData) {
+                        goLayerGroup.clearLayers();
+                        backLayerGroup.clearLayers();
+
+                        const goStops = [], backStops = [];
+                        routeData.stations.edges.forEach(edge => {
+                            if (edge.node.lat && edge.node.lon) {
+                                if (edge.goBack === 1) goStops.push(edge);
+                                else if (edge.goBack === 2) backStops.push(edge);
+                            }
+                        });
+                        
+                        goStops.sort((a, b) => a.orderNo - b.orderNo);
+                        backStops.sort((a, b) => a.orderNo - b.orderNo);
+
+                        drawRouteOnMap(routeData.routePoint.go, goStops, 'go');
+                        drawRouteOnMap(routeData.routePoint.back, backStops, 'back');
+                        updateBusMarkers(routeData.buses.edges);
+                        
+                        if (isFirstMapLoad) {
+                            if(goStops.length > 0) map.setView([goStops[0].node.lat, goStops[0].node.lon], 16);
+                            isFirstMapLoad = false;
+                        }
+                    }
+
+                    function drawRouteOnMap(encodedPolyline, stops, direction) {
+                        if (!encodedPolyline || stops.length === 0 || !map) return;
+                        const layerGroup = direction === 'go' ? goLayerGroup : backLayerGroup;
+                        
+                        const decodedPath = decodePolyline(encodedPolyline);
+                        L.polyline(decodedPath, { 
+                            color: (direction === 'go' ? 'var(--go-color)' : 'var(--back-color)'), 
+                            weight: 6, opacity: 0.7, pane: 'routePane' 
+                        }).addTo(layerGroup);
+
+                        stops.forEach(stop => {
+                            const originalLatLng = L.latLng(stop.node.lat, stop.node.lon);
+                            const projectedLatLng = findClosestPointOnPolyline(originalLatLng, decodedPath);
+                            
+                            const icon = createStationIcon(stop.orderNo, direction);
+                            const marker = L.marker(projectedLatLng, { icon: icon, pane: 'stationPane' }).addTo(layerGroup);
+                            
+                            // Find ETA data for this stop
+                            const estimate = currentRouteData.estimateTimes.edges.find(e => e.node.id === stop.node.id && e.node.goBack === stop.goBack);
+                            marker.bindPopup(createPopupContent(stop, estimate ? estimate.node.etas : []));
+                        });
+                    }
+                     function updateBusMarkers(buses) {
+                        if(!map) return;
+                        const newBusIds = new Set(buses.map(bus => bus.node.id));
+                        buses.forEach(bus => {
+                            const busId = bus.node.id;
+                            const latLng = [bus.node.lat, bus.node.lon];
+                            const direction = bus.goBack === 1 ? 'go' : 'back';
+                            const layerGroup = direction === 'go' ? goBusLayerGroup : backBusLayerGroup;
+
+                            if (busMarkers[busId]) {
+                                busMarkers[busId].setLatLng(latLng);
+                                if (busMarkers[busId].options.direction !== direction) {
+                                   busMarkers[busId].remove();
+                                   busMarkers[busId].addTo(layerGroup);
+                                   busMarkers[busId].options.direction = direction;
+                                }
+                            } else {
+                                const icon = createBusIcon(direction);
+                                busMarkers[busId] = L.marker(latLng, { icon: icon, direction: direction, pane: 'busPane' })
+                                    .bindPopup(`<b>車牌: ${busId}</b>`)
+                                    .addTo(layerGroup);
+                            }
+                        });
+                        for (const busId in busMarkers) {
+                            if (!newBusIds.has(busId)) {
+                                busMarkers[busId].remove();
+                                delete busMarkers[busId];
+                            }
+                        }
+                    }
+                    function createBusIcon(direction){return L.divIcon({className:`bus-icon ${direction==="go"?"go-bus":"back-bus"}`,html:'<span class="material-icons-outlined">directions_bus</span>',iconSize:[32,32],iconAnchor:[16,16]})}
+                    function createStationIcon(number,direction){return L.divIcon({className:`station-number-icon ${direction==="go"?"go-station":"back-station"}`,html:`<span>${number}</span>`,iconSize:[24,24],iconAnchor:[12,12]})}
+                    function createPopupContent(stop, etas){ return`<div class="popup-header">${stop.node.name}</div><div class="popup-info"><strong>站序:</strong> ${stop.orderNo}</div><div class="popup-info"><strong>即時動態:</strong></div>${formatEtas(etas)}` }
+                    function formatEtas(etas){
+                        if(!etas || etas.length === 0) return `<div class="no-data">${translations[currentLang].noData}</div>`;
+                        return '<div class="eta-container">' + etas.map(eta => {
+                            let timeText, className = "eta-tag";
+                            if(eta.etaTime <= 1){ timeText = translations[currentLang].approaching; className += " eta-approaching"; }
+                            else if (eta.etaTime <= 3) { timeText = translations[currentLang].arrivingSoon; className += " eta-soon"; }
+                            else { timeText = `${eta.etaTime} ${translations[currentLang].minutes}`; }
+                            return `<span class="${className}"><span class="bus-id">${eta.busId}</span> ${timeText}</span>`;
+                        }).join('') + '</div>';
+                    }
+
                     let countdownTimer = {
                         remaining: updateInterval,
                         updateButton: document.getElementById('updateCountdown'),
@@ -3173,6 +3421,7 @@
                             }
                         }
                     };
+
                     function adjustContentPadding() {
                         const mainNavHeight = mainNav.offsetHeight;
                         filterKeyboardContainer.style.display = 'block';
@@ -3341,6 +3590,22 @@
                     };
                     async function initializeAppUI() {
                         applyInitialTheme();
+                        
+                        // Initialize Map
+                        if (!map) {
+                            map = L.map('map').setView([22.6273, 120.3014], 16);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+                            
+                            map.createPane('routePane').style.zIndex = 350;
+                            map.createPane('stationPane').style.zIndex = 450;
+                            map.createPane('busPane').style.zIndex = 550;
+
+                            goLayerGroup = L.layerGroup().addTo(map);
+                            backLayerGroup = L.layerGroup();
+                            goBusLayerGroup = L.layerGroup().addTo(map);
+                            backBusLayerGroup = L.layerGroup();
+                        }
+
                         const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
                         splashScreenToggle.checked = splashScreenEnabled;
                         currentLang = localStorage.getItem("lang") || "zh";
@@ -3434,6 +3699,7 @@
                         const estimateTimesSection = document.getElementById('estimateTimesSection');
                         let touchStartX, touchStartY, touchEndX, touchEndY;
                         estimateTimesSection.addEventListener('touchstart', (e) => {
+                            if (e.target.closest('#dragHandle')) return; // Ignore drag handle swipes
                             if (e.touches.length !== 1) return;
                             touchStartX = e.touches[0].clientX;
                             touchStartY = e.touches[0].clientY;
@@ -3446,6 +3712,7 @@
                             touchEndY = e.touches[0].clientY;
                         }, { passive: true });
                         estimateTimesSection.addEventListener('touchend', () => {
+                            if (e.target.closest('#dragHandle')) return;
                             if (touchEndX === 0) return;
                             const diffX = touchStartX - touchEndX;
                             const diffY = touchStartY - touchEndY;
@@ -3534,6 +3801,66 @@
                             favTouchEndX = 0;
                             favTouchEndY = 0;
                         }
+
+                        // --- DRAG HANDLE LOGIC ---
+                        const dragHandle = document.getElementById('dragHandle');
+                        const panel = document.getElementById('estimateTimesSection');
+                        let isDragging = false;
+                        let startY, startHeight;
+                        const onDragStart = (e) => {
+                            isDragging = true;
+                            startY = e.touches ? e.touches[0].clientY : e.clientY;
+                            startHeight = panel.offsetHeight;
+                            panel.style.transition = 'none';
+                            document.body.style.cursor = 'ns-resize';
+                            e.preventDefault();
+                        };
+                        const onDragMove = (e) => {
+                            if (!isDragging) return;
+                            const contentWrapper = document.getElementById('content-wrapper');
+                            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+                            const deltaY = startY - currentY;
+
+                            // --- 動態計算最小高度 ---
+                            // 最小高度設為讓 '更新按鈕' 底部不被導航列遮擋的高度 + 20px 安全邊距
+                            const mainNavHeight = document.getElementById('mainNav').offsetHeight; // 底部導航高度
+                            const updateBtn = document.getElementById('updateCountdown');
+                            const updateBtnHeight = updateBtn.offsetHeight; // 更新按鈕高度
+                            
+                            // updateBtn.style.bottom 是 80px，所以它距離底部有 80px 的空間。
+                            // 我們需要面板的高度至少要超過 updateBtn 的 top 位置
+                            const updateBtnBottom = parseInt(updateBtn.style.bottom || 80); 
+
+                            // 最小高度應該讓面板的頂部剛好在 updateBtn 的上方
+                            // minHeight = updateBtnBottom + updateBtnHeight + 頂部與拖桿的安全邊距(20px)
+                            const minHeight = updateBtnBottom + updateBtnHeight + 20;
+
+                            // 如果元素不存在，使用一個固定的安全值
+                            const finalMinHeight = isNaN(minHeight) || minHeight < 100 ? 150 : minHeight;
+
+                            const maxHeight = contentWrapper.offsetHeight;
+                            
+                            // 計算新的高度，並將其限制在最小與最大高度之間
+                            const newHeight = Math.min(Math.max(startHeight + deltaY, finalMinHeight), maxHeight);
+                            
+                            panel.style.height = `${newHeight}px`;
+                            map.invalidateSize();
+                        };
+
+                        const onDragEnd = () => {
+                            isDragging = false;
+                            panel.style.transition = '';
+                            document.body.style.cursor = '';
+                            if(map) map.invalidateSize();
+                        };
+                        dragHandle.addEventListener('mousedown', onDragStart);
+                        document.addEventListener('mousemove', onDragMove);
+                        document.addEventListener('mouseup', onDragEnd);
+                        dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
+                        document.addEventListener('touchmove', onDragMove, { passive: true });
+                        document.addEventListener('touchend', onDragEnd);
+
+
                         adjustContentPadding();
                         window.addEventListener('resize', () => {
                             adjustContentPadding();
@@ -3544,7 +3871,14 @@
                         window.addEventListener('hashchange', () => handleHashChange(false));
                         const urlParams = new URLSearchParams(window.location.search);
                         const pageFromUrl = urlParams.get('page');
+                        const routeIdFromUrl = urlParams.get('route'); // 新增：從 URL 讀取 route 參數
+
                         let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+
+                        if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                            currentRouteId = routeIdFromUrl; // 新增：如果頁面是 tracker 且有 route 參數，則設定 currentRouteId
+                        }
+                        
                         await showPage(initialPageId, initialPageId !== 'homePage');
                         handleHashChange(false);
                         updateNavHighlight(); 
