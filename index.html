@@ -3754,7 +3754,7 @@
                             touchEndX = e.touches[0].clientX;
                             touchEndY = e.touches[0].clientY;
                         }, { passive: true });
-                        estimateTimesSection.addEventListener('touchend', () => {
+                        estimateTimesSection.addEventListener('touchend', (e) => {
                             if (e.target.closest('#dragHandle')) return;
                             if (touchEndX === 0) return;
                             const diffX = touchStartX - touchEndX;
