@@ -47,6 +47,7 @@
             -ms-user-select: none; 
             transition: background-color 0.3s ease, color 0.3s ease;
             height: 100vh;
+            height: calc(var(--vh, 1vh) * 100); /* 使用我們自訂的、穩定的 vh 變數 */
             overflow: hidden;
         }
         body.is-dragging-item {
@@ -1411,6 +1412,14 @@
         </div>
     </div>
     <script>
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        // 初始執行一次，並在每次視窗大小或方向改變時重新執行。
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
         document.addEventListener('DOMContentLoaded', async () => {
             const splashScreen = document.getElementById('splashScreen');
             const body = document.body;
