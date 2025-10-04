@@ -1655,6 +1655,11 @@
                             removeFavorite: '移除最愛',
                             addFavorite: '加入最愛',
                             favoritesTitle: '常用站牌',
+                            mapStopOrder: '站序：',
+                            mapRealTimeStatus: '即時動態：',
+                            mapBusPlate: '車牌：',
+                            networkErrorOfflineView: '網路連線失敗，無法顯示即時動態。',
+                            offlineStatus: '離線',
                             favoritesSubtitle: '點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。',
                             noFavoritesYet: '還沒有常用站牌喔！',
                             noFavoritesInGroup: '這個分組還沒有常用站牌喔！',
@@ -1774,6 +1779,11 @@
                             removeFavorite: 'Remove Favorite',
                             addFavorite: 'Add Favorite',
                             favoritesTitle: 'Favorite Stops',
+                            mapStopOrder: 'Stop Order:',
+                            mapRealTimeStatus: 'Real-time Status:',
+                            mapBusPlate: 'Plate No.:',
+                            networkErrorOfflineView: 'Network connection failed. Cannot display real-time data.',
+                            offlineStatus: 'Offline',
                             favoritesSubtitle: 'Tap to view details, long-press or right-click to remove, drag to reorder.',
                             noFavoritesYet: 'No favorite stops yet!',
                             noFavoritesInGroup: 'No favorite stops in this group yet!',
@@ -2014,6 +2024,13 @@
                     }
                     function checkMarqueeOverflow(container, textElement, originalText) {
                         if (!container || !textElement) return;
+                        const oldText = textElement.dataset.originalText;
+                        // 如果新舊文字相同，且跑馬燈已在執行中，則直接返回，不做任何事
+                        if (oldText === originalText && textElement.classList.contains('is-overflowing')) {
+                            return; 
+                        }
+                        // 將當前文字儲存起來，以便下次比較
+                        textElement.dataset.originalText = originalText;
                         container.style.flexGrow = '1';
                         textElement.classList.remove('is-overflowing');
                         textElement.style.animation = 'none';
@@ -3434,7 +3451,7 @@
                             } else {
                                 const icon = createBusIcon(direction);
                                 busMarkers[busId] = L.marker(latLng, { icon: icon, direction: direction, pane: 'busPane' })
-                                    .bindPopup(`<b>車牌: ${busId}</b>`)
+                                    .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
                                     .addTo(layerGroup);
                             }
                         });
@@ -3447,7 +3464,9 @@
                     }
                     function createBusIcon(direction){return L.divIcon({className:`bus-icon ${direction==="go"?"go-bus":"back-bus"}`,html:'<span class="material-icons-outlined">directions_bus</span>',iconSize:[32,32],iconAnchor:[16,16]})}
                     function createStationIcon(number,direction){return L.divIcon({className:`station-number-icon ${direction==="go"?"go-station":"back-station"}`,html:`<span>${number}</span>`,iconSize:[24,24],iconAnchor:[12,12]})}
-                    function createPopupContent(stop, etas){ return`<div class="popup-header">${stop.node.name}</div><div class="popup-info"><strong>站序:</strong> ${stop.orderNo}</div><div class="popup-info"><strong>即時動態:</strong></div>${formatEtas(etas)}` }
+                    function createPopupContent(stop, etas) {
+                        return `<div class="popup-header">${stop.node.name}</div><div class="popup-info"><strong>${translations[currentLang].mapStopOrder}</strong> ${stop.orderNo}</div><div class="popup-info"><strong>${translations[currentLang].mapRealTimeStatus}</strong></div>${formatEtas(etas)}`
+                    }
                     function formatEtas(etas){
                         if(!etas || etas.length === 0) return `<div class="no-data">${translations[currentLang].noData}</div>`;
                         return '<div class="eta-container">' + etas.map(eta => {
