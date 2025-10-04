@@ -1938,8 +1938,51 @@
 
                     // --- MAP HELPER FUNCTIONS ---
                     function decodePolyline(t){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d}
-                    function findClosestPointOnPolyline(t,e){let n=1/0,o=null;for(let r=0;r<e.length-1;r++){const i=L.latLng(e[r]),s=L.latLng(e[r+1]);if(0!==i.distanceTo(s)**2){const a=((t.lat-i.lat)*(s.lat-i.lat)+(t.lng-i.lng)*(s.lng-i.lng))/i.distanceTo(s)**2,l=Math.max(0,Math.min(1,a)),c=L.latLng(i.lat+l*(s.lat-i.lat),i.lng+l*(s.lng-i.lng)),f=t.distanceTo(c);f<n&&(n=f,o=c)}}return o||L.latLng(t)}
-
+                    function findClosestPointOnPolyline(point, polyline) {
+                        let minDistanceSquared = Infinity;
+                        let closestPoint = null;
+                    
+                        if (!map || !polyline || polyline.length < 2) {
+                            return L.latLng(point);
+                        }
+                    
+                        const pointProjected = map.project(point);
+                    
+                        for (let i = 0; i < polyline.length - 1; i++) {
+                            const p1 = L.latLng(polyline[i]);
+                            const p2 = L.latLng(polyline[i+1]);
+                    
+                            const p1Projected = map.project(p1);
+                            const p2Projected = map.project(p2);
+                    
+                            const segmentLengthSquared = p1Projected.distanceTo(p2Projected) ** 2;
+                    
+                            if (segmentLengthSquared === 0) continue;
+                    
+                            const t = ((pointProjected.x - p1Projected.x) * (p2Projected.x - p1Projected.x) + (pointProjected.y - p1Projected.y) * (p2Projected.y - p1Projected.y)) / segmentLengthSquared;
+                    
+                            let projectedSegmentPoint;
+                            if (t < 0) {
+                                projectedSegmentPoint = p1Projected;
+                            } else if (t > 1) {
+                                projectedSegmentPoint = p2Projected;
+                            } else {
+                                projectedSegmentPoint = L.point(
+                                    p1Projected.x + t * (p2Projected.x - p1Projected.x),
+                                    p1Projected.y + t * (p2Projected.y - p1Projected.y)
+                                );
+                            }
+                    
+                            const distanceSquared = pointProjected.distanceTo(projectedSegmentPoint) ** 2;
+                    
+                            if (distanceSquared < minDistanceSquared) {
+                                minDistanceSquared = distanceSquared;
+                                closestPoint = projectedSegmentPoint;
+                            }
+                        }
+                        
+                        return closestPoint ? map.unproject(closestPoint) : L.latLng(point);
+                    }
                     function updateNavHighlight() {
                         document.querySelectorAll('#mainNav button').forEach(button => {
                             button.classList.remove('active-nav');
@@ -3973,3 +4016,4 @@
     </script>
 </body>
 </html>
+
