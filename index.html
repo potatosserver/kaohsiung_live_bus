@@ -3873,30 +3873,14 @@
                             const currentY = e.touches ? e.touches[0].clientY : e.clientY;
                             const deltaY = startY - currentY;
 
-                            // --- 動態計算最小高度 ---
-                            // 最小高度設為讓 '更新按鈕' 底部不被導航列遮擋的高度 + 20px 安全邊距
-                            const mainNavHeight = document.getElementById('mainNav').offsetHeight; // 底部導航高度
-                            const updateBtn = document.getElementById('updateCountdown');
-                            const updateBtnHeight = updateBtn.offsetHeight; // 更新按鈕高度
-                            
-                            // updateBtn.style.bottom 是 80px，所以它距離底部有 80px 的空間。
-                            // 我們需要面板的高度至少要超過 updateBtn 的 top 位置
-                            const updateBtnBottom = parseInt(updateBtn.style.bottom || 80); 
-
-                            // 最小高度應該讓面板的頂部剛好在 updateBtn 的上方
-                            // minHeight = updateBtnBottom + updateBtnHeight + 頂部與拖桿的安全邊距(20px)
-                            const minHeight = updateBtnBottom + updateBtnHeight + 20;
-
-                            // 如果元素不存在，使用一個固定的安全值
-                            const finalMinHeight = isNaN(minHeight) || minHeight < 100 ? 150 : minHeight;
+                            const finalMinHeight = 60; 
 
                             const maxHeight = contentWrapper.offsetHeight;
                             
-                            // 計算新的高度，並將其限制在最小與最大高度之間
                             const newHeight = Math.min(Math.max(startHeight + deltaY, finalMinHeight), maxHeight);
                             
                             panel.style.height = `${newHeight}px`;
-                            map.invalidateSize();
+                            if(map) map.invalidateSize();
                         };
 
                         const onDragEnd = () => {
