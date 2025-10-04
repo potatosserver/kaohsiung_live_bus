@@ -223,6 +223,7 @@
             align-items: center;
             justify-content: center;
             flex-grow: 1;
+            flex-basis: 0;
             padding: 4px 4px;
             font-size: 0.8rem;
             color: #64748b;
@@ -1028,6 +1029,12 @@
             white-space: pre-wrap; 
             overflow-wrap: break-word; 
             word-break: break-word; 
+        }
+        #settingsPage .container {
+            padding-bottom: 90px; /* 避免內容被下方導航列遮擋 */
+        }
+        #settingsPage {
+            overflow-y: auto; /* <<< 新增此規則以啟用滾動 */
         }
     </style>
 </head>
