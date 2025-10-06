@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1029,6 +1030,9 @@
             white-space: pre-wrap; 
             overflow-wrap: break-word; 
             word-break: break-word; 
+        }
+        #homePage {
+            overflow-y: auto;
         }
         #settingsPage .container {
             padding-bottom: 90px; /* 避免內容被下方導航列遮擋 */
@@ -3281,7 +3285,7 @@
                     };
                     async function fetchAnnouncements() {
                         loadFavorites(); 
-                        if (favoriteData.favorites.length === 0 && navigator.onLine) {
+                        if (favoriteData.favorites.length === 0) {
                             announcementLoading.classList.add('hidden');
                             noAnnouncementsMessage.classList.remove('hidden');
                             announcementContent.innerHTML = '';
@@ -3289,23 +3293,29 @@
                             announcementsDataLoaded = true;
                             return;
                         }
+
                         announcementLoading.classList.remove('hidden');
                         noAnnouncementsMessage.classList.add('hidden');
                         announcementContent.innerHTML = '';
+
                         const uniqueRouteIds = [...new Set(favoriteData.favorites.map(fav => fav.routeId))];
                         let allMessages = [];
+
                         try {
                             const promises = uniqueRouteIds.map(routeId =>
                                 fetchAPI(GQL.QUERY_CLOGS, { routeId: parseInt(routeId) })
                             );
                             const results = await Promise.allSettled(promises);
+
                             results.forEach((result, index) => {
                                 if (result.status === 'fulfilled' && result.value.data) {
                                     const routeId = uniqueRouteIds[index];
                                     const favRoute = favoriteData.favorites.find(fav => fav.routeId === routeId);
                                     const routeName = favRoute ? favRoute.routeName : `Route ${routeId}`;
+                                    
                                     const clogMessages = result.value.data.clogMessages?.edges || [];
                                     const abnormalMessages = result.value.data.abnormalMessages?.edges || [];
+
                                     clogMessages.forEach(edge => {
                                         allMessages.push({
                                             type: 'clog',
@@ -3316,6 +3326,7 @@
                                             description: edge.node.description
                                         });
                                     });
+
                                     abnormalMessages.forEach(edge => {
                                         allMessages.push({
                                             type: 'abnormal',
@@ -3330,6 +3341,7 @@
                                     console.error(`Failed to fetch announcements for routeId: ${uniqueRouteIds[index]}`, result.reason);
                                 }
                             });
+
                             const groupedMessages = new Map();
                             allMessages.forEach(msg => {
                                 const key = `${msg.title}|||${msg.description}`;
@@ -3346,35 +3358,31 @@
                                     });
                                 }
                             });
+
                             renderAnnouncements(Array.from(groupedMessages.values()));
                         } catch (error) {
                             console.error("取得訊息公告時發生錯誤:", error);
+                            announcementContent.innerHTML = `<p class="text-center py-4 text-red-500">${translations[currentLang].weatherLoadError}</p>`;
                         } finally {
                             announcementLoading.classList.add('hidden');
                             announcementsDataLoaded = true;
                         }
                     }
                     function renderAnnouncements(messages) {
-                        const announcementContent = document.getElementById('announcementContent');
-                        const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
-                        const existingError = announcementContent.querySelector('.error-announcement');
                         announcementContent.innerHTML = '';
-                        if (existingError) {
-                            announcementContent.appendChild(existingError);
-                        }
                         if (messages.length === 0) {
-                            if (!existingError) {
-                                 noAnnouncementsMessage.classList.remove('hidden');
-                                 announcementContent.appendChild(noAnnouncementsMessage);
-                            }
+                            noAnnouncementsMessage.classList.remove('hidden');
+                            announcementContent.appendChild(noAnnouncementsMessage);
                         } else {
                             noAnnouncementsMessage.classList.add('hidden');
                             messages.forEach(msg => {
                                 const messageCard = document.createElement('div');
                                 messageCard.className = 'announcement-item bg-blue-100 dark:bg-slate-700 p-3 rounded-lg shadow-sm mb-3 border border-blue-200 dark:border-slate-600';
+                                
                                 const routeNamesHtml = msg.routeNames.map(name =>
                                     `<span class="inline-block px-2 py-0.5 rounded bg-blue-200 text-blue-800 font-medium text-xs dark:bg-blue-800 dark:text-blue-200">${name}</span>`
                                 ).join(' ');
+
                                 messageCard.innerHTML = `
                                     <h3 class="font-semibold text-slate-800 dark:text-slate-200">${routeNamesHtml} - ${msg.title}</h3>
                                     <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${msg.description}</p>
@@ -4035,4 +4043,3 @@
     </script>
 </body>
 </html>
-
