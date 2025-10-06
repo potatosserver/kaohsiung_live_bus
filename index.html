@@ -316,7 +316,7 @@
         body.dark-mode #stationListBackContent::before {
              background-color: #475569;
         }
-        .station-item {
+        .station-item, .bus-card { /* Combine styles for new and old structure */
             position: relative;
             display: flex;
             align-items: center;
@@ -329,7 +329,7 @@
             position: absolute;
             left: -18px; 
             z-index: 1;
-            background-color: #f1f5f9;
+            background-color: #f1f5f9; /* Needs to match panel bg */
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -338,7 +338,7 @@
             height: 40px;
         }
         body.dark-mode .station-icon-container {
-            background-color: #0f172a;
+            background-color: #0f172a; /* Needs to match dark panel bg */
         }
         .station-dot {
             width: 12px;
@@ -826,7 +826,7 @@
         #busTrackerPage .station-list-container {
             height: 100%;
             overflow-y: auto;
-            padding: 1rem 1rem 1rem 1rem;
+            padding: 1rem 1rem 1rem 0; /* Adjusted padding */
         }
         #dragHandle {
             flex-shrink: 0;
@@ -875,6 +875,35 @@
         .no-data { color: #95a5a6; font-style: italic; }
         .station-list-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         /* --- MAP.HTML MERGED STYLES END --- */
+
+        /* --- NEW MARQUEE & CYCLER STYLES START --- */
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-container { overflow: hidden; white-space: nowrap; }
+        .marquee-text.is-overflowing > * {
+            display: inline-block;
+            white-space: nowrap;
+            animation-name: marquee-scroll;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        .marquee-inner { display: inline-block; padding-right: 2.5rem; }
+        .info-cycler { position: relative; min-width: 5.5rem; height: 2rem; }
+        .cycler-item {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            padding: 0 0.75rem; border-radius: 9999px;
+            font-size: 0.875rem; font-weight: 700;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
+        }
+        .cycler-item.active { opacity: 1; visibility: visible; }
+        @keyframes spin-once { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .is-refreshing { animation: spin-once 0.5s ease-out; }
+        /* --- NEW MARQUEE & CYCLER STYLES END --- */
 
         body.dark-mode {
             background-color: #0f172a; 
@@ -932,11 +961,9 @@
         body.dark-mode .direction-toggle-group { border-color: #60a5fa; }
         body.dark-mode .direction-button { background-color: transparent; color: #60a5fa; }
         body.dark-mode .direction-button.bg-blue-500 { background-color: #60a5fa; color: #1e293b; }
-        body.dark-mode .station-icon-container { background-color: #0f172a; }
         .station-dot.go-station { background-color: var(--go-color); }
         .station-dot.back-station { background-color: var(--back-color); }
         body.dark-mode .station-dot { background-color: #60a5fa; }
-        body.dark-mode .station-content { background-color: #1e293b; }
         body.dark-mode .time-pill.bg-slate-200 { background-color: #334155; color: #cbd5e1; }
         body.dark-mode .time-pill.bg-red-200 { background-color: #991b1b; color: #fecaca; }
         body.dark-mode .time-pill.bg-green-200 { background-color: #166534; color: #dcfce7; }
@@ -1035,10 +1062,10 @@
             overflow-y: auto;
         }
         #settingsPage .container {
-            padding-bottom: 90px; /* 避免內容被下方導航列遮擋 */
+            padding-bottom: 90px;
         }
         #settingsPage {
-            overflow-y: auto; /* <<< 新增此規則以啟用滾動 */
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -1133,7 +1160,7 @@
                 <div id="estimateTimesSection">
                     <div id="dragHandle"></div>
                     <div class="relative flex-grow min-h-0">
-                         <div id="trackerLoading" class="absolute inset-0 bg-white/70 dark:bg-slate-800/70 z-20 items-center justify-center hidden">
+                         <div id="trackerLoading" class="absolute inset-0 bg-white/70 dark:bg-slate-800/70 z-20 flex items-center justify-center flex-col hidden">
                             <div class="loading-spinner mx-auto"></div>
                             <p class="mt-4 text-slate-600 text-sm" data-i18n="loadingBusData">正在載入路線動態...</p>
                         </div>
@@ -1427,7 +1454,6 @@
             const vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
         }
-        // 初始執行一次，並在每次視窗大小或方向改變時重新執行。
         setViewportHeight();
         window.addEventListener('resize', setViewportHeight);
         window.addEventListener('orientationchange', setViewportHeight);
@@ -1624,11 +1650,13 @@
                     let startTop = 0;
                     let favoriteUpdateInterval = null;
 
-                    // --- MAP-RELATED VARIABLES ---
                     let map = null;
                     let goLayerGroup, backLayerGroup, goBusLayerGroup, backBusLayerGroup;
                     let isFirstMapLoad = true;
                     let busMarkers = {};
+
+                    const MARQUEE_SPEED_PPS = 50;
+                    let infoCyclerInterval = null;
                     
                     const translations = {
                         zh: {
@@ -1775,7 +1803,7 @@
                             backDirection: 'To',
                             loadingBusData: 'Loading bus data...',
                             noBusDataForDirection: 'No bus information available for this direction.',
-                            lastBusDeparted: 'Last bus departed',
+                            lastBusDeparted: 'Last Bus Departed',
                             approaching: 'Approaching',
                             arrivingSoon: 'Arriving Soon',
                             minutes: 'min',
@@ -1822,7 +1850,7 @@
                             languageSettings: 'Language Settings',
                             selectLanguage: 'Select Language',
                             about: 'About',
-                            authorName: 'Author: Cho Pin-Chun (Andrew)',
+                            authorName: 'Author: CHO, BING-JUN (Andrew)',
                             authorWebsite: "Author's Website",
                             githubSource: 'GitHub Source Code',
                             updateCountdown: 's to update',
@@ -1966,7 +1994,111 @@
                         }`
                     };
 
-                    // --- MAP HELPER FUNCTIONS ---
+                    const getMarqueeSyncDelay = (contentEl, wasOverflowing) => {
+                        const currentCard = contentEl.closest('.bus-card');
+                        if (!currentCard) return '0s';
+                        let referenceEl = null;
+
+                        if (wasOverflowing) {
+                            referenceEl = contentEl;
+                        } 
+                        
+                        if (!referenceEl) {
+                            let prevCard = currentCard.previousElementSibling;
+                            while (prevCard) {
+                                const potentialRef = prevCard.querySelector('.marquee-text.is-overflowing > *');
+                                if (potentialRef) { referenceEl = potentialRef; break; }
+                                prevCard = prevCard.previousElementSibling;
+                            }
+                        }
+                        
+                        if (!referenceEl) {
+                            let nextCard = currentCard.nextElementSibling;
+                            while (nextCard) {
+                                const potentialRef = nextCard.querySelector('.marquee-text.is-overflowing > *');
+                                if (potentialRef) { referenceEl = potentialRef; break; }
+                                nextCard = nextCard.nextElementSibling;
+                            }
+                        }
+
+                        if (!referenceEl) return '0s';
+
+                        try {
+                            const animations = referenceEl.getAnimations();
+                            const marqueeAnimation = animations.find(anim => anim.animationName === 'marquee-scroll');
+                            if (!marqueeAnimation) return '0s';
+
+                            const timing = marqueeAnimation.effect.getComputedTiming();
+                            const duration = timing.duration;
+                            if (isNaN(duration) || duration === 0) return '0s';
+
+                            const progress = (marqueeAnimation.currentTime / duration) % 1;
+                            const newDuration = parseFloat(contentEl.style.animationDuration);
+                            
+                            return `-${progress * newDuration}s`;
+                        } catch (e) {
+                            console.error("Error calculating marquee delay:", e);
+                            return '0s';
+                        }
+                    };
+
+                    const checkMarquee = (contentEl) => {
+                        const marqueeText = contentEl.parentElement;
+                        const container = marqueeText.parentElement;
+                        const currentText = contentEl.textContent.trim();
+                        const wasOverflowing = marqueeText.classList.contains('is-overflowing');
+
+                        const forceScrollInEnglish = [
+                            translations.en.approaching, 
+                            translations.en.arrivingSoon,
+                            translations.en.lastBusDeparted
+                        ];
+                        const forceMarquee = currentLang === 'en' && forceScrollInEnglish.includes(currentText);
+                        const shouldMarquee = contentEl.scrollWidth > container.clientWidth || forceMarquee;
+                        
+                        if (shouldMarquee) {
+                            const duration = Math.max(2.5, Math.min(15, contentEl.scrollWidth / MARQUEE_SPEED_PPS));
+                            contentEl.style.animationDuration = `${duration}s`;
+                            
+                            const delay = getMarqueeSyncDelay(contentEl, wasOverflowing);
+                            contentEl.style.animationDelay = delay;
+                            
+                            marqueeText.classList.add('is-overflowing');
+                            if (!contentEl.querySelector('.marquee-inner')) {
+                                contentEl.innerHTML = `<span class="marquee-inner">${currentText}</span><span class="marquee-inner">${currentText}</span>`;
+                            }
+                        } else {
+                            if (wasOverflowing) {
+                                marqueeText.classList.remove('is-overflowing');
+                                contentEl.innerHTML = currentText;
+                                contentEl.style.animationDuration = '';
+                                contentEl.style.animationDelay = '';
+                            }
+                        }
+                    };
+
+                    const scheduleMarqueeCheck = (element) => {
+                        if(!element) return;
+                        if (element._marqueeCheckId) cancelAnimationFrame(element._marqueeCheckId);
+                        element._marqueeCheckId = requestAnimationFrame(() => checkMarquee(element));
+                    };
+                    
+                    function startInfoCycler() {
+                        if (infoCyclerInterval) clearInterval(infoCyclerInterval);
+                        infoCyclerInterval = setInterval(() => {
+                            document.querySelectorAll('.info-cycler').forEach(cycler => {
+                                const items = Array.from(cycler.querySelectorAll('.cycler-item')).filter(it => it.style.display !== 'none');
+                                if (items.length < 2) return;
+                                let currentIndex = items.findIndex(item => item.classList.contains('active'));
+                                if (currentIndex !== -1) {
+                                    items[currentIndex].classList.remove('active');
+                                    const nextIndex = (currentIndex + 1) % items.length;
+                                    items[nextIndex].classList.add('active');
+                                }
+                            });
+                        }, 4000);
+                    }
+
                     function decodePolyline(t){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d}
                     function findClosestPointOnPolyline(point, polyline) {
                         let minDistanceSquared = Infinity;
@@ -2029,11 +2161,9 @@
                     function checkMarqueeOverflow(container, textElement, originalText) {
                         if (!container || !textElement) return;
                         const oldText = textElement.dataset.originalText;
-                        // 如果新舊文字相同，且跑馬燈已在執行中，則直接返回，不做任何事
                         if (oldText === originalText && textElement.classList.contains('is-overflowing')) {
                             return; 
                         }
-                        // 將當前文字儲存起來，以便下次比較
                         textElement.dataset.originalText = originalText;
                         container.style.flexGrow = '1';
                         textElement.classList.remove('is-overflowing');
@@ -2358,6 +2488,10 @@
                             clearInterval(favoriteUpdateInterval);
                             favoriteUpdateInterval = null;
                         }
+                        if (infoCyclerInterval) {
+                            clearInterval(infoCyclerInterval);
+                            infoCyclerInterval = null;
+                        }
                         if (pageId === 'homePage') {
                             history.replaceState({ page: 'homePage' }, '', '?page=home');
                             pushState = false;
@@ -2397,7 +2531,6 @@
                             } else {
                                 updateCountdownButton.style.display = 'none';
                             }
-                            // Invalidate map size when showing the page
                             if(map) {
                                 setTimeout(() => map.invalidateSize(), 10);
                             }
@@ -2649,83 +2782,98 @@
                             isAnimatingDirection = false;
                         }, 300);
                     }
-                    function createStationCard(estimate, stationName, displayedBusIds, direction, stationData, isOffline = false) {
-                        let timeDisplay;
-                        let pillBgColorClass;
-                        let busIdDisplayHtml = '';
+
+                    function createStationCard(estimate, stationData, direction, plateVisibleStations, isOffline = false) {
+                        const card = document.createElement('div');
+                        card.className = 'station-item bus-card cursor-pointer'; // Use both classes
+                        card.dataset.stationId = estimate.id;
+                        card.dataset.stationName = stationData.node.name;
+                        card.dataset.routeId = currentRouteId;
+                        card.dataset.routeName = currentRouteName;
+                         if(stationData.node.lat && stationData.node.lon){
+                           card.dataset.lat = stationData.node.lat;
+                           card.dataset.lon = stationData.node.lon;
+                        }
+
+                        let timeDisplay, pillBgColorClass, busId = null;
+
                         if (isOffline) {
                             timeDisplay = translations[currentLang].offlineStatus;
-                            pillBgColorClass = 'bg-slate-200';
+                            pillBgColorClass = 'bg-slate-200 text-slate-800';
                         } else {
                             timeDisplay = translations[currentLang].lastBusDeparted;
-                            pillBgColorClass = 'bg-slate-200';
-                            if (estimate.etas && estimate.etas.length > 0) {
-                                const closestEta = estimate.etas.reduce((minEta, currentEta) => {
-                                    const minTime = minEta.etaTime !== null ? minEta.etaTime : Infinity;
-                                    const currentTime = currentEta.etaTime !== null ? currentEta.etaTime : Infinity;
-                                    return currentTime < minTime ? currentEta : minEta;
-                                }, { etaTime: Infinity });
-                                if (closestEta.etaTime !== Infinity && closestEta.etaTime !== null) {
+                            pillBgColorClass = 'bg-slate-200 text-slate-800';
+                            if (estimate && estimate.etas && estimate.etas.length > 0) {
+                                const closestEta = estimate.etas[0];
+                                busId = closestEta.busId;
+                                if (closestEta.etaTime !== null) {
                                     if (closestEta.etaTime <= 1) {
                                         timeDisplay = translations[currentLang].approaching;
-                                        pillBgColorClass = 'bg-red-200';
+                                        pillBgColorClass = 'bg-red-200 text-red-800';
                                     } else if (closestEta.etaTime <= 3) {
                                         timeDisplay = translations[currentLang].arrivingSoon;
-                                        pillBgColorClass = 'bg-green-200';
+                                        pillBgColorClass = 'bg-green-200 text-green-800';
                                     } else {
-                                        timeDisplay = `${closestEta.etaTime}${translations[currentLang].minutes}`;
-                                        pillBgColorClass = 'bg-blue-200';
-                                    }
-                                    if (closestEta.busId && !displayedBusIds.has(closestEta.busId)) {
-                                        busIdDisplayHtml = `<div class="bus-id-display">
-                                                            <span class="material-icons-outlined text-sm">directions_bus</span>
-                                                            <span>${closestEta.busId}</span>
-                                                        </div>`;
-                                        displayedBusIds.add(closestEta.busId);
+                                        timeDisplay = `${closestEta.etaTime} ${translations[currentLang].minutes}`;
+                                        pillBgColorClass = 'bg-blue-200 text-blue-800';
                                     }
                                 }
-                            } else if (estimate.comeTime) {
+                            } else if (estimate && estimate.comeTime) {
                                 timeDisplay = estimate.comeTime;
-                                pillBgColorClass = 'bg-slate-200';
                             }
                         }
-                        const stationCard = document.createElement('div');
-                        stationCard.className = 'station-item cursor-pointer';
-                        stationCard.dataset.stationId = estimate.id;
-                        stationCard.dataset.stationName = stationName;
-                        stationCard.dataset.routeId = currentRouteId;
-                        stationCard.dataset.routeName = currentRouteName;
-                        if(stationData.node.lat && stationData.node.lon){
-                           stationCard.dataset.lat = stationData.node.lat;
-                           stationCard.dataset.lon = stationData.node.lon;
-                        }
+
                         const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, direction);
                         const iconHtml = isCurrentlyFavorite
                             ? '<span class="material-icons-outlined text-red-500">favorite</span>'
                             : `<div class="station-dot ${direction === 1 ? 'go-station' : 'back-station'}"></div>`;
-                        stationCard.innerHTML = `
+
+                        card.innerHTML = `
                             <div class="station-icon-container">
                                 ${iconHtml}
                             </div>
                             <div class="station-content">
-                                <div class="time-pill ${pillBgColorClass}">
-                                    <p class="text-base font-bold">${timeDisplay}</p>
+                                <div class="table table-fixed w-full">
+                                    <div class="table-cell w-[6.5rem] align-middle">
+                                        <div class="info-cycler">
+                                            <div class="time-item cycler-item active ${pillBgColorClass}">
+                                                <div class="marquee-container w-full text-center">
+                                                    <div class="marquee-text"><span data-original-text="${timeDisplay}">${timeDisplay}</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="plate-item cycler-item bg-yellow-200 text-yellow-800" style="display: none;">
+                                                <span class="material-icons-outlined !text-sm mr-1">directions_bus</span>
+                                                <span class="plate-number font-semibold whitespace-nowrap"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="table-cell pl-3 align-middle">
+                                        <div class="marquee-container">
+                                            <div class="marquee-text">
+                                                <p class="station-name text-base font-medium text-slate-800" data-original-text="${stationData.node.name}">${stationData.node.name}</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="station-name">
-                                    <p class="text-base font-medium text-slate-800">${stationName}</p>
-                                </div>
-                                ${busIdDisplayHtml} </div>
+                            </div>
                         `;
 
-                        stationCard.addEventListener('click', (e) => {
-                             if(e.currentTarget.dataset.lat && e.currentTarget.dataset.lon && map){
+                        if (plateVisibleStations.has(estimate.id)) {
+                           const plateItem = card.querySelector('.plate-item');
+                           const plateNumber = card.querySelector('.plate-number');
+                           plateNumber.textContent = plateVisibleStations.get(estimate.id);
+                           plateItem.style.display = 'flex';
+                        }
+                        
+                        card.addEventListener('click', (e) => {
+                            if(e.currentTarget.dataset.lat && e.currentTarget.dataset.lon && map){
                                 map.flyTo([e.currentTarget.dataset.lat, e.currentTarget.dataset.lon], 17);
-                             }
+                            }
                         });
 
-                        stationCard.addEventListener('contextmenu', (e) => {
+                        card.addEventListener('contextmenu', (e) => {
                             e.preventDefault();
-                            const stationData = {
+                            const stationContextData = {
                                 routeId: parseInt(e.currentTarget.dataset.routeId),
                                 routeName: e.currentTarget.dataset.routeName,
                                 stationId: e.currentTarget.dataset.stationId,
@@ -2733,16 +2881,16 @@
                                 direction: direction,
                                 destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure
                             };
-                            showFavoriteButton(stationData, e.clientX, e.clientY);
+                            showFavoriteButton(stationContextData, e.clientX, e.clientY);
                         });
-                        let touchStartPos;
-                        let longPressTimer;
-                        stationCard.addEventListener('touchstart', (e) => {
+
+                        let touchStartPos, longPressTimer;
+                        card.addEventListener('touchstart', (e) => {
                             if (e.touches.length === 1) {
                                 touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
                                 longPressTimer = setTimeout(() => {
                                     e.preventDefault();
-                                    const stationData = {
+                                    const stationContextData = {
                                         routeId: parseInt(e.currentTarget.dataset.routeId),
                                         routeName: e.currentTarget.dataset.routeName,
                                         stationId: e.currentTarget.dataset.stationId,
@@ -2750,26 +2898,28 @@
                                         direction: direction,
                                         destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure
                                     };
-                                    showFavoriteButton(stationData, e.touches[0].clientX, e.touches[0].clientY);
+                                    showFavoriteButton(stationContextData, e.touches[0].clientX, e.touches[0].clientY);
                                     longPressTimer = null;
                                 }, 700);
                             }
                         }, {passive: true});
-                        stationCard.addEventListener('touchmove', (e) => {
+                        card.addEventListener('touchmove', (e) => {
                             if (!longPressTimer || !e.touches[0]) return; 
-                            const deltaX = Math.abs(e.touches[0].clientX - e.changedTouches[0].clientX);
-                            const deltaY = Math.abs(e.touches[0].clientY - e.changedTouches[0].clientY);
+                            const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.x);
+                            const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.y);
                             if (deltaX > 10 || deltaY > 10) { 
                                 clearTimeout(longPressTimer);
                             }
                         });
-                        stationCard.addEventListener('touchend', () => clearTimeout(longPressTimer));
-                        stationCard.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
-                        return stationCard;
+                        card.addEventListener('touchend', () => clearTimeout(longPressTimer));
+                        card.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+
+                        return card;
                     }
+
+
                     function displayEstimateTimes(data, direction, targetElement, isOffline = false) {
                         targetElement.innerHTML = '';
-                        const stationMap = new Map(data.stations.edges.map(edge => [edge.node.id, edge.node.name]));
                         
                         const filteredEstimates = data.estimateTimes.edges
                             .map(edge => ({
@@ -2783,17 +2933,34 @@
                             targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                             return;
                         }
+                        
+                        const nearestStopForBus = new Map();
+                        if (!isOffline) {
+                            data.estimateTimes.edges.forEach(e => {
+                                if (e.node.goBack === direction && e.node.etas && e.node.etas.length > 0) {
+                                    const eta = e.node.etas[0];
+                                    if (!nearestStopForBus.has(eta.busId) || eta.etaTime < nearestStopForBus.get(eta.busId).etaTime) {
+                                        nearestStopForBus.set(eta.busId, { stationId: e.node.id, etaTime: eta.etaTime, busId: eta.busId });
+                                    }
+                                }
+                            });
+                        }
+                        const plateVisibleStations = new Map(Array.from(nearestStopForBus.values()).map(v => [v.stationId, v.busId]));
 
                         const fragment = document.createDocumentFragment();
-                        const displayedBusIds = new Set();
                         filteredEstimates.forEach((edge) => {
                             const estimate = edge.node;
-                            const stationName = stationMap.get(estimate.id) || `${translations[currentLang].unknownStation} (ID: ${estimate.id})`;
-                            const card = createStationCard(estimate, stationName, displayedBusIds, direction, edge.stationDetails, isOffline);
+                            const stationDetails = edge.stationDetails;
+                            const card = createStationCard(estimate, stationDetails, direction, plateVisibleStations, isOffline);
                             fragment.appendChild(card);
+                            setTimeout(() => {
+                                scheduleMarqueeCheck(card.querySelector('.station-name'));
+                                scheduleMarqueeCheck(card.querySelector('.time-item span'));
+                            }, 0);
                         });
                         targetElement.appendChild(fragment);
                     }
+
                     function renderAllDirections(data, isOffline = false) {
                         displayEstimateTimes(data, 1, stationListGoContent, isOffline);
                         displayEstimateTimes(data, 2, stationListBackContent, isOffline);
@@ -2837,7 +3004,6 @@
                                 console.error("Error saving route details to localStorage", e);
                             }
                             
-                            // Render list and map
                             renderAllDirections(currentRouteData, false);
                             renderMap(currentRouteData);
                             
@@ -2878,7 +3044,9 @@
                         showPage('busTrackerPage', pushState);
                         routeTitle.textContent = routeName;
                         routeDescription.textContent = routeDesc;
-                        loadBusData(currentRouteId, true, scrollToStationId);
+                        loadBusData(currentRouteId, true, scrollToStationId).then(() => {
+                           startInfoCycler();
+                        });
                         countdownTimer.reset();
                     }
                     function createTimePillHtml(estimate) {
@@ -3392,7 +3560,6 @@
                         }
                     }
 
-                    // --- MAP RENDERING FUNCTIONS ---
                     function renderMap(routeData) {
                         goLayerGroup.clearLayers();
                         backLayerGroup.clearLayers();
@@ -3435,7 +3602,6 @@
                             const icon = createStationIcon(stop.orderNo, direction);
                             const marker = L.marker(projectedLatLng, { icon: icon, pane: 'stationPane' }).addTo(layerGroup);
                             
-                            // Find ETA data for this stop
                             const estimate = currentRouteData.estimateTimes.edges.find(e => e.node.id === stop.node.id && e.node.goBack === stop.goBack);
                             marker.bindPopup(createPopupContent(stop, estimate ? estimate.node.etas : []));
                         });
@@ -3677,7 +3843,6 @@
                     async function initializeAppUI() {
                         applyInitialTheme();
                         
-                        // Initialize Map
                         if (!map) {
                             map = L.map('map').setView([22.6273, 120.3014], 16);
                             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -3785,7 +3950,7 @@
                         const estimateTimesSection = document.getElementById('estimateTimesSection');
                         let touchStartX, touchStartY, touchEndX, touchEndY;
                         estimateTimesSection.addEventListener('touchstart', (e) => {
-                            if (e.target.closest('#dragHandle')) return; // Ignore drag handle swipes
+                            if (e.target.closest('#dragHandle')) return;
                             if (e.touches.length !== 1) return;
                             touchStartX = e.touches[0].clientX;
                             touchStartY = e.touches[0].clientY;
@@ -3888,7 +4053,6 @@
                             favTouchEndY = 0;
                         }
 
-                        // --- DRAG HANDLE LOGIC ---
                         const dragHandle = document.getElementById('dragHandle');
                         const panel = document.getElementById('estimateTimesSection');
                         let isDragging = false;
@@ -3941,12 +4105,12 @@
                         window.addEventListener('hashchange', () => handleHashChange(false));
                         const urlParams = new URLSearchParams(window.location.search);
                         const pageFromUrl = urlParams.get('page');
-                        const routeIdFromUrl = urlParams.get('route'); // 新增：從 URL 讀取 route 參數
+                        const routeIdFromUrl = urlParams.get('route'); 
 
                         let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
                         if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
-                            currentRouteId = routeIdFromUrl; // 新增：如果頁面是 tracker 且有 route 參數，則設定 currentRouteId
+                            currentRouteId = routeIdFromUrl; 
                         }
                         
                         await showPage(initialPageId, initialPageId !== 'homePage');
