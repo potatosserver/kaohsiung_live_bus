@@ -2758,6 +2758,8 @@
                             }
                         }
                     }
+
+                    // --- START: MODIFIED FUNCTION ---
                     function handleDirectionToggle(newDirection) {
                         if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                             return;
@@ -2779,104 +2781,23 @@
                             outgoingList.classList.add('hidden');
                             outgoingList.classList.remove(slideOutClass);
                             incomingList.classList.remove(slideInClass);
+                            
+                            // After the slide-in animation is complete, force a re-check on all marquee elements
+                            // within the newly visible list to ensure correct width calculation.
+                            const stationNameElements = incomingList.querySelectorAll('.station-name');
+                            const timeElements = incomingList.querySelectorAll('.time-item span[data-original-text]');
+                            
+                            stationNameElements.forEach(el => scheduleMarqueeCheck(el));
+                            timeElements.forEach(el => scheduleMarqueeCheck(el));
+
                             isAnimatingDirection = false;
-                        }, 300);
+                        }, 310); // Use a slightly longer delay (310ms) to ensure animation is fully complete
                     }
+                    // --- END: MODIFIED FUNCTION ---
 
-                    function updateStationCard(card, estimate, stationData, direction, plateVisibleStations, isOffline = false) {
-                        // Get references to inner elements
-                        const timeItem = card.querySelector('.time-item');
-                        const timeMarqueeSpan = card.querySelector('.time-item .marquee-text > span');
-                        const plateItem = card.querySelector('.plate-item');
-                        const plateNumberEl = plateItem.querySelector('.plate-number');
-                        const favoriteIconContainer = card.querySelector('.station-icon-container');
-
-                        // --- Calculate new display values ---
-                        let newTimeDisplay, newPillBgColorClass;
-                        if (isOffline) {
-                            newTimeDisplay = translations[currentLang].offlineStatus;
-                            newPillBgColorClass = 'bg-slate-200 text-slate-800';
-                        } else {
-                            newTimeDisplay = translations[currentLang].lastBusDeparted;
-                            newPillBgColorClass = 'bg-slate-200 text-slate-800';
-                            if (estimate && estimate.etas && estimate.etas.length > 0) {
-                                const closestEta = estimate.etas[0];
-                                if (closestEta.etaTime !== null) {
-                                    if (closestEta.etaTime <= 1) {
-                                        newTimeDisplay = translations[currentLang].approaching;
-                                        newPillBgColorClass = 'bg-red-200 text-red-800';
-                                    } else if (closestEta.etaTime <= 3) {
-                                        newTimeDisplay = translations[currentLang].arrivingSoon;
-                                        newPillBgColorClass = 'bg-green-200 text-green-800';
-                                    } else {
-                                        newTimeDisplay = `${closestEta.etaTime} ${translations[currentLang].minutes}`;
-                                        newPillBgColorClass = 'bg-blue-200 text-blue-800';
-                                    }
-                                }
-                            } else if (estimate && estimate.comeTime) {
-                                newTimeDisplay = estimate.comeTime;
-                            }
-                        }
-
-                        // --- Update DOM only if changed ---
-                        // Update time display and pill color
-                        if (timeMarqueeSpan.dataset.originalText !== newTimeDisplay) {
-                            timeMarqueeSpan.dataset.originalText = newTimeDisplay;
-                            timeMarqueeSpan.textContent = newTimeDisplay; // checkMarquee will handle duplication
-                            scheduleMarqueeCheck(timeMarqueeSpan);
-                        }
-                        const newTimePillClass = `time-item cycler-item active ${newPillBgColorClass}`;
-                        if (timeItem.className !== newTimePillClass) {
-                            timeItem.className = newTimePillClass;
-                        }
-
-                        // Update plate visibility and content
-                        const shouldShowPlate = plateVisibleStations.has(estimate.id);
-                        const isShowingPlate = plateItem.style.display !== 'none';
-                        const newPlateNumber = shouldShowPlate ? plateVisibleStations.get(estimate.id) : '';
-
-                        if (shouldShowPlate) {
-                            if (plateNumberEl.textContent !== newPlateNumber) {
-                                plateNumberEl.textContent = newPlateNumber;
-                            }
-                            if (!isShowingPlate) {
-                                plateItem.style.display = 'flex';
-                            }
-                        } else {
-                            if (isShowingPlate) {
-                                plateItem.style.display = 'none';
-                                // If the plate cycler item was active, switch back to the time item
-                                if (plateItem.classList.contains('active')) {
-                                    plateItem.classList.remove('active');
-                                    timeItem.classList.add('active');
-                                }
-                            }
-                        }
-
-                        // Update favorite icon
-                        const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, direction);
-                        const hasFavoriteIcon = favoriteIconContainer.querySelector('.material-icons-outlined');
-                        
-                        if (isCurrentlyFavorite && !hasFavoriteIcon) {
-                             favoriteIconContainer.innerHTML = '<span class="material-icons-outlined text-red-500">favorite</span>';
-                        } else if (!isCurrentlyFavorite && hasFavoriteIcon) {
-                            favoriteIconContainer.innerHTML = `<div class="station-dot ${direction === 1 ? 'go-station' : 'back-station'}"></div>`;
-                        }
-                    }
-
-                    function createStationCard(estimate, stationData, direction, plateVisibleStations, isOffline = false) {
-                        const card = document.createElement('div');
-                        card.className = 'station-item bus-card cursor-pointer'; // Use both classes
-                        card.dataset.stationId = estimate.id;
-                        card.dataset.stationName = stationData.node.name;
-                        card.dataset.routeId = currentRouteId;
-                        card.dataset.routeName = currentRouteName;
-                         if(stationData.node.lat && stationData.node.lon){
-                           card.dataset.lat = stationData.node.lat;
-                           card.dataset.lon = stationData.node.lon;
-                        }
-
-                        let timeDisplay, pillBgColorClass;
+                    // --- START: MODIFIED LOGIC (NOW USING renderOrUpdateEstimateTimes) ---
+                    function getStatusInfo(estimate, isOffline = false) {
+                        let timeDisplay, pillBgColorClass, busId = null;
 
                         if (isOffline) {
                             timeDisplay = translations[currentLang].offlineStatus;
@@ -2886,6 +2807,7 @@
                             pillBgColorClass = 'bg-slate-200 text-slate-800';
                             if (estimate && estimate.etas && estimate.etas.length > 0) {
                                 const closestEta = estimate.etas[0];
+                                busId = closestEta.busId;
                                 if (closestEta.etaTime !== null) {
                                     if (closestEta.etaTime <= 1) {
                                         timeDisplay = translations[currentLang].approaching;
@@ -2902,16 +2824,15 @@
                                 timeDisplay = estimate.comeTime;
                             }
                         }
-
-                        const isCurrentlyFavorite = isFavorite(currentRouteId, estimate.id, direction);
-                        const iconHtml = isCurrentlyFavorite
+                        return { timeDisplay, pillBgColorClass, busId };
+                    }
+                    
+                    function createCardHtml(stationData, direction, isFavorite) {
+                        const iconHtml = isFavorite
                             ? '<span class="material-icons-outlined text-red-500">favorite</span>'
                             : `<div class="station-dot ${direction === 1 ? 'go-station' : 'back-station'}"></div>`;
-                        
-                        const plateNumber = plateVisibleStations.has(estimate.id) ? plateVisibleStations.get(estimate.id) : '';
-                        const plateDisplay = plateVisibleStations.has(estimate.id) ? 'flex' : 'none';
 
-                        card.innerHTML = `
+                        return `
                             <div class="station-icon-container">
                                 ${iconHtml}
                             </div>
@@ -2919,14 +2840,14 @@
                                 <div class="table table-fixed w-full">
                                     <div class="table-cell w-[6.5rem] align-middle">
                                         <div class="info-cycler">
-                                            <div class="time-item cycler-item active ${pillBgColorClass}">
+                                            <div class="time-item cycler-item active">
                                                 <div class="marquee-container w-full text-center">
-                                                    <div class="marquee-text"><span data-original-text="${timeDisplay}">${timeDisplay}</span></div>
+                                                    <div class="marquee-text"><span data-original-text=""></span></div>
                                                 </div>
                                             </div>
-                                            <div class="plate-item cycler-item bg-yellow-200 text-yellow-800" style="display: ${plateDisplay};">
+                                            <div class="plate-item cycler-item bg-yellow-200 text-yellow-800" style="display: none;">
                                                 <span class="material-icons-outlined !text-sm mr-1">directions_bus</span>
-                                                <span class="plate-number font-semibold whitespace-nowrap">${plateNumber}</span>
+                                                <span class="plate-number font-semibold whitespace-nowrap"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -2940,74 +2861,24 @@
                                 </div>
                             </div>
                         `;
-                        
-                        card.addEventListener('click', (e) => {
-                            if(e.currentTarget.dataset.lat && e.currentTarget.dataset.lon && map){
-                                map.flyTo([e.currentTarget.dataset.lat, e.currentTarget.dataset.lon], 17);
-                            }
-                        });
-
-                        card.addEventListener('contextmenu', (e) => {
-                            e.preventDefault();
-                            const stationContextData = {
-                                routeId: parseInt(e.currentTarget.dataset.routeId),
-                                routeName: e.currentTarget.dataset.routeName,
-                                stationId: e.currentTarget.dataset.stationId,
-                                stationName: e.currentTarget.dataset.stationName,
-                                direction: direction,
-                                destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure
-                            };
-                            showFavoriteButton(stationContextData, e.clientX, e.clientY);
-                        });
-
-                        let touchStartPos, longPressTimer;
-                        card.addEventListener('touchstart', (e) => {
-                            if (e.touches.length === 1) {
-                                touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                                longPressTimer = setTimeout(() => {
-                                    e.preventDefault();
-                                    const stationContextData = {
-                                        routeId: parseInt(e.currentTarget.dataset.routeId),
-                                        routeName: e.currentTarget.dataset.routeName,
-                                        stationId: e.currentTarget.dataset.stationId,
-                                        stationName: e.currentTarget.dataset.stationName,
-                                        direction: direction,
-                                        destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure
-                                    };
-                                    showFavoriteButton(stationContextData, e.touches[0].clientX, e.touches[0].clientY);
-                                    longPressTimer = null;
-                                }, 700);
-                            }
-                        }, {passive: true});
-                        card.addEventListener('touchmove', (e) => {
-                            if (!longPressTimer || !e.touches[0]) return; 
-                            const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.x);
-                            const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.y);
-                            if (deltaX > 10 || deltaY > 10) { 
-                                clearTimeout(longPressTimer);
-                            }
-                        });
-                        card.addEventListener('touchend', () => clearTimeout(longPressTimer));
-                        card.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
-
-                        return card;
                     }
-
-                    function displayEstimateTimes(data, direction, targetElement, isOffline = false) {
-                        targetElement.innerHTML = '';
-                        
-                        const filteredEstimates = data.estimateTimes.edges
-                            .map(edge => ({
-                                ...edge,
-                                stationDetails: data.stations.edges.find(s => s.node.id === edge.node.id && s.goBack === edge.node.goBack)
-                            }))
-                            .filter(edge => edge.node.goBack === direction && edge.stationDetails)
-                            .sort((a,b) => a.stationDetails.orderNo - b.stationDetails.orderNo);
-
-                        if (!data || !data.estimateTimes || !data.estimateTimes.edges.length || filteredEstimates.length === 0) {
+                    
+                    function renderOrUpdateEstimateTimes(data, direction, targetElement, isOffline = false) {
+                        if (!data || !data.estimateTimes || !data.stations) {
                             targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                             return;
                         }
+
+                        const filteredStations = data.stations.edges
+                            .filter(edge => edge.goBack === direction)
+                            .sort((a, b) => a.orderNo - b.orderNo);
+
+                        if (filteredStations.length === 0) {
+                             targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
+                            return;
+                        }
+                        
+                        const estimatesMap = new Map(data.estimateTimes.edges.filter(e => e.node.goBack === direction).map(e => [e.node.id, e.node]));
                         
                         const nearestStopForBus = new Map();
                         if (!isOffline) {
@@ -3022,79 +2893,94 @@
                         }
                         const plateVisibleStations = new Map(Array.from(nearestStopForBus.values()).map(v => [v.stationId, v.busId]));
 
-                        const fragment = document.createDocumentFragment();
-                        filteredEstimates.forEach((edge) => {
-                            const estimate = edge.node;
-                            const stationDetails = edge.stationDetails;
-                            const card = createStationCard(estimate, stationDetails, direction, plateVisibleStations, isOffline);
-                            fragment.appendChild(card);
-                            setTimeout(() => {
+                        filteredStations.forEach(stationData => {
+                            const station = stationData.node;
+                            let card = targetElement.querySelector(`.bus-card[data-station-id="${station.id}"]`);
+                            
+                            if (!card) {
+                                const isCurrentlyFavorite = isFavorite(currentRouteId, station.id, direction);
+                                const cardHtml = createCardHtml(stationData, direction, isCurrentlyFavorite);
+                                targetElement.insertAdjacentHTML('beforeend', `<div class="station-item bus-card cursor-pointer" data-station-id="${station.id}">${cardHtml}</div>`);
+                                card = targetElement.lastElementChild;
+                                
+                                card.addEventListener('click', (e) => {
+                                    if(station.lat && station.lon && map) map.flyTo([station.lat, station.lon], 17);
+                                });
+                                card.addEventListener('contextmenu', (e) => {
+                                    e.preventDefault();
+                                    const stationContextData = { routeId: parseInt(currentRouteId), routeName: currentRouteName, stationId: station.id, stationName: station.name, direction: direction, destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure };
+                                    showFavoriteButton(stationContextData, e.clientX, e.clientY);
+                                });
+
+                                let touchStartPos, longPressTimer;
+                                card.addEventListener('touchstart', (e) => {
+                                    if (e.touches.length === 1) {
+                                        touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                                        longPressTimer = setTimeout(() => {
+                                            e.preventDefault();
+                                            const stationContextData = { routeId: parseInt(currentRouteId), routeName: currentRouteName, stationId: station.id, stationName: station.name, direction: direction, destination: direction === 1 ? currentRouteData.destination : currentRouteData.departure };
+                                            showFavoriteButton(stationContextData, e.touches[0].clientX, e.touches[0].clientY);
+                                            longPressTimer = null;
+                                        }, 700);
+                                    }
+                                }, { passive: true });
+                                card.addEventListener('touchmove', (e) => {
+                                    if (!longPressTimer || !e.touches[0] || !touchStartPos) return;
+                                    const deltaX = Math.abs(e.touches[0].clientX - touchStartPos.x);
+                                    const deltaY = Math.abs(e.touches[0].clientY - touchStartPos.y);
+                                    if (deltaX > 10 || deltaY > 10) clearTimeout(longPressTimer);
+                                });
+                                card.addEventListener('touchend', () => clearTimeout(longPressTimer));
+                                card.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+
                                 scheduleMarqueeCheck(card.querySelector('.station-name'));
-                                scheduleMarqueeCheck(card.querySelector('.time-item span'));
-                            }, 0);
-                        });
-                        targetElement.appendChild(fragment);
-                    }
-                    
-                    function updateEstimateTimes(data, direction, targetElement, isOffline = false) {
-                        const filteredEstimates = data.estimateTimes.edges
-                            .map(edge => ({
-                                ...edge,
-                                stationDetails: data.stations.edges.find(s => s.node.id === edge.node.id && s.goBack === edge.node.goBack)
-                            }))
-                            .filter(edge => edge.node.goBack === direction && edge.stationDetails)
-                            .sort((a,b) => a.stationDetails.orderNo - b.stationDetails.orderNo);
-
-                        if (filteredEstimates.length === 0) {
-                            if (!targetElement.querySelector('p')) {
-                                targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                             }
-                            return;
-                        } else {
-                             const p = targetElement.querySelector('p');
-                             if(p) p.remove();
-                        }
-                        
-                        const nearestStopForBus = new Map();
-                        if (!isOffline) {
-                            data.estimateTimes.edges.forEach(e => {
-                                if (e.node.goBack === direction && e.node.etas && e.node.etas.length > 0) {
-                                    const eta = e.node.etas[0];
-                                    if (!nearestStopForBus.has(eta.busId) || eta.etaTime < nearestStopForBus.get(eta.busId).etaTime) {
-                                        nearestStopForBus.set(eta.busId, { stationId: e.node.id, etaTime: eta.etaTime, busId: eta.busId });
-                                    }
+                            
+                            const estimate = estimatesMap.get(station.id);
+                            const { timeDisplay, pillBgColorClass, busId } = getStatusInfo(estimate, isOffline);
+
+                            const timeItem = card.querySelector('.time-item');
+                            const timeSpan = timeItem.querySelector('span');
+                            const plateItem = card.querySelector('.plate-item');
+                            const plateNumber = card.querySelector('.plate-number');
+                            const iconContainer = card.querySelector('.station-icon-container');
+
+                            const isCurrentlyFavorite = isFavorite(currentRouteId, station.id, direction);
+                            const expectedIconHtml = isCurrentlyFavorite ? '<span class="material-icons-outlined text-red-500">favorite</span>' : `<div class="station-dot ${direction === 1 ? 'go-station' : 'back-station'}"></div>`;
+                            if(iconContainer.innerHTML.trim() !== expectedIconHtml.trim()) {
+                                iconContainer.innerHTML = expectedIconHtml;
+                            }
+
+                            if (timeSpan.dataset.originalText !== timeDisplay) {
+                                timeSpan.textContent = timeDisplay;
+                                timeSpan.dataset.originalText = timeDisplay;
+                                scheduleMarqueeCheck(timeSpan);
+                            }
+                            const currentClasses = timeItem.className.split(' ');
+                            const activeClass = currentClasses.includes('active') ? 'active' : '';
+                            timeItem.className = `time-item cycler-item ${activeClass} ${pillBgColorClass}`;
+
+                            if (plateVisibleStations.has(station.id)) {
+                                const plateNum = plateVisibleStations.get(station.id);
+                                if (plateNumber.textContent !== plateNum) {
+                                    plateNumber.textContent = plateNum;
                                 }
-                            });
-                        }
-                        const plateVisibleStations = new Map(Array.from(nearestStopForBus.values()).map(v => [v.stationId, v.busId]));
-
-                        // If the number of stations has changed, fall back to a full rebuild for safety.
-                        if (targetElement.children.length !== filteredEstimates.length) {
-                            displayEstimateTimes(data, direction, targetElement, isOffline);
-                            return;
-                        }
-
-                        filteredEstimates.forEach((edge, index) => {
-                            const cardToUpdate = targetElement.children[index];
-                            if (cardToUpdate && cardToUpdate.dataset.stationId === edge.node.id) {
-                                updateStationCard(cardToUpdate, edge.node, edge.stationDetails, direction, plateVisibleStations, isOffline);
+                                plateItem.style.display = 'flex';
                             } else {
-                                // Mismatch indicates a structural change, rebuild to be safe
-                                displayEstimateTimes(data, direction, targetElement, isOffline);
-                                return;
+                                plateItem.style.display = 'none';
                             }
                         });
                     }
 
-                    function renderAllDirections(data, isOffline = false) {
-                        displayEstimateTimes(data, 1, stationListGoContent, isOffline);
-                        displayEstimateTimes(data, 2, stationListBackContent, isOffline);
+                    function renderAllDirections(data, isInitialLoad, isOffline = false) {
+                        if(isInitialLoad) {
+                           stationListGoContent.innerHTML = '';
+                           stationListBackContent.innerHTML = '';
+                        }
+                        renderOrUpdateEstimateTimes(data, 1, stationListGoContent, isOffline);
+                        renderOrUpdateEstimateTimes(data, 2, stationListBackContent, isOffline);
                     }
-
-                    function updateAllDirections(data, isOffline = false) {
-                        updateEstimateTimes(data, 1, stationListGoContent, isOffline);
-                        updateEstimateTimes(data, 2, stationListBackContent, isOffline);
-                    }
+                    // --- END: MODIFIED LOGIC ---
 
                     function renderOfflineUncachedState() {
                         trackerLoading.style.display = 'none';
@@ -3135,14 +3021,9 @@
                                 console.error("Error saving route details to localStorage", e);
                             }
                             
-                            if (isInitialLoad) {
-                                renderAllDirections(currentRouteData, false);
-                                startInfoCycler();
-                            } else {
-                                updateAllDirections(currentRouteData, false);
-                            }
-                            
+                            renderAllDirections(currentRouteData, isInitialLoad, false);
                             renderMap(currentRouteData);
+                            
                             updateDirectionButtons();
 
                             if (scrollToStationId) {
@@ -3160,7 +3041,7 @@
                             if (cachedData) {
                                 console.log(`Displaying cached data for route ${routeId}`);
                                 currentRouteData = cachedData;
-                                renderAllDirections(cachedData, true); 
+                                renderAllDirections(cachedData, isInitialLoad, true); 
                                 renderMap(cachedData);
                                 updateDirectionButtons();
                             } else {
@@ -3180,7 +3061,9 @@
                         showPage('busTrackerPage', pushState);
                         routeTitle.textContent = routeName;
                         routeDescription.textContent = routeDesc;
-                        loadBusData(currentRouteId, true, scrollToStationId);
+                        loadBusData(currentRouteId, true, scrollToStationId).then(() => {
+                           startInfoCycler();
+                        });
                         countdownTimer.reset();
                     }
                     function createTimePillHtml(estimate) {
