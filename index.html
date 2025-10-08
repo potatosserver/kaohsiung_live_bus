@@ -2961,14 +2961,21 @@
                             timeItem.className = `time-item cycler-item ${activeClass} ${pillBgColorClass}`;
 
                             if (plateVisibleStations.has(station.id)) {
-                                const plateNum = plateVisibleStations.get(station.id);
-                                if (plateNumber.textContent !== plateNum) {
-                                    plateNumber.textContent = plateNum;
-                                }
-                                plateItem.style.display = 'flex';
-                            } else {
-                                plateItem.style.display = 'none';
-                            }
+							    const plateNum = plateVisibleStations.get(station.id);
+							    if (plateNumber.textContent !== plateNum) {
+							        plateNumber.textContent = plateNum;
+							    }
+							    plateItem.style.display = 'flex';
+							} else {
+							    // 如果要隱藏車牌藥丸
+							    plateItem.style.display = 'none';
+							
+							    // 檢查它當前是否為 active，如果是，則將 active 狀態轉移給時間藥丸
+							    if (plateItem.classList.contains('active')) {
+							        plateItem.classList.remove('active');
+							        timeItem.classList.add('active');
+							    }
+							}
                         });
                     }
 
