@@ -4,6 +4,7 @@
 <head>
     <meta name="google-site-verification" content="ahdkishmook7wgZXJ6JVA43nNO5SSccNOlvmB575Od4" />
     <meta charset="UTF-8">
+    <meta name="color-scheme" content="light dark" />
     <meta name="author" content="卓稟鈞(AndrewCho)">
     <meta name="description" content="一個專為高雄市公車設計的簡單、美觀且低流量站點搜尋器，提供快速查詢路線資訊功能，滿足即時需求，適合所有用戶使用。">
     <meta name="keywords" content="高雄市公車, 高雄公車, 高雄市公車即時資訊, 公車即時資訊, 公車式小黃, 公車小黃, 幹線, 幹線公車, 快線, 快線公車, 紅線公車, 橘線公車, 黃線公車, 綠線公車, Github, github.io" />
@@ -38,6 +39,7 @@
             --go-color: #3b82f6; /* Blue for Go */
             --back-color: #ef4444; /* Red for Back */
         }
+
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
             background-color: #f1f5f9;
@@ -484,6 +486,15 @@
             background-color: #1e293b;
             border: 1px solid #475569;
         }
+        #manageGroupsModalBody .manage-group-item.group-placeholder {
+            opacity: 0.4;
+            background: #e0f2fe;
+            border: 2px dashed #3b82f6;
+        }
+        body.dark-mode #manageGroupsModalBody .manage-group-item.group-placeholder {
+            background: #0f172a;
+            border-color: #60a5fa;
+        }
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -812,6 +823,14 @@
             flex-grow: 1;
             width: 100%;
             background-color: #e5e7eb;
+        }
+        #busTrackerPage.map-hidden #map,
+        #busTrackerPage.map-hidden #dragHandle {
+            display: none;
+        }
+        #busTrackerPage.map-hidden #estimateTimesSection {
+            height: 100% !important;
+            flex-grow: 1;
         }
         #busTrackerPage #estimateTimesSection {
             flex-shrink: 0;
@@ -1185,7 +1204,7 @@
             <div class="flex-shrink-0">
                 <header class="text-center mb-6">
                     <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h1>
-                    <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。</p>
+                    <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">點擊可查看路線詳情，長按可移除，拖動以排序。</p>
                 </header>
                 <div id="favoriteGroupTabsContainer" class="mb-6 pb-2">
                 </div>
@@ -1284,6 +1303,16 @@
                             </div>
                             <label for="splashScreenToggle" class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="splashScreenToggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <span class="material-icons-outlined text-slate-500 mr-3">map</span>
+                                <span class="text-slate-600" data-i18n="showMap">顯示地圖</span>
+                            </div>
+                            <label for="mapDisplayToggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="mapDisplayToggle" class="sr-only peer">
                                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-blue-600"></div>
                             </label>
                         </div>
@@ -1598,6 +1627,7 @@
                     const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
                     const darkModeToggle = document.getElementById('darkModeToggle');
                     const splashScreenToggle = document.getElementById('splashScreenToggle');
+                    const mapDisplayToggle = document.getElementById('mapDisplayToggle');
                     const languageSelect = document.getElementById('languageSelect');
                     const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
                     const updateIntervalSelect = document.getElementById('updateIntervalSelect');
@@ -1614,6 +1644,7 @@
                     const announcementContent = document.getElementById('announcementContent');
                     const announcementLoading = document.getElementById('announcementLoading');
                     const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+                    
                     let allRoutes = [];
                     let currentRouteData = null;
                     let currentDirection = 1; 
@@ -1649,6 +1680,12 @@
                     let startYTouch = 0;
                     let startTop = 0;
                     let favoriteUpdateInterval = null;
+
+                    let draggedGroupItem = null;
+                    let groupPlaceholder = null;
+                    let groupGhost = null;
+                    let startYGroupTouch = 0;
+                    let startTopGroup = 0;
 
                     let map = null;
                     let goLayerGroup, backLayerGroup, goBusLayerGroup, backBusLayerGroup;
@@ -1692,7 +1729,7 @@
                             mapBusPlate: '車牌：',
                             networkErrorOfflineView: '網路連線失敗，無法顯示即時動態。',
                             offlineStatus: '離線',
-                            favoritesSubtitle: '點擊可查看路線詳情，長按或右鍵可移除，拖動以排序。',
+                            favoritesSubtitle: '點擊可查看路線詳情，長按可移除，拖動以排序。',
                             noFavoritesYet: '還沒有常用站牌喔！',
                             noFavoritesInGroup: '這個分組還沒有常用站牌喔！',
                             addFavoritesHint: '在路線動態頁面，長按或右鍵點擊站牌即可將其加入最愛。',
@@ -1718,6 +1755,7 @@
                             appearance: '外觀',
                             darkMode: '深色模式',
                             splashScreen: '啟用啟動動畫',
+                            showMap: '顯示地圖',
                             defaultStartPageTitle: '預設起始頁面',
                             defaultStartPageSubtitle: '選擇啟動時的頁面',
                             updateIntervalTitle: '自動更新頻率',
@@ -1816,7 +1854,7 @@
                             mapBusPlate: 'Plate No.:',
                             networkErrorOfflineView: 'Network connection failed. Cannot display real-time data.',
                             offlineStatus: 'Offline',
-                            favoritesSubtitle: 'Tap to view details, long-press or right-click to remove, drag to reorder.',
+                            favoritesSubtitle: 'Tap to view details, long-press to remove, drag to reorder.',
                             noFavoritesYet: 'No favorite stops yet!',
                             noFavoritesInGroup: 'No favorite stops in this group yet!',
                             addFavoritesHint: 'On the dynamic route page, long-press or right-click a stop to add it to favorites.',
@@ -1842,6 +1880,7 @@
                             appearance: 'Appearance',
                             darkMode: 'Dark Mode',
                             splashScreen: 'Enable Startup Animation',
+                            showMap: 'Show Map',
                             defaultStartPageTitle: 'Default Start Page',
                             defaultStartPageSubtitle: 'Select the page to show on launch',
                             updateIntervalTitle: 'Auto-Update Frequency',
@@ -2210,6 +2249,17 @@
                         }
                         updateMrtIframeSrc();
                     }
+                    function updateTrackerLayout() {
+                        const mapEnabled = localStorage.getItem('mapDisplayEnabled') !== 'false';
+                        if (mapEnabled) {
+                            busTrackerPage.classList.remove('map-hidden');
+                        } else {
+                            busTrackerPage.classList.add('map-hidden');
+                        }
+                        if (map) {
+                            map.invalidateSize();
+                        }
+                    }
                     async function setLanguage(lang) {
                         if (lang === currentLang) return;
                         currentLang = lang;
@@ -2303,7 +2353,7 @@
                         return new Promise(resolve => {
                             resolveCustomPrompt = resolve;
                             const cleanup = (result) => {
-                                if (window.location.hash === modalHash) {
+                                if (window.location.hash === modalHash && history.state?.modal === 'prompt') {
                                     history.back();
                                 }
                                 customPromptModal.classList.remove('show');
@@ -2328,7 +2378,7 @@
                         });
                     }
                     function customConfirm(title, message) {
-                        const modalHash = `${window.location.hash}/confirm/${Date.now()}`;
+                        const modalHash = `#confirm/${Date.now()}`;
                         history.pushState({ modal: 'confirm', page: activePage }, '', modalHash);
                         customConfirmTitle.textContent = title;
                         customConfirmMessage.textContent = message;
@@ -2336,7 +2386,7 @@
                         return new Promise(resolve => {
                             resolveCustomConfirm = resolve;
                             const cleanup = (result) => {
-                                if (window.location.hash === modalHash) {
+                                 if (window.location.hash === modalHash && history.state?.modal === 'confirm') {
                                     history.back();
                                 }
                                 customConfirmModal.classList.remove('show');
@@ -2492,10 +2542,22 @@
                             clearInterval(infoCyclerInterval);
                             infoCyclerInterval = null;
                         }
-                        if (pageId === 'homePage') {
-                            history.replaceState({ page: 'homePage' }, '', '?page=home');
-                            pushState = false;
+                        const oldPageId = activePage;
+                        if (pushState) {
+                             const state = { page: pageId };
+                             let pageName = pageId.replace('Page', '');
+                             if (pageId === 'routeSelectionPage') pageName = 'dynamic';
+                             if (pageId === 'busTrackerPage') pageName = 'tracker';
+                             let url = `?page=${pageName}`;
+                             if (pageId === 'busTrackerPage' && currentRouteId) {
+                                state.routeId = currentRouteId;
+                                url += `&route=${currentRouteId}`;
+                             }
+                             history.pushState(state, '', url);
+                        } else if (pageId === 'homePage' && oldPageId !== 'homePage' && !window.location.search.includes('page=home')) {
+                            history.pushState({ page: 'homePage' }, '', '?page=home');
                         }
+                        
                         lastPage = activePage;
                         activePage = pageId;
                         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
@@ -2507,24 +2569,14 @@
                             document.getElementById('homePage').classList.add('active');
                             activePage = 'homePage';
                         }
-                        if (pushState) {
-                            const state = { page: pageId };
-                            let pageName = pageId.replace('Page', '');
-                            if (pageId === 'routeSelectionPage') pageName = 'dynamic';
-                            if (pageId === 'busTrackerPage') pageName = 'tracker';
-                            let url = `?page=${pageName}`;
-                            if(pageId === 'busTrackerPage' && currentRouteId) {
-                                state.routeId = currentRouteId;
-                                url += `&route=${currentRouteId}`;
-                            }
-                            history.pushState(state, '', url);
-                        }
+                        
                         if (pageId === 'routeSelectionPage') {
                             resetSearch();
                             filterKeyboardContainer.style.display = 'block';
                             updateCountdownButton.style.display = 'none';
                             adjustContentPadding();
                         } else if (pageId === 'busTrackerPage') {
+                            updateTrackerLayout();
                             filterKeyboardContainer.style.display = 'none';
                             if (navigator.onLine) {
                                 updateCountdownButton.style.display = 'flex';
@@ -2759,7 +2811,6 @@
                         }
                     }
 
-                    // --- START: MODIFIED FUNCTION ---
                     function handleDirectionToggle(newDirection) {
                         if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                             return;
@@ -2782,8 +2833,6 @@
                             outgoingList.classList.remove(slideOutClass);
                             incomingList.classList.remove(slideInClass);
                             
-                            // After the slide-in animation is complete, force a re-check on all marquee elements
-                            // within the newly visible list to ensure correct width calculation.
                             const stationNameElements = incomingList.querySelectorAll('.station-name');
                             const timeElements = incomingList.querySelectorAll('.time-item span[data-original-text]');
                             
@@ -2791,11 +2840,8 @@
                             timeElements.forEach(el => scheduleMarqueeCheck(el));
 
                             isAnimatingDirection = false;
-                        }, 310); // Use a slightly longer delay (310ms) to ensure animation is fully complete
+                        }, 310);
                     }
-                    // --- END: MODIFIED FUNCTION ---
-
-                    // --- START: MODIFIED LOGIC (NOW USING renderOrUpdateEstimateTimes) ---
                     function getStatusInfo(estimate, isOffline = false) {
                         let timeDisplay, pillBgColorClass, busId = null;
 
@@ -2967,10 +3013,7 @@
 							    }
 							    plateItem.style.display = 'flex';
 							} else {
-							    // 如果要隱藏車牌藥丸
 							    plateItem.style.display = 'none';
-							
-							    // 檢查它當前是否為 active，如果是，則將 active 狀態轉移給時間藥丸
 							    if (plateItem.classList.contains('active')) {
 							        plateItem.classList.remove('active');
 							        timeItem.classList.add('active');
@@ -2987,8 +3030,6 @@
                         renderOrUpdateEstimateTimes(data, 1, stationListGoContent, isOffline);
                         renderOrUpdateEstimateTimes(data, 2, stationListBackContent, isOffline);
                     }
-                    // --- END: MODIFIED LOGIC ---
-
                     function renderOfflineUncachedState() {
                         trackerLoading.style.display = 'none';
                         stationListGoContent.innerHTML = '';
@@ -3230,7 +3271,7 @@
                                     <div class="drag-handle">
                                         <span class="material-icons-outlined">drag_indicator</span>
                                     </div>
-                                    <div class="flex-grow ml-2 cursor-pointer card-tap-area">
+                                    <div class="flex-grow ml-2 card-tap-area">
                                         <h3 class="font-bold text-md text-slate-800">${fav.routeName}</h3>
                                         <p class="text-sm text-slate-600">${fav.stationName}</p>
                                         <p class="text-xs text-slate-400 mt-1">${directionText}</p>
@@ -3330,28 +3371,35 @@
                             const { routeId, stationId, direction } = card.dataset;
                             const favData = favoriteData.favorites.find(f => f.routeId == routeId && f.stationId == stationId && f.direction == direction);
                             if (!favData) return;
-                            const tapArea = card.querySelector('.card-tap-area');
+
                             const dragHandle = card.querySelector('.drag-handle');
                             let favLongPressTimer;
-                            tapArea.addEventListener('click', () => {
+
+                            card.addEventListener('click', (e) => {
+                                if (e.target.closest('.drag-handle')) return; 
                                 if (isDraggingTouch) return;
                                 navigateToTracker(favData.routeId, favData.routeName, '', true, favData.stationId, favData.direction);
                             });
-                            card.addEventListener('contextmenu', (e) => {
+                            
+                            const tapArea = card.querySelector('.card-tap-area');
+                            
+                            tapArea.addEventListener('contextmenu', (e) => {
                                 e.preventDefault();
                                 showFavoriteButton(favData, e.clientX, e.clientY);
                             });
-                            card.addEventListener('touchstart', (e) => {
-                                if (dragHandle.contains(e.target) || isDraggingTouch) return;
+
+                            tapArea.addEventListener('touchstart', (e) => {
                                 favLongPressTimer = setTimeout(() => {
                                     e.preventDefault();
                                     showFavoriteButton(favData, e.touches[0].clientX, e.touches[0].clientY);
                                     favLongPressTimer = null;
                                 }, 700);
                             }, { passive: true });
-                            card.addEventListener('touchmove', () => clearTimeout(favLongPressTimer));
-                            card.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
-                            card.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
+                            
+                            tapArea.addEventListener('touchmove', () => clearTimeout(favLongPressTimer));
+                            tapArea.addEventListener('touchend', () => clearTimeout(favLongPressTimer));
+                            tapArea.addEventListener('touchcancel', () => clearTimeout(favLongPressTimer));
+                            
                             dragHandle.addEventListener('touchstart', handleTouchDragStart.bind(card));
                         });
                     }
@@ -3713,24 +3761,27 @@
                     }
                     function handleHashChange(isPopState = false) {
                         const hash = window.location.hash;
-                        if (!hash.includes('manage-groups')) {
-                            manageGroupsModal.classList.remove('show');
+                        let modalWasClosed = false;
+
+                        if (!hash.includes('manage-groups') && manageGroupsModal.classList.contains('show')) {
+                           manageGroupsModal.classList.remove('show');
+                           modalWasClosed = true;
                         }
-                        if (!hash.includes('/confirm/')) {
-                            if (customConfirmModal.classList.contains('show')) {
-                                customConfirmModal.classList.remove('show');
-                                if (resolveCustomConfirm) resolveCustomConfirm(false); 
-                            }
+                        if (!hash.includes('/confirm/') && customConfirmModal.classList.contains('show')) {
+                           customConfirmModal.classList.remove('show');
+                           if (resolveCustomConfirm) resolveCustomConfirm(false);
+                           modalWasClosed = true;
                         }
-                        if (!hash.includes('/prompt/')) {
-                             if (customPromptModal.classList.contains('show')) {
-                                customPromptModal.classList.remove('show');
-                                if (resolveCustomPrompt) resolveCustomPrompt(null); 
-                            }
+                        if (!hash.includes('/prompt/') && customPromptModal.classList.contains('show')) {
+                           customPromptModal.classList.remove('show');
+                           if (resolveCustomPrompt) resolveCustomPrompt(null);
+                           modalWasClosed = true;
                         }
+                        return modalWasClosed;
                     }
+
                     function closeManageGroupsModalAndRefresh() {
-                        if(window.location.hash === '#manage-groups'){
+                        if(window.location.hash.includes('#manage-groups')){
                             history.back();
                         } else {
                             manageGroupsModal.classList.remove('show');
@@ -3739,6 +3790,7 @@
                     }
                     function showSelectGroupModal(stationData) {
                         currentStationContext = stationData;
+                        history.pushState({ modal: 'select-group', page: activePage }, '', '#select-group');
                         selectGroupModalBody.innerHTML = '';
                         favoriteData.groups.forEach(group => {
                             const btn = document.createElement('button');
@@ -3746,6 +3798,7 @@
                             btn.textContent = group.name;
                             btn.addEventListener('click', () => {
                                 addFavorite(stationData, group.id);
+                                if (window.location.hash.includes('#select-group')) history.back();
                                 selectGroupModal.classList.remove('show');
                             });
                             selectGroupModalBody.appendChild(btn);
@@ -3757,6 +3810,7 @@
                         addNewGroupBtnInModal.className = 'w-full flex items-center justify-center text-left py-3 px-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 font-medium';
                         addNewGroupBtnInModal.innerHTML = `<span class="material-icons-outlined mr-2">add</span> ${translations[currentLang].addNewGroup}`;
                         addNewGroupBtnInModal.addEventListener('click', async () => {
+                            if (window.location.hash.includes('#select-group')) history.back();
                             selectGroupModal.classList.remove('show');
                             const name = await customPrompt(
                                 translations[currentLang].addNewGroup,
@@ -3773,12 +3827,97 @@
                         selectGroupModalBody.appendChild(addNewGroupBtnInModal);
                         selectGroupModal.classList.add('show');
                     }
+                    const getDragAfterGroupItem = (container, y) => {
+                        const draggableElements = [...container.querySelectorAll('.manage-group-item:not(.group-placeholder)')];
+                        return draggableElements.reduce((closest, child) => {
+                            if (child === groupPlaceholder) return closest;
+                            const box = child.getBoundingClientRect();
+                            const offset = y - box.top - box.height / 2;
+                            if (offset < 0 && offset > closest.offset) {
+                                return { offset: offset, element: child };
+                            } else {
+                                return closest;
+                            }
+                        }, { offset: Number.NEGATIVE_INFINITY }).element;
+                    };
+                    function handleGroupTouchDragStart(e) {
+                        const touch = e.touches[0];
+                        groupPlaceholder = this;
+                        groupGhost = groupPlaceholder.cloneNode(true);
+                        groupGhost.classList.add('dragging-ghost');
+                        document.body.appendChild(groupGhost);
+                        const rect = groupPlaceholder.getBoundingClientRect();
+                        startTopGroup = rect.top;
+                        startYGroupTouch = touch.clientY;
+                        groupGhost.style.width = `${rect.width}px`;
+                        groupGhost.style.top = `${startTopGroup}px`;
+                        groupGhost.style.left = `${rect.left}px`;
+                        groupPlaceholder.classList.add('group-placeholder');
+                        body.classList.add('is-dragging-item');
+                        document.addEventListener('touchmove', handleGroupTouchDragMove, { passive: false });
+                        document.addEventListener('touchend', handleGroupTouchDragEnd, { once: true });
+                    }
+                    function handleGroupTouchDragMove(e) {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const newTop = startTopGroup + (touch.clientY - startYGroupTouch);
+                        if(groupGhost) groupGhost.style.top = `${newTop}px`;
+                        const afterElement = getDragAfterGroupItem(manageGroupsModalBody, touch.clientY);
+                        if (afterElement) {
+                            manageGroupsModalBody.insertBefore(groupPlaceholder, afterElement);
+                        } else {
+                            manageGroupsModalBody.appendChild(groupPlaceholder);
+                        }
+                    }
+                    function handleGroupTouchDragEnd() {
+                        if (groupGhost) document.body.removeChild(groupGhost);
+                        if (groupPlaceholder) groupPlaceholder.classList.remove('group-placeholder');
+                        body.classList.remove('is-dragging-item');
+                        groupGhost = null;
+                        groupPlaceholder = null;
+                        const newOrderedElements = [...manageGroupsModalBody.querySelectorAll('.manage-group-item')];
+                        const newOrderedIds = newOrderedElements.map(elem => elem.dataset.groupId);
+                        favoriteData.groups.sort((a, b) => newOrderedIds.indexOf(a.id) - newOrderedIds.indexOf(b.id));
+                        saveFavorites();
+                        document.removeEventListener('touchmove', handleGroupTouchDragMove);
+                    }
+                    function handleManageGroupsDragOver(e) {
+                        e.preventDefault();
+                        if (!draggedGroupItem) return;
+                        const afterElement = getDragAfterGroupItem(manageGroupsModalBody, e.clientY);
+                        if (afterElement) {
+                            manageGroupsModalBody.insertBefore(draggedGroupItem, afterElement);
+                        } else {
+                            manageGroupsModalBody.appendChild(draggedGroupItem);
+                        }
+                    }
+                    function handleManageGroupsDrop(e) {
+                        e.preventDefault();
+                        if (!draggedGroupItem) return;
+                        const newOrderedElements = [...manageGroupsModalBody.querySelectorAll('.manage-group-item')];
+                        const newOrderedIds = newOrderedElements.map(elem => elem.dataset.groupId);
+                        favoriteData.groups.sort((a, b) => newOrderedIds.indexOf(a.id) - newOrderedIds.indexOf(b.id));
+                        saveFavorites();
+                    }
                     function renderManageGroupList() {
-                         manageGroupsModalBody.innerHTML = '';
+                        manageGroupsModalBody.innerHTML = '';
+                        manageGroupsModalBody.removeEventListener('dragover', handleManageGroupsDragOver);
+                        manageGroupsModalBody.removeEventListener('drop', handleManageGroupsDrop);
+
                          favoriteData.groups.filter(g => g.id !== 'all').forEach(group => {
                              const groupItem = document.createElement('div');
-                             groupItem.className = 'flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-700 rounded-lg';
-                             groupItem.innerHTML = `<span class="font-medium">${group.name}</span>`;
+                             groupItem.className = 'manage-group-item flex items-center justify-between p-2 bg-slate-100 dark:bg-slate-700 rounded-lg';
+                             groupItem.draggable = true;
+                             groupItem.dataset.groupId = group.id;
+                             
+                             const dragArea = document.createElement('div');
+                             dragArea.className = 'flex items-center group-drag-handle cursor-grab flex-grow';
+                             dragArea.innerHTML = `
+                                 <span class="material-icons-outlined mr-2 text-slate-500 touch-none">drag_indicator</span>
+                                 <span class="font-medium">${group.name}</span>
+                             `;
+                             groupItem.appendChild(dragArea);
+                             
                              const controls = document.createElement('div');
                              controls.className = 'flex items-center space-x-2';
                              const renameBtn = document.createElement('button');
@@ -3792,8 +3931,24 @@
                              deleteBtn.addEventListener('click', () => deleteGroup(group.id));
                              controls.appendChild(deleteBtn);
                              groupItem.appendChild(controls);
-                             manageGroupsModalBody.appendChild(groupItem);
+
+                            groupItem.addEventListener('dragstart', (e) => {
+                                draggedGroupItem = e.target.closest('.manage-group-item');
+                                setTimeout(() => { if(draggedGroupItem) draggedGroupItem.style.opacity = '0.5'; }, 0);
+                            });
+                             
+                            groupItem.addEventListener('dragend', (e) => {
+                                if (draggedGroupItem) draggedGroupItem.style.opacity = '1';
+                                draggedGroupItem = null;
+                            });
+
+                            dragArea.addEventListener('touchstart', handleGroupTouchDragStart.bind(groupItem));
+                             
+                            manageGroupsModalBody.appendChild(groupItem);
                          });
+                         
+                        manageGroupsModalBody.addEventListener('dragover', handleManageGroupsDragOver);
+                        manageGroupsModalBody.addEventListener('drop', handleManageGroupsDrop);
                     }
                     async function addNewGroup() {
                         const name = await customPrompt(
@@ -3883,6 +4038,10 @@
 
                         const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
                         splashScreenToggle.checked = splashScreenEnabled;
+                        const mapEnabled = localStorage.getItem('mapDisplayEnabled') !== 'false';
+                        mapDisplayToggle.checked = mapEnabled;
+                        updateTrackerLayout();
+
                         currentLang = localStorage.getItem("lang") || "zh";
                         languageSelect.value = currentLang;
                         updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
@@ -3892,6 +4051,7 @@
                         applyTranslations(); 
                         defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
                         defaultStartPageSelect.value = defaultStartPage;
+                        
                         darkModeToggle.addEventListener('change', () => {
                             if (darkModeToggle.checked) {
                                 body.classList.add('dark-mode');
@@ -3904,6 +4064,10 @@
                         });
                         splashScreenToggle.addEventListener('change', () => {
                             localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
+                        });
+                        mapDisplayToggle.addEventListener('change', () => {
+                            localStorage.setItem('mapDisplayEnabled', mapDisplayToggle.checked);
+                            updateTrackerLayout();
                         });
                         languageSelect.addEventListener('change', async (e) => {
                             await setLanguage(e.target.value);
@@ -3919,21 +4083,20 @@
                                 hideFavoriteButton();
                             }
                         });
+                        
                         window.addEventListener('popstate', async (event) => {
-                            handleHashChange(true); 
-                            const pageWeAreLeaving = activePage; 
-                            const destinationState = event.state;
-                            const destinationPageId = destinationState ? destinationState.page : 'homePage'; 
-                            if (pageWeAreLeaving === 'busTrackerPage') {
-                                await showPage(destinationPageId, false); 
+                            const modalWasClosed = handleHashChange(true);
+                            if (modalWasClosed) {
+                                event.stopImmediatePropagation();
+                                return;
                             }
-                            else if (['routeSelectionPage', 'favoriteStationsPage', 'mrtPage', 'settingsPage'].includes(pageWeAreLeaving)) {
-                                await showPage('homePage', false);
-                            }
-                            else {
+                            const destinationState = event.state || { page: 'homePage' };
+                            const destinationPageId = destinationState.page;
+                            if (destinationPageId && destinationPageId !== activePage) {
                                 await showPage(destinationPageId, false);
                             }
                         });
+
                         filterKeyboard.addEventListener('click', (e) => {
                             const button = e.target.closest('button');
                             if (!button) return;
@@ -3966,7 +4129,10 @@
                             const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
                             applySearch(fullSearchTerm);
                         });
-                        closeSelectGroupModal.addEventListener('click', () => selectGroupModal.classList.remove('show'));
+                        closeSelectGroupModal.addEventListener('click', () => {
+                            if (window.location.hash.includes('#select-group')) history.back();
+                            selectGroupModal.classList.remove('show');
+                        });
                         closeManageGroupsModal.addEventListener('click', closeManageGroupsModalAndRefresh);
                         addNewGroupBtn.addEventListener('click', addNewGroup);
                         goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
@@ -4137,7 +4303,9 @@
                             currentRouteId = routeIdFromUrl; 
                         }
                         
-                        await showPage(initialPageId, initialPageId !== 'homePage');
+                        await showPage(initialPageId, false);
+                        history.replaceState({ page: initialPageId, routeId: routeIdFromUrl }, '', window.location.href);
+
                         handleHashChange(false);
                         updateNavHighlight(); 
                         countdownInterval = setInterval(() => {
