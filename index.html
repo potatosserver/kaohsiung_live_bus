@@ -1715,8 +1715,8 @@
                             otherRoutes: '其他',
                             reset: '重設',
                             errorTitle: '錯誤!',
-                            goDirection: '去程',
-                            backDirection: '返程',
+                            goDirection: '去程往',
+                            backDirection: '返程往',
                             loadingBusData: '正在載入路線動態...',
                             noBusDataForDirection: '此方向目前沒有班次資訊。',
                             lastBusDeparted: '末班駛離',
@@ -2343,8 +2343,66 @@
                             throw error;
                         }
                     }
-                    function showToast(message) {
+                    
+                    // MODIFICATION START: Question 2 - Implement Toast and Retry Logic
+                    function showToast(message, type = 'info', duration = 5000) {
+                        const toast = document.createElement('div');
+                        let bgColor, textColor, icon;
+
+                        switch (type) {
+                            case 'error':
+                                bgColor = 'bg-red-500 dark:bg-red-700';
+                                textColor = 'text-white';
+                                icon = 'error_outline';
+                                break;
+                            case 'warning':
+                                bgColor = 'bg-yellow-500 dark:bg-yellow-600';
+                                textColor = 'text-white dark:text-slate-900';
+                                icon = 'warning_amber';
+                                break;
+                            default:
+                                bgColor = 'bg-slate-700 dark:bg-slate-200';
+                                textColor = 'text-white dark:text-slate-800';
+                                icon = 'info_outline';
+                                break;
+                        }
+
+                        toast.className = `flex items-center gap-3 w-auto max-w-sm p-3 rounded-lg shadow-lg pointer-events-auto transition-all duration-300 transform translate-y-4 opacity-0 ${bgColor} ${textColor}`;
+                        toast.innerHTML = `
+                            <span class="material-icons-outlined">${icon}</span>
+                            <p class="text-sm font-medium">${message}</p>
+                        `;
+                        
+                        toastContainer.appendChild(toast);
+                        
+                        // Animate in
+                        setTimeout(() => {
+                            toast.classList.remove('translate-y-4', 'opacity-0');
+                        }, 10);
+
+                        // Animate out
+                        setTimeout(() => {
+                            toast.classList.add('opacity-0');
+                            toast.addEventListener('transitionend', () => toast.remove());
+                        }, duration);
                     }
+
+                    async function fetchWithRetry(query, variables, retries = 1, delay = 2000) {
+                        try {
+                            // Use the original fetchAPI function for the actual request
+                            return await fetchAPI(query, variables);
+                        } catch (error) {
+                            if (retries > 0 && navigator.onLine) {
+                                await new Promise(resolve => setTimeout(resolve, delay));
+                                return await fetchWithRetry(query, variables, retries - 1, delay);
+                            } else {
+                                // Re-throw the error after all retries fail or if offline
+                                throw error;
+                            }
+                        }
+                    }
+                    // MODIFICATION END
+
                     function customPrompt(title, message, defaultValue = '') {
                         const modalHash = `#prompt/${Date.now()}`;
                         history.pushState({ modal: 'prompt', page: activePage }, '', modalHash);
@@ -3046,6 +3104,16 @@
                         if (isInitialLoad) {
                             isFirstMapLoad = true;
                             trackerLoading.style.display = 'flex';
+                            
+                            // MODIFICATION START: Question 1 Fix
+                            // Force reset display state to ensure "Go" list is visible and "Back" is hidden
+                            stationListGo.classList.remove('hidden');
+                            stationListBack.classList.add('hidden');
+                            // Also remove any lingering animation classes to prevent visual glitches
+                            stationListGo.classList.remove('slide-out-left', 'slide-in-from-right', 'slide-out-right', 'slide-in-from-left');
+                            stationListBack.classList.remove('slide-out-left', 'slide-in-from-right', 'slide-out-right', 'slide-in-from-left');
+                            // MODIFICATION END
+
                             stationListGoContent.innerHTML = '';
                             stationListBackContent.innerHTML = '';
                             document.getElementById('offlineNotice').classList.add('hidden');
@@ -3060,7 +3128,10 @@
                         updateCountdownButton.disabled = true;
 
                         try {
-                            const result = await fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
+                            // MODIFICATION START: Question 2 - Use fetchWithRetry
+                            const result = await fetchWithRetry(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
+                            // MODIFICATION END
+                            
                             if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                             currentRouteData = result.data.route;
                             
@@ -3086,20 +3157,31 @@
                             }
 
                         } catch (error) {
+                            // MODIFICATION START: Question 2 - Improved catch block
                             console.error("Failed to fetch route details:", error);
+                            const isTrulyOffline = !navigator.onLine;
+                            
                             let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
                             const cachedData = cachedDetails[routeId];
+                            
                             if (cachedData) {
-                                console.log(`Displaying cached data for route ${routeId}`);
+                                if (isTrulyOffline) {
+                                    showToast(translations[currentLang].networkErrorCriticalTitle, 'error');
+                                    renderAllDirections(cachedData, isInitialLoad, true); // Pass true to show "Offline" text
+                                } else {
+                                    showToast(translations[currentLang].networkErrorWarningMessage, 'warning');
+                                    renderAllDirections(cachedData, isInitialLoad, false); // Pass false to show stale data without "Offline" text
+                                }
                                 currentRouteData = cachedData;
-                                renderAllDirections(cachedData, isInitialLoad, true); 
                                 renderMap(cachedData);
                                 updateDirectionButtons();
                             } else {
-                                console.log(`No cached data for route ${routeId}. Displaying limited offline view.`);
+                                // No data to show at all
+                                showToast(translations[currentLang].networkErrorCriticalMessage, 'error');
                                 currentRouteData = null;
                                 renderOfflineUncachedState();
                             }
+                            // MODIFICATION END
                         } finally {
                             trackerLoading.style.display = 'none';
                             updateCountdownButton.disabled = false;
@@ -4332,14 +4414,23 @@
                         window.addEventListener('offline', () => {
                             updateCountdownButton.style.display = "none";
                         });
+
+                        // MODIFICATION START: Question 2 - Smart Foreground Refresh
                         document.addEventListener('visibilitychange', () => {
                             if (document.visibilityState === 'visible') {
                                 updateNavHighlight();
-                                if (busTrackerPage.classList.contains('active') && navigator.onLine) {
-                                    countdownTimer.update();
+                                if (busTrackerPage.classList.contains('active')) {
+                                    // Delay update slightly to allow network to reconnect
+                                    setTimeout(() => {
+                                        if (navigator.onLine) {
+                                            countdownTimer.update();
+                                        }
+                                    }, 1000);
                                 }
                             }
                         });
+                        // MODIFICATION END
+
                     }
                     async function loadInitialData() {
                         await initRouteSelection();
