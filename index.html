@@ -2345,7 +2345,7 @@
                     }
                     
                     // MODIFICATION START: Question 2 - Implement Toast and Retry Logic
-                    function showToast(message, type = 'info', duration = 5000) {
+                    function showToast(message, type = 'info', duration = 3000) {
                         const toast = document.createElement('div');
                         let bgColor, textColor, icon;
 
@@ -2520,8 +2520,12 @@
                             const favoriteId = `${newFavorite.routeId}-${newFavorite.stationId}-${newFavorite.direction}`;
                             if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all = [];
                             favoriteData.groupOrder.all.push(favoriteId);
-                            if (!favoriteData.groupOrder[groupId]) favoriteData.groupOrder[groupId] = [];
-                            favoriteData.groupOrder[groupId].push(favoriteId);
+                            if (groupId && !favoriteData.groupOrder[groupId]) {
+                                favoriteData.groupOrder[groupId] = [];
+                            }
+                            if (groupId) {
+                                favoriteData.groupOrder[groupId].push(favoriteId);
+                            }
                             saveFavorites();
                             if (busTrackerPage.classList.contains('active')) {
                                 loadBusData(currentRouteId, false);
@@ -3105,15 +3109,19 @@
                             isFirstMapLoad = true;
                             trackerLoading.style.display = 'flex';
                             
-                            // MODIFICATION START: Question 1 Fix
-                            // Force reset display state to ensure "Go" list is visible and "Back" is hidden
-                            stationListGo.classList.remove('hidden');
-                            stationListBack.classList.add('hidden');
-                            // Also remove any lingering animation classes to prevent visual glitches
+                            // Fix: Set the correct direction list to be visible based on the navigation context (e.g., from favorites)
+                            if (currentDirection === 1) {
+                                stationListGo.classList.remove('hidden');
+                                stationListBack.classList.add('hidden');
+                            } else {
+                                stationListGo.classList.add('hidden');
+                                stationListBack.classList.remove('hidden');
+                            }
+                    
+                            // Clean up any old animation classes to prevent visual glitches on page load
                             stationListGo.classList.remove('slide-out-left', 'slide-in-from-right', 'slide-out-right', 'slide-in-from-left');
                             stationListBack.classList.remove('slide-out-left', 'slide-in-from-right', 'slide-out-right', 'slide-in-from-left');
-                            // MODIFICATION END
-
+                    
                             stationListGoContent.innerHTML = '';
                             stationListBackContent.innerHTML = '';
                             document.getElementById('offlineNotice').classList.add('hidden');
@@ -3150,7 +3158,8 @@
 
                             if (scrollToStationId) {
                                 await new Promise(resolve => setTimeout(resolve, 100));
-                                const targetStationCard = document.querySelector(`.station-list-container [data-station-id="${scrollToStationId}"]`);
+                                const activeList = currentDirection === 1 ? stationListGoContent : stationListBackContent;
+                                const targetStationCard = activeList.querySelector(`[data-station-id="${scrollToStationId}"]`);
                                 if (targetStationCard) {
                                     targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 }
@@ -3862,6 +3871,10 @@
                            if (resolveCustomPrompt) resolveCustomPrompt(null);
                            modalWasClosed = true;
                         }
+                        if (!hash.includes('select-group') && selectGroupModal.classList.contains('show')) {
+                           selectGroupModal.classList.remove('show');
+                           modalWasClosed = true;
+                        }
                         return modalWasClosed;
                     }
 
@@ -3894,21 +3907,51 @@
                         const addNewGroupBtnInModal = document.createElement('button');
                         addNewGroupBtnInModal.className = 'w-full flex items-center justify-center text-left py-3 px-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 font-medium';
                         addNewGroupBtnInModal.innerHTML = `<span class="material-icons-outlined mr-2">add</span> ${translations[currentLang].addNewGroup}`;
+                        
+                        // BUG FIX: Replaced the entire event listener for adding a new group.
                         addNewGroupBtnInModal.addEventListener('click', async () => {
-                            if (window.location.hash.includes('#select-group')) history.back();
-                            selectGroupModal.classList.remove('show');
+                            // 1. Close the current modal.
+                            if (window.location.hash.includes('#select-group')) {
+                                history.back();
+                            } else {
+                                selectGroupModal.classList.remove('show');
+                            }
+                            
+                            // 2. Wait a fraction of a second for the UI to settle before showing the next modal.
+                            await new Promise(resolve => setTimeout(resolve, 50)); 
+
+                            // 3. Show the prompt to get the new group name.
                             const name = await customPrompt(
                                 translations[currentLang].addNewGroup,
                                 translations[currentLang].enterNewGroupName
                             );
+
                             if (name && name.trim()) {
-                                addNewGroupAction(name.trim());
-                                const newGroup = favoriteData.groups.find(g => g.name === name.trim());
-                                if (newGroup) {
-                                    addFavorite(stationData, newGroup.id);
+                                const newGroupName = name.trim();
+                                
+                                // 4. Check for duplicate name.
+                                if (favoriteData.groups.some(g => g.name.toLowerCase() === newGroupName.toLowerCase())) {
+                                    showToast(translations[currentLang].groupNameExists, 'warning');
+                                    return; 
                                 }
+
+                                // 5. Create the new group and save it.
+                                const newGroup = {
+                                    id: Date.now().toString(),
+                                    name: newGroupName,
+                                    isDefault: false
+                                };
+                                favoriteData.groups.push(newGroup);
+                                saveFavorites();
+                                
+                                // 6. Add the current station (from the outer scope) to this new group.
+                                addFavorite(stationData, newGroup.id);
+                                
+                                // 7. Give user feedback.
+                                showToast(`${translations[currentLang].addedToGroup} "${newGroupName}"`, 'info');
                             }
                         });
+
                         selectGroupModalBody.appendChild(addNewGroupBtnInModal);
                         selectGroupModal.classList.add('show');
                     }
@@ -4046,6 +4089,7 @@
                     }
                     function addNewGroupAction(name) {
                         if (favoriteData.groups.some(g => g.id !== 'all' && g.name.toLowerCase() === name.toLowerCase())) {
+                            showToast(translations[currentLang].groupNameExists, 'warning');
                             return;
                         }
                         const newGroup = {
