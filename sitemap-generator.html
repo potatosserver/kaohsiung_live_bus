@@ -128,7 +128,9 @@
             
             // 各路線頁面
             routes.forEach(route => {
-                const routeUrl = `${baseUrl}?page=tracker&route=${route.id}`;
+                // *** 這是修正的地方 ***
+                // 將 URL 中的 '&' 替換為 '&amp;'
+                const routeUrl = `${baseUrl}?page=tracker&amp;route=${route.id}`;
                 urls += `
   <url>
     <loc>${routeUrl}</loc>
