@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高雄公車 Sitemap 生成器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+        #copyButton:active {
+            transform: scale(0.95);
+        }
+        #toast {
+            transition: opacity 0.3s, transform 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-800 dark:text-white">高雄公車動態網站 Sitemap 生成器</h1>
+            <p class="text-slate-500 mt-2">此頁面將自動抓取所有公車路線並生成 Sitemap XML 內容。</p>
+        </header>
+
+        <div id="loadingState" class="text-center py-10">
+            <div class="inline-block border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin h-12 w-12" style="border-top-color: transparent;"></div>
+            <p class="mt-4 text-slate-600 dark:text-slate-400">正在從高雄市政府 API 載入所有路線...</p>
+        </div>
+        
+        <div id="resultState" class="hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-lg shadow-md overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+                    <h2 class="text-lg font-semibold">Sitemap XML 內容</h2>
+                </div>
+                <div class="p-4">
+                    <textarea id="sitemapOutput" readonly class="w-full h-96 p-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button id="copyButton" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-transform duration-150 ease-in-out">
+                    複製 Sitemap 內容
+                </button>
+            </div>
+        </div>
+        
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-xl opacity-0 transform translate-y-4">
+        已成功複製到剪貼簿！
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loadingState = document.getElementById('loadingState');
+            const resultState = document.getElementById('resultState');
+            const sitemapOutput = document.getElementById('sitemapOutput');
+            const copyButton = document.getElementById('copyButton');
+            const toast = document.getElementById('toast');
+
+            const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
+            const HEADERS = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+            const GQL_QUERY = `query QUERY_SIDE_ROUTES($lang: String!) {
+                routes(lang: $lang) {
+                    edges {
+                        node {
+                            id
+                            name
+                        }
+                    }
+                }
+            }`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: HEADERS,
+                    body: JSON.stringify({ query: GQL_QUERY, variables: { lang: "zh" } })
+                });
+
+                if (!response.ok) throw new Error(`API 請求失敗，狀態碼: ${response.status}`);
+                
+                const result = await response.json();
+                const routes = result.data.routes.edges.map(edge => edge.node).filter(route => route.id !== 0);
+                
+                const sitemapContent = generateSitemap(routes);
+                sitemapOutput.value = sitemapContent;
+
+                loadingState.classList.add('hidden');
+                resultState.classList.remove('hidden');
+
+            } catch (error) {
+                loadingState.innerHTML = `
+                    <p class="text-red-500 font-semibold">錯誤：無法載入路線資料。</p>
+                    <p class="text-slate-500 mt-2">${error.message}</p>
+                    <p class="text-slate-500 mt-1">請檢查您的網路連線或稍後再試。</p>
+                `;
+            }
+
+            copyButton.addEventListener('click', () => {
+                sitemapOutput.select();
+                document.execCommand('copy');
+                
+                toast.classList.remove('opacity-0', 'translate-y-4');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-4');
+                }, 2000);
+            });
+        });
+
+        function generateSitemap(routes) {
+            const baseUrl = 'https://kaohsiung-live-bus.pages.dev/';
+            const today = new Date().toISOString().split('T')[0];
+
+            let urls = '';
+            
+            // 首頁
+            urls += `
+  <url>
+    <loc>${baseUrl}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>`;
+            
+            // 各路線頁面
+            routes.forEach(route => {
+                const routeUrl = `${baseUrl}?page=tracker&route=${route.id}`;
+                urls += `
+  <url>
+    <loc>${routeUrl}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+            });
+
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
+</urlset>`;
+        }
+    </script>
+
+</body>
+</html>
