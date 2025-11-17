@@ -1101,7 +1101,8 @@
     <div id="routeSelectionPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="routeSelectionTitle">高雄市公車路線查詢</h1>
+                <!-- MODIFICATION: h1 changed to h2 -->
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="routeSelectionTitle">高雄市公車路線查詢</h2>
                 <p class="text-slate-500 mt-2" data-i18n="routeSelectionSubtitle">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
             <div id="searchBarStickyWrapper" class="sticky top-0 z-10 bg-transparent py-2">
@@ -1159,7 +1160,8 @@
         <div class="container mx-auto max-w-4xl">
              <header class="p-4 flex-shrink-0">
                 <div class="flex items-center justify-center mb-2">
-                    <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
+                    <!-- MODIFICATION: h1 changed to h2 -->
+                    <h2 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h2>
                 </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-4"></p>
     <div class="direction-toggle-group flex justify-center mt-4 mb-0 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">                    <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold" data-direction="1">
@@ -1206,7 +1208,8 @@
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
             <div class="flex-shrink-0">
                 <header class="text-center mb-6">
-                    <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h1>
+                    <!-- MODIFICATION: h1 changed to h2 -->
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h2>
                     <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">點擊可查看路線詳情，長按可移除，拖動以排序。</p>
                 </header>
                 <div id="favoriteGroupTabsContainer" class="mb-6 pb-2">
@@ -1232,6 +1235,7 @@
     <div id="homePage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-4">
+                <!-- MODIFICATION: This is the main h1 -->
                 <h1 class="text-2xl md:text-3xl font-bold text-slate-800" data-i18n="appTitle">高雄公車 App</h1>
                 <p class="text-slate-500 mt-1" data-i18n="appSubtitle">您的即時公車夥伴</p>
             </header>
@@ -1280,7 +1284,8 @@
     <div id="settingsPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="settingsTitle">設定</h1>
+                <!-- MODIFICATION: h1 changed to h2 -->
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="settingsTitle">設定</h2>
                 <p class="text-slate-500 mt-2" data-i18n="settingsSubtitle">調整應用程式設定。</p>
             </header>
             <div class="space-y-6">
@@ -2344,7 +2349,6 @@
                         }
                     }
                     
-                    // MODIFICATION START: Question 2 - Implement Toast and Retry Logic
                     function showToast(message, type = 'info', duration = 3000) {
                         const toast = document.createElement('div');
                         let bgColor, textColor, icon;
@@ -2401,7 +2405,6 @@
                             }
                         }
                     }
-                    // MODIFICATION END
 
                     function customPrompt(title, message, defaultValue = '') {
                         const modalHash = `#prompt/${Date.now()}`;
@@ -3109,7 +3112,6 @@
                             isFirstMapLoad = true;
                             trackerLoading.style.display = 'flex';
                             
-                            // Fix: Set the correct direction list to be visible based on the navigation context (e.g., from favorites)
                             if (currentDirection === 1) {
                                 stationListGo.classList.remove('hidden');
                                 stationListBack.classList.add('hidden');
@@ -3118,7 +3120,6 @@
                                 stationListBack.classList.remove('hidden');
                             }
                     
-                            // Clean up any old animation classes to prevent visual glitches on page load
                             stationListGo.classList.remove('slide-out-left', 'slide-in-from-right', 'slide-out-right', 'slide-in-from-left');
                             stationListBack.classList.remove('slide-out-left', 'slide-in-from-right', 'slide-out-right', 'slide-in-from-left');
                     
@@ -3136,9 +3137,7 @@
                         updateCountdownButton.disabled = true;
 
                         try {
-                            // MODIFICATION START: Question 2 - Use fetchWithRetry
                             const result = await fetchWithRetry(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
-                            // MODIFICATION END
                             
                             if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                             currentRouteData = result.data.route;
@@ -3166,7 +3165,6 @@
                             }
 
                         } catch (error) {
-                            // MODIFICATION START: Question 2 - Improved catch block
                             console.error("Failed to fetch route details:", error);
                             const isTrulyOffline = !navigator.onLine;
                             
@@ -3190,7 +3188,6 @@
                                 currentRouteData = null;
                                 renderOfflineUncachedState();
                             }
-                            // MODIFICATION END
                         } finally {
                             trackerLoading.style.display = 'none';
                             updateCountdownButton.disabled = false;
@@ -4459,7 +4456,6 @@
                             updateCountdownButton.style.display = "none";
                         });
 
-                        // MODIFICATION START: Question 2 - Smart Foreground Refresh
                         document.addEventListener('visibilitychange', () => {
                             if (document.visibilityState === 'visible') {
                                 updateNavHighlight();
@@ -4473,7 +4469,6 @@
                                 }
                             }
                         });
-                        // MODIFICATION END
 
                     }
                     async function loadInitialData() {
