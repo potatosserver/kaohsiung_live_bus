@@ -3221,11 +3221,34 @@
                             updateDirectionButtons();
 
                             if (scrollToStationId) {
-                                await new Promise(resolve => setTimeout(resolve, 100));
+                                await new Promise(resolve => setTimeout(resolve, 300)); // 稍微增加延遲確保地圖載入完成
+                                
+                                // 1. 列表滾動 (原本的功能)
                                 const activeList = currentDirection === 1 ? stationListGoContent : stationListBackContent;
                                 const targetStationCard = activeList.querySelector(`[data-station-id="${scrollToStationId}"]`);
                                 if (targetStationCard) {
                                     targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    // 稍微閃爍一下該卡片以提示使用者
+                                    targetStationCard.style.transition = 'background-color 0.5s';
+                                    targetStationCard.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                                    setTimeout(() => { targetStationCard.style.backgroundColor = ''; }, 1000);
+                                }
+
+                                // 2. 地圖移動 (新增的功能)
+                                if (map && currentRouteData && currentRouteData.stations) {
+                                    // 找到對應方向與 ID 的站牌資料
+                                    const targetStationEdge = currentRouteData.stations.edges.find(edge => 
+                                        String(edge.node.id) === String(scrollToStationId) && 
+                                        edge.goBack === currentDirection
+                                    );
+
+                                    if (targetStationEdge && targetStationEdge.node.lat && targetStationEdge.node.lon) {
+                                        // 飛到該座標，Zoom 層級設為 17 (較近)
+                                        map.flyTo([targetStationEdge.node.lat, targetStationEdge.node.lon], 17, {
+                                            animate: true,
+                                            duration: 1.5 
+                                        });
+                                    }
                                 }
                             }
 
@@ -3239,16 +3262,15 @@
                             if (cachedData) {
                                 if (isTrulyOffline) {
                                     showToast(translations[currentLang].networkErrorCriticalTitle, 'error');
-                                    renderAllDirections(cachedData, isInitialLoad, true); // Pass true to show "Offline" text
+                                    renderAllDirections(cachedData, isInitialLoad, true); 
                                 } else {
                                     showToast(translations[currentLang].networkErrorWarningMessage, 'warning');
-                                    renderAllDirections(cachedData, isInitialLoad, false); // Pass false to show stale data without "Offline" text
+                                    renderAllDirections(cachedData, isInitialLoad, false); 
                                 }
                                 currentRouteData = cachedData;
                                 renderMap(cachedData);
                                 updateDirectionButtons();
                             } else {
-                                // No data to show at all
                                 showToast(translations[currentLang].networkErrorCriticalMessage, 'error');
                                 currentRouteData = null;
                                 renderOfflineUncachedState();
