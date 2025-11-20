@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -1089,6 +1088,72 @@
 		#routeSelectionPage {
     		overflow-y: auto;
 		}
+
+        /* --- LANDSCAPE MODE NAVIGATION --- */
+        @media (orientation: landscape) {
+            /* Sidebar conversion */
+            #mainNav {
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: auto;
+                width: 90px; /* Width of sidebar */
+                height: 100vh;
+                height: calc(var(--vh, 1vh) * 100);
+                flex-direction: column;
+                justify-content: space-between; /* Ensure spread */
+                border-top: none;
+                border-right: 1px solid #e2e8f0;
+                padding: 0;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+            
+            body.dark-mode #mainNav {
+                border-right-color: #334155;
+            }
+
+            #mainNav button {
+                flex: 1; /* Distribute evenly */
+                width: 100%;
+                border-bottom: 1px solid transparent; /* visual separator optional */
+            }
+
+            /* Adjust main content containers to make room for sidebar */
+            #routeSelectionPage .container, 
+            #mrtPage .container, 
+            #homePage .container,
+            #settingsPage .container,
+            #busTrackerPage .container,
+            #favoriteStationsPage .container {
+                padding-bottom: 20px !important; /* Remove large bottom padding */
+                padding-left: 110px !important; /* Add left padding (Sidebar width + gap) */
+                max-width: 100% !important; /* Allow full width usage in landscape */
+            }
+
+            /* MRT Iframe fix */
+            #mrtPage .container {
+                padding-left: 90px !important; /* Iframe can flush against sidebar */
+                padding-right: 0 !important;
+                padding-bottom: 0 !important;
+            }
+
+            /* Keyboard offset */
+            #filterKeyboardContainer {
+                left: 0px;
+                width: 100%;
+            }
+            
+            /* Countdown button offset */
+            #updateCountdown {
+                bottom: 20px; 
+                left: calc(50% + 45px);
+            }
+            
+            /* Toast offset - 修正: 置中 */
+            #toastContainer {
+                 left: 50%;
+            }        
+        }
     </style>
 </head>
 <body class="antialiased">
