@@ -119,11 +119,11 @@
         }
         /* 調整底部 Padding 以適應懸浮選單 */
         #routeSelectionPage .container, #mrtPage .container, #homePage .container {
-            padding-bottom: 100px; /* 稍微減少底部 padding */
+            padding-bottom: 110px; /* 加大底部留白 */
         }
         @media (min-width: 768px) {
             #routeSelectionPage .container, #mrtPage .container, #homePage .container {
-                padding-bottom: 110px;
+                padding-bottom: 120px;
             }
         }
         .bus-taxi-button {
@@ -154,7 +154,7 @@
         #updateCountdown {
             white-space: nowrap;
             position: fixed;
-            bottom: 90px; /* 調整位置，配合縮小的 nav 底部間距 */
+            bottom: 100px; /* 調整位置，避開懸浮選單 */
             left: 50%;
             transform: translateX(-50%);
             z-index: 1001;
@@ -212,20 +212,18 @@
         /* --- NEW FLOATING CAPSULE NAVIGATION STYLE START --- */
         #mainNav {
             position: fixed;
-            bottom: 12px; /* 修改：減少底部空隙 (原本 20px) */
+            bottom: 20px; /* 距離底部 */
             left: 50%;    /* 水平置中 */
             transform: translateX(-50%);
             right: auto;
-            width: calc(100% - 24px); /* 修改：減少左右空隙 (原本 32px) */
+            width: calc(100% - 32px); /* 留邊距 */
             max-width: 500px; /* 平板/桌面限制寬度 */
             
             background-color: rgba(255, 255, 255, 0.85); /* 半透明玻璃 */
             backdrop-filter: blur(12px); /* 毛玻璃效果 */
             -webkit-backdrop-filter: blur(12px);
             
-            /* 修改：加上淡淡的灰藍色邊框 */
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            
+            border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 24px; /* 大圓角 */
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
             
@@ -234,7 +232,6 @@
             justify-content: space-around;
             padding: 8px 8px;
             transition: all 0.3s ease;
-            box-sizing: border-box;
         }
 
         #mainNav button {
@@ -276,8 +273,7 @@
 
         body.dark-mode #mainNav {
             background-color: rgba(30, 41, 59, 0.85); /* 深色玻璃 */
-            /* 修改：深色模式下的邊框 */
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
@@ -1128,13 +1124,12 @@
             /* Sidebar conversion with floating style */
             #mainNav {
                 top: 50%; /* 垂直置中 */
-                left: 12px; /* 修改：左側距離也稍微縮減 */
+                left: 20px;
                 transform: translateY(-50%); /* 修正垂直置中 (覆蓋原本的 translateX) */
                 bottom: auto;
                 right: auto;
                 
                 width: 80px; /* 固定寬度 */
-                min-width: 80px; /* 新增：強制最小寬度，防止被 iframe 擠壓變小 */
                 height: auto; /* 高度自動 */
                 max-height: 85vh; /* 避免太高 */
                 
@@ -1144,19 +1139,16 @@
                 
                 padding: 20px 0;
                 border-radius: 24px;
-                /* 修改：橫向時的邊框樣式 */
-                border: 1px solid rgba(148, 163, 184, 0.3);
+                border-right: 1px solid rgba(255, 255, 255, 0.6); /* 恢復邊框邏輯但保持風格 */
                 box-shadow: 5px 0 25px rgba(0,0,0,0.1);
             }
             
             body.dark-mode #mainNav {
-                /* 修改：橫向深色模式邊框 */
-                border: 1px solid rgba(255, 255, 255, 0.15);
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
             }
 
             #mainNav button {
                 flex: 0 0 auto; /* 防止按鈕被過度拉伸 */
-                flex-shrink: 0; /* 新增：防止按鈕被擠壓縮小 */
                 width: 60px; /* 限制按鈕寬度 */
                 margin: 0 auto; /* 水平置中 */
                 padding: 10px 0;
