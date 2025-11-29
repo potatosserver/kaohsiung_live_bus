@@ -1609,7 +1609,11 @@
             if (localStorage.getItem('darkMode') === 'true') {
                 body.classList.add('dark-mode');
             }
-            const showSplashScreen = localStorage.getItem('splashScreenEnabled') !== 'false'; 
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDeepLink = urlParams.has('route'); 
+            const isUserEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
+            const showSplashScreen = isUserEnabled && !isDeepLink;
+
             const startApp = () => {
                 const splashScreen = document.getElementById('splashScreen');
                 if(splashScreen) {
@@ -3221,6 +3225,7 @@
                             isFirstMapLoad = true;
                             trackerLoading.style.display = 'flex';
                             
+                            // (原本的初始化 UI 邏輯保持不變，但在這裡我們稍後會根據 scrollToStationId 重新判斷方向)
                             if (currentDirection === 1) {
                                 stationListGo.classList.remove('hidden');
                                 stationListBack.classList.add('hidden');
@@ -3251,6 +3256,31 @@
                             if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                             currentRouteData = result.data.route;
                             
+                            // --- 新增邏輯開始：自動判斷目標站點的方向 ---
+                            if (scrollToStationId && currentRouteData.stations) {
+                                // 搜尋目標站點在 API 資料中的方向 (goBack: 1=去程, 2=返程)
+                                const targetEdge = currentRouteData.stations.edges.find(edge => 
+                                    String(edge.node.id) === String(scrollToStationId)
+                                );
+
+                                if (targetEdge) {
+                                    const targetDirection = targetEdge.goBack;
+                                    // 如果目標方向與當前方向不同，強制切換
+                                    if (targetDirection !== currentDirection) {
+                                        currentDirection = targetDirection;
+                                        // 立即更新 UI 顯示正確的列表
+                                        if (currentDirection === 1) {
+                                            stationListGo.classList.remove('hidden');
+                                            stationListBack.classList.add('hidden');
+                                        } else {
+                                            stationListGo.classList.add('hidden');
+                                            stationListBack.classList.remove('hidden');
+                                        }
+                                    }
+                                }
+                            }
+                            // --- 新增邏輯結束 ---
+
                             try {
                                 let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
                                 cachedDetails[routeId] = currentRouteData;
@@ -3262,41 +3292,48 @@
                             renderAllDirections(currentRouteData, isInitialLoad, false);
                             renderMap(currentRouteData);
                             
-                            updateDirectionButtons();
+                            updateDirectionButtons(); // 這會根據上面的 currentDirection 更新按鈕狀態
 
                             if (scrollToStationId) {
-                                await new Promise(resolve => setTimeout(resolve, 300)); // 稍微增加延遲確保地圖載入完成
+                                await new Promise(resolve => setTimeout(resolve, 500)); // 延遲稍長一點確保 DOM 渲染完畢
                                 
-                                // 1. 列表滾動 (原本的功能)
+                                // 1. 列表滾動
                                 const activeList = currentDirection === 1 ? stationListGoContent : stationListBackContent;
                                 const targetStationCard = activeList.querySelector(`[data-station-id="${scrollToStationId}"]`);
                                 if (targetStationCard) {
                                     targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    // 稍微閃爍一下該卡片以提示使用者
                                     targetStationCard.style.transition = 'background-color 0.5s';
-                                    targetStationCard.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                                    setTimeout(() => { targetStationCard.style.backgroundColor = ''; }, 1000);
+                                    targetStationCard.style.backgroundColor = 'rgba(59, 130, 246, 0.2)'; // 加深高亮顏色
+                                    setTimeout(() => { targetStationCard.style.backgroundColor = ''; }, 1500);
                                 }
 
-                                // 2. 地圖移動 (新增的功能)
+                                // 2. 地圖移動
                                 if (map && currentRouteData && currentRouteData.stations) {
-                                    // 找到對應方向與 ID 的站牌資料
                                     const targetStationEdge = currentRouteData.stations.edges.find(edge => 
                                         String(edge.node.id) === String(scrollToStationId) && 
                                         edge.goBack === currentDirection
                                     );
 
                                     if (targetStationEdge && targetStationEdge.node.lat && targetStationEdge.node.lon) {
-                                        // 飛到該座標，Zoom 層級設為 17 (較近)
-                                        map.flyTo([targetStationEdge.node.lat, targetStationEdge.node.lon], 17, {
+                                        map.flyTo([targetStationEdge.node.lat, targetStationEdge.node.lon], 18, { // Zoom 改為 18 更清楚
                                             animate: true,
                                             duration: 1.5 
+                                        });
+                                        
+                                        // 如果地圖上有對應的 Marker，自動打開 Popup
+                                        // 注意：這需要遍歷 layerGroup，因為我們沒有儲存 station markers 的參照
+                                        const targetLayerGroup = currentDirection === 1 ? goLayerGroup : backLayerGroup;
+                                        targetLayerGroup.eachLayer(layer => {
+                                            if (layer.getLatLng && layer.getLatLng().lat === targetStationEdge.node.lat && layer.getLatLng().lng === targetStationEdge.node.lon) {
+                                                layer.openPopup();
+                                            }
                                         });
                                     }
                                 }
                             }
 
                         } catch (error) {
+                            // (錯誤處理保持不變)
                             console.error("Failed to fetch route details:", error);
                             const isTrulyOffline = !navigator.onLine;
                             
@@ -4607,11 +4644,17 @@
                         const urlParams = new URLSearchParams(window.location.search);
                         const pageFromUrl = urlParams.get('page');
                         const routeIdFromUrl = urlParams.get('route');
+                        // 新增：讀取 station 參數
+                        const stationIdFromUrl = urlParams.get('station'); 
+
                         let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
+
                         if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
                             const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                             if (route) {
-                                navigateToTracker(route.id, route.name, route.description, false, null, 1);
+                                // 修改：將 stationIdFromUrl 傳入第 5 個參數 (scrollToStationId)
+                                // navigateToTracker(routeId, routeName, routeDesc, pushState, scrollToStationId, direction)
+                                navigateToTracker(route.id, route.name, route.description, false, stationIdFromUrl, 1);
                             } else {
                                 await showPage('routeSelectionPage', true);
                             }
