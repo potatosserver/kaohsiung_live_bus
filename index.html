@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -116,12 +117,13 @@
         .material-icons-outlined {
             font-size: 24px;
         }
+        /* 調整底部 Padding 以適應懸浮選單 */
         #routeSelectionPage .container, #mrtPage .container, #homePage .container {
-            padding-bottom: 90px;
+            padding-bottom: 110px; /* 加大底部留白 */
         }
         @media (min-width: 768px) {
             #routeSelectionPage .container, #mrtPage .container, #homePage .container {
-                padding-bottom: 100px;
+                padding-bottom: 120px;
             }
         }
         .bus-taxi-button {
@@ -152,7 +154,7 @@
         #updateCountdown {
             white-space: nowrap;
             position: fixed;
-            bottom: 70px;
+            bottom: 100px; /* 調整位置，避開懸浮選單 */
             left: 50%;
             transform: translateX(-50%);
             z-index: 1001;
@@ -206,19 +208,32 @@
                 line-height: 1.1;
             }
         }
+
+        /* --- NEW FLOATING CAPSULE NAVIGATION STYLE START --- */
         #mainNav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #ffffff;
-            border-top: 1px solid #e2e8f0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            bottom: 20px; /* 距離底部 */
+            left: 50%;    /* 水平置中 */
+            transform: translateX(-50%);
+            right: auto;
+            width: calc(100% - 32px); /* 留邊距 */
+            max-width: 500px; /* 平板/桌面限制寬度 */
+            
+            background-color: rgba(255, 255, 255, 0.85); /* 半透明玻璃 */
+            backdrop-filter: blur(12px); /* 毛玻璃效果 */
+            -webkit-backdrop-filter: blur(12px);
+            
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 24px; /* 大圓角 */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            
             z-index: 1000;
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
+            padding: 8px 8px;
+            transition: all 0.3s ease;
         }
+
         #mainNav button {
             display: flex;
             flex-direction: column;
@@ -227,24 +242,46 @@
             flex-grow: 1;
             flex-basis: 0;
             padding: 4px 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #64748b;
             background-color: transparent;
             border: none;
             cursor: pointer;
-            transition: color 0.2s, background-color 0.2s;
+            border-radius: 16px; /* 按鈕圓角 */
+            transition: color 0.2s, background-color 0.2s, transform 0.1s;
         }
+        
+        #mainNav button:active {
+            transform: scale(0.95);
+        }
+
         #mainNav button .material-icons-outlined {
-            font-size: 28px;
-            margin-bottom: 4px;
+            font-size: 26px;
+            margin-bottom: 2px;
         }
+
         #mainNav button:hover {
             color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.1);
         }
+
         #mainNav button.active-nav {
             color: #3b82f6;
             font-weight: 600;
+            background-color: rgba(59, 130, 246, 0.1);
         }
+
+        body.dark-mode #mainNav {
+            background-color: rgba(30, 41, 59, 0.85); /* 深色玻璃 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-mode #mainNav button { color: #94a3b8; }
+        body.dark-mode #mainNav button:hover { color: #93c5fd; background-color: rgba(147, 197, 253, 0.1); }
+        body.dark-mode #mainNav button.active-nav { color: #93c5fd; background-color: rgba(147, 197, 253, 0.15); }
+        /* --- NEW FLOATING CAPSULE NAVIGATION STYLE END --- */
+
         #favoriteActionButton {
             position: fixed;
             padding: 8px 16px;
@@ -990,13 +1027,6 @@
         body.dark-mode .favorite-card-item.placeholder { background: #0f172a; border-color: #60a5fa; }
         body.dark-mode .drag-handle { color: #64748b; }
         body.dark-mode .favorite-card-content { background-color: #1e293b; }
-        body.dark-mode #mainNav {
-            background-color: #1e293b; 
-            border-top-color: #334155; 
-        }
-        body.dark-mode #mainNav button { color: #94a3b8; }
-        body.dark-mode #mainNav button:hover { color: #93c5fd; }
-        body.dark-mode #mainNav button.active-nav { color: #93c5fd; }
         body.dark-mode #updateCountdown {
             background-color: #e8def8;
             color: #1c1b1f;
@@ -1091,34 +1121,41 @@
 
 /* --- LANDSCAPE MODE NAVIGATION & LAYOUT --- */
         @media (orientation: landscape) {
-            /* Sidebar conversion (保持不變) */
+            /* Sidebar conversion with floating style */
             #mainNav {
-                top: 0;
-                left: 0;
-                bottom: 0;
+                top: 50%; /* 垂直置中 */
+                left: 20px;
+                transform: translateY(-50%); /* 修正垂直置中 (覆蓋原本的 translateX) */
+                bottom: auto;
                 right: auto;
-                width: 90px;
-                height: 100vh;
-                height: calc(var(--vh, 1vh) * 100);
+                
+                width: 80px; /* 固定寬度 */
+                height: auto; /* 高度自動 */
+                max-height: 85vh; /* 避免太高 */
+                
                 flex-direction: column;
-                justify-content: space-between;
-                border-top: none;
-                border-right: 1px solid #e2e8f0;
-                padding: 0;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                justify-content: center;
+                gap: 12px; /* 按鈕間距 */
+                
+                padding: 20px 0;
+                border-radius: 24px;
+                border-right: 1px solid rgba(255, 255, 255, 0.6); /* 恢復邊框邏輯但保持風格 */
+                box-shadow: 5px 0 25px rgba(0,0,0,0.1);
             }
             
             body.dark-mode #mainNav {
-                border-right-color: #334155;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
             }
 
             #mainNav button {
-                flex: 1;
-                width: 100%;
-                border-bottom: 1px solid transparent;
+                flex: 0 0 auto; /* 防止按鈕被過度拉伸 */
+                width: 60px; /* 限制按鈕寬度 */
+                margin: 0 auto; /* 水平置中 */
+                padding: 10px 0;
+                border-bottom: none;
             }
 
-            /* Adjust main content containers (保持不變) */
+            /* Adjust main content containers */
             #routeSelectionPage .container, 
             #mrtPage .container, 
             #homePage .container,
@@ -1126,12 +1163,12 @@
             #busTrackerPage .container,
             #favoriteStationsPage .container {
                 padding-bottom: 20px !important;
-                padding-left: 110px !important;
+                padding-left: 120px !important; /* 加大左側留白，避開懸浮選單 */
                 max-width: 100% !important;
             }
 
             #mrtPage .container {
-                padding-left: 90px !important;
+                padding-left: 100px !important;
                 padding-right: 0 !important;
                 padding-bottom: 0 !important;
             }
@@ -1143,7 +1180,7 @@
             
             #updateCountdown {
                 bottom: 20px; 
-                left: calc(50% + 45px);
+                left: calc(50% + 50px);
             }
             
             #toastContainer {
@@ -2772,7 +2809,7 @@
                             updateCountdownButton.style.display = 'none';
                             const container = document.querySelector(`#${pageId} .container`);
                             if(container) {
-                                container.style.paddingBottom = '90px';
+                                /* container.style.paddingBottom = '90px'; */ /* CSS handled */
                             }
                         }
                         updateNavHighlight();
