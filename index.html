@@ -1089,19 +1089,19 @@
     		overflow-y: auto;
 		}
 
-        /* --- LANDSCAPE MODE NAVIGATION --- */
+/* --- LANDSCAPE MODE NAVIGATION & LAYOUT --- */
         @media (orientation: landscape) {
-            /* Sidebar conversion */
+            /* Sidebar conversion (保持不變) */
             #mainNav {
                 top: 0;
                 left: 0;
                 bottom: 0;
                 right: auto;
-                width: 90px; /* Width of sidebar */
+                width: 90px;
                 height: 100vh;
                 height: calc(var(--vh, 1vh) * 100);
                 flex-direction: column;
-                justify-content: space-between; /* Ensure spread */
+                justify-content: space-between;
                 border-top: none;
                 border-right: 1px solid #e2e8f0;
                 padding: 0;
@@ -1113,46 +1113,90 @@
             }
 
             #mainNav button {
-                flex: 1; /* Distribute evenly */
+                flex: 1;
                 width: 100%;
-                border-bottom: 1px solid transparent; /* visual separator optional */
+                border-bottom: 1px solid transparent;
             }
 
-            /* Adjust main content containers to make room for sidebar */
+            /* Adjust main content containers (保持不變) */
             #routeSelectionPage .container, 
             #mrtPage .container, 
             #homePage .container,
             #settingsPage .container,
             #busTrackerPage .container,
             #favoriteStationsPage .container {
-                padding-bottom: 20px !important; /* Remove large bottom padding */
-                padding-left: 110px !important; /* Add left padding (Sidebar width + gap) */
-                max-width: 100% !important; /* Allow full width usage in landscape */
+                padding-bottom: 20px !important;
+                padding-left: 110px !important;
+                max-width: 100% !important;
             }
 
-            /* MRT Iframe fix */
             #mrtPage .container {
-                padding-left: 90px !important; /* Iframe can flush against sidebar */
+                padding-left: 90px !important;
                 padding-right: 0 !important;
                 padding-bottom: 0 !important;
             }
 
-            /* Keyboard offset */
             #filterKeyboardContainer {
                 left: 0px;
                 width: 100%;
             }
             
-            /* Countdown button offset */
             #updateCountdown {
                 bottom: 20px; 
                 left: calc(50% + 45px);
             }
             
-            /* Toast offset - 修正: 置中 */
             #toastContainer {
                  left: 50%;
-            }        
+            }
+
+            /* ---------------------------------------------------------
+               修改部分：地圖在右，列表在左
+               --------------------------------------------------------- */
+            
+            /* 1. 設定容器為橫向 Flex */
+            #busTrackerPage #content-wrapper {
+                flex-direction: row !important;
+                overflow: hidden;
+            }
+
+            /* 2. 地圖：放在順序 2 (右邊) */
+            #busTrackerPage #map {
+                flex-grow: 1;
+                width: auto;
+                height: 100% !important;
+                order: 2; /* 關鍵：設定排序為第 2 個 */
+            }
+
+            /* 3. 路線列表：放在順序 1 (左邊) */
+            #busTrackerPage #estimateTimesSection {
+                width: 400px;
+                max-width: 40vw;
+                height: 100% !important;
+                flex-shrink: 0;
+                order: 1; /* 關鍵：設定排序為第 1 個 */
+                
+                /* 邊框調整：因為在左邊，所以分隔線要在右側 */
+                border-left: none; 
+                border-right: 1px solid #cbd5e1; 
+                border-top: none; 
+            }
+
+            /* 深色模式下的分隔線顏色 */
+            body.dark-mode #busTrackerPage #estimateTimesSection {
+                border-right-color: #475569;
+                border-left: none;
+            }
+
+            /* 隱藏原本上下的拖拉手柄 */
+            #busTrackerPage #dragHandle {
+                display: none !important;
+            }
+
+            /* 調整列表容器的內距 */
+            #busTrackerPage .station-list-container {
+                padding-top: 0 !important;
+            }
         }
     </style>
 </head>
