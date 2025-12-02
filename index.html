@@ -31,7 +31,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
-    </script>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/x-icon" href="/icons/icon.ico" />
     <style>
@@ -449,6 +448,11 @@
             background: #e0f2fe;
             border: 2px dashed #3b82f6;
         }
+        /* --- FIX 1: 增加底部內距，防止最後一個站牌被導航列擋住 --- */
+        #favoriteListContainer {
+            padding-bottom: 120px;
+        }
+
         .dragging-ghost {
             position: absolute !important;
             pointer-events: none;
@@ -1139,14 +1143,24 @@
                 max-height: 85vh; /* 避免太高 */
                 
                 flex-direction: column;
-                justify-content: center;
-                gap: 12px; /* 按鈕間距 */
                 
-                padding: 20px 0;
+                /* FIX 2: 修改這裡以修復炸開問題 */
+                justify-content: space-evenly; /* 改用平均分配，而不是置中 */
+                gap: 0; /* 移除固定間距，讓 flex 自動計算，避免高度不足時炸開 */
+                overflow-y: auto; /* 如果螢幕真的超級矮，允許選單內部滾動 */
+                scrollbar-width: none; /* Firefox 隱藏滾動條 */
+                -ms-overflow-style: none; /* IE/Edge 隱藏滾動條 */
+                
+                padding: 10px 0; /*稍微減少上下 padding */
                 border-radius: 24px;
                 /* 修改：橫向時的邊框樣式 */
                 border: 1px solid rgba(148, 163, 184, 0.3);
                 box-shadow: 5px 0 25px rgba(0,0,0,0.1);
+            }
+
+            /* Chrome/Safari 隱藏滾動條 */
+            #mainNav::-webkit-scrollbar {
+                display: none;
             }
             
             body.dark-mode #mainNav {
