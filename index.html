@@ -391,7 +391,7 @@
             position: absolute;
             left: -18px; 
             z-index: 1;
-            background-color: #f1f5f9; 
+            background-color: #ffffff; /* Fallback for transparency overlap */
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -400,7 +400,7 @@
             height: 40px;
         }
         body.dark-mode .station-icon-container {
-            background-color: #0f172a; 
+            background-color: #1e293b; 
         }
         .station-dot {
             width: 12px;
@@ -881,12 +881,27 @@
         }
 
         /* --- MAP.HTML MERGED STYLES START --- */
-        #busTrackerPage .container { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 70px; }
-        #content-wrapper { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+        #busTrackerPage .container { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 0; 
+            padding-bottom: 80px; /* Enhanced bottom padding for portrait to clear nav/update btn */
+        }
+        #content-wrapper { 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-height: 0;
+            gap: 12px; /* Add gap between rounded blocks */
+        }
         #map {
             flex-grow: 1;
             width: 100%;
             background-color: #e5e7eb;
+            border-radius: 1.5rem; /* Rounded corners for map block */
+            overflow: hidden; /* Ensure content doesn't bleed */
+            z-index: 0;
         }
         #busTrackerPage.map-hidden #map,
         #busTrackerPage.map-hidden #dragHandle {
@@ -895,6 +910,7 @@
         #busTrackerPage.map-hidden #estimateTimesSection {
             height: 100% !important;
             flex-grow: 1;
+            border-radius: 1.5rem; /* Full rounded corners when map is hidden */
         }
         #busTrackerPage #estimateTimesSection {
             flex-shrink: 0;
@@ -902,9 +918,16 @@
             background-color: #f1f5f9;
             display: flex;
             flex-direction: column;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06); /* Upward shadow */
+            border: 1px solid rgba(0,0,0,0.05);
+            z-index: 10;
         }
         body.dark-mode #busTrackerPage #estimateTimesSection {
             background-color: #0f172a;
+            border-color: #334155;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.3);
         }
         #busTrackerPage .station-list-container {
             height: 100%;
@@ -1202,6 +1225,11 @@
                 padding-right: 20px !important;
             }
 
+            /* Fix Goal 2: Remove extra height/padding in landscape */
+            #busTrackerPage .container {
+                padding-bottom: 10px !important; /* Reduce padding significantly */
+            }
+
             #filterKeyboardContainer {
                 left: 0px;
                 width: 100%;
@@ -1225,6 +1253,13 @@
                 width: auto;
                 height: 100% !important;
                 order: 2; 
+                border-radius: 1.5rem; /* Ensure rounded corners */
+                margin-right: 16px; /* Spacing */
+                margin-bottom: 0; /* Remove portrait spacing */
+            }
+            #busTrackerPage.map-hidden #estimateTimesSection {
+                 height: 100% !important;
+                 flex-grow: 1;
             }
             #busTrackerPage #estimateTimesSection {
                 width: 400px;
@@ -1233,8 +1268,10 @@
                 flex-shrink: 0;
                 order: 1; 
                 border-left: none; 
-                border-right: 1px solid #cbd5e1; 
+                border-right: 1px solid rgba(0,0,0,0.05); /* Softer border */
                 border-top: none; 
+                border-radius: 1.5rem; /* Rounded corners for the block */
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Subtle shadow */
             }
             body.dark-mode #busTrackerPage #estimateTimesSection {
                 border-right-color: #475569;
@@ -1245,6 +1282,11 @@
             }
             #busTrackerPage .station-list-container {
                 padding-top: 0 !important;
+            }
+            
+            /* Fix Goal 2: Reset internal list padding in landscape */
+            #stationListGoContent, #stationListBackContent {
+                padding-bottom: 20px !important; /* Remove the 40px portrait padding */
             }
         }
     </style>
