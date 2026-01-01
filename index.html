@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -49,7 +48,7 @@
             -ms-user-select: none; 
             transition: background-color 0.3s ease, color 0.3s ease;
             height: 100vh;
-            height: calc(var(--vh, 1vh) * 100); /* 使用我們自訂的、穩定的 vh 變數 */
+            height: calc(var(--vh, 1vh) * 100);
             overflow: hidden;
         }
         body.is-dragging-item {
@@ -75,6 +74,35 @@
         .page.active {
             display: flex;
         }
+        
+        #routeSelectionPage {
+            display: none; 
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+        }
+        #routeSelectionPage.active {
+            display: flex;
+        }
+        #routeSelectionPage .container {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding-bottom: 20px !important;
+            height: auto;
+            max-width: 100%;
+        }
+        #filterKeyboardContainer {
+            flex: 0 0 auto;
+            position: relative;
+            bottom: auto;
+            left: auto;
+            right: auto;
+            z-index: 500;
+            width: 100%;
+            background-color: #f1f5f9;
+            border-top: 1px solid #cbd5e1;
+        }
+
         #estimateTimesSection {
             position: relative;
             overflow: hidden;
@@ -116,12 +144,13 @@
         .material-icons-outlined {
             font-size: 24px;
         }
-        /* 調整底部 Padding 以適應懸浮選單 */
-        #routeSelectionPage .container, #mrtPage .container, #homePage .container {
-            padding-bottom: 100px; /* 稍微減少底部 padding */
+        
+        #lrtPage .container, #homePage .container {
+             padding-bottom: 100px;
         }
+        
         @media (min-width: 768px) {
-            #routeSelectionPage .container, #mrtPage .container, #homePage .container {
+            #lrtPage .container, #homePage .container {
                 padding-bottom: 110px;
             }
         }
@@ -153,7 +182,7 @@
         #updateCountdown {
             white-space: nowrap;
             position: fixed;
-            bottom: 90px; /* 調整位置，配合縮小的 nav 底部間距 */
+            bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1001;
@@ -208,26 +237,20 @@
             }
         }
 
-        /* --- NEW FLOATING CAPSULE NAVIGATION STYLE START --- */
         #mainNav {
             position: fixed;
-            bottom: 12px; /* 修改：減少底部空隙 (原本 20px) */
-            left: 50%;    /* 水平置中 */
+            bottom: 12px;
+            left: 50%;
             transform: translateX(-50%);
             right: auto;
-            width: calc(100% - 24px); /* 修改：減少左右空隙 (原本 32px) */
-            max-width: 500px; /* 平板/桌面限制寬度 */
-            
-            background-color: rgba(255, 255, 255, 0.85); /* 半透明玻璃 */
-            backdrop-filter: blur(12px); /* 毛玻璃效果 */
+            width: calc(100% - 24px);
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            
-            /* 修改：加上淡淡的灰藍色邊框 */
             border: 1px solid rgba(148, 163, 184, 0.3);
-            
-            border-radius: 24px; /* 大圓角 */
+            border-radius: 24px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            
             z-index: 1000;
             display: flex;
             justify-content: space-around;
@@ -249,7 +272,7 @@
             background-color: transparent;
             border: none;
             cursor: pointer;
-            border-radius: 16px; /* 按鈕圓角 */
+            border-radius: 16px;
             transition: color 0.2s, background-color 0.2s, transform 0.1s;
         }
         
@@ -274,8 +297,7 @@
         }
 
         body.dark-mode #mainNav {
-            background-color: rgba(30, 41, 59, 0.85); /* 深色玻璃 */
-            /* 修改：深色模式下的邊框 */
+            background-color: rgba(30, 41, 59, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
         }
@@ -283,7 +305,6 @@
         body.dark-mode #mainNav button { color: #94a3b8; }
         body.dark-mode #mainNav button:hover { color: #93c5fd; background-color: rgba(147, 197, 253, 0.1); }
         body.dark-mode #mainNav button.active-nav { color: #93c5fd; background-color: rgba(147, 197, 253, 0.15); }
-        /* --- NEW FLOATING CAPSULE NAVIGATION STYLE END --- */
 
         #favoriteActionButton {
             position: fixed;
@@ -357,7 +378,7 @@
         body.dark-mode #stationListBackContent::before {
              background-color: #475569;
         }
-        .station-item, .bus-card { /* Combine styles for new and old structure */
+        .station-item, .bus-card { 
             position: relative;
             display: flex;
             align-items: center;
@@ -370,7 +391,7 @@
             position: absolute;
             left: -18px; 
             z-index: 1;
-            background-color: #f1f5f9; /* Needs to match panel bg */
+            background-color: #f1f5f9; 
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -379,7 +400,7 @@
             height: 40px;
         }
         body.dark-mode .station-icon-container {
-            background-color: #0f172a; /* Needs to match dark panel bg */
+            background-color: #0f172a; 
         }
         .station-dot {
             width: 12px;
@@ -448,7 +469,6 @@
             background: #e0f2fe;
             border: 2px dashed #3b82f6;
         }
-        /* --- FIX 1: 增加底部內距，防止最後一個站牌被導航列擋住 --- */
         #favoriteListContainer {
             padding-bottom: 120px;
         }
@@ -919,8 +939,12 @@
             display: flex; justify-content: center; align-items: center; color: white; border-radius: 50%; width: 32px; height: 32px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 2px solid white;
         }
-        .bus-icon.go-bus { background-color: var(--back-color); } /* 去程公車圖示改為紅色 */
-        .bus-icon.back-bus { background-color: var(--go-color); } /* 返程公車圖示改為藍色 */
+        .bus-icon.go-bus { background-color: var(--back-color); } 
+        .bus-icon.back-bus { background-color: var(--go-color); } 
+        /* Goal 7: Light Rail Icons */
+        .bus-icon.tram-icon.go-tram { background-color: #22c55e; } /* Green for Go/Clockwise */
+        .bus-icon.tram-icon.back-tram { background-color: #a855f7; } /* Purple for Back/Counter-Clockwise */
+        
         .bus-icon .material-icons-outlined { font-size: 22px; }
         .station-number-icon {
             display: flex; justify-content: center; align-items: center; border-radius: 50%; color: white; font-weight: bold; font-size: 12px;
@@ -1027,7 +1051,8 @@
         .station-dot.go-station { background-color: var(--go-color); }
         .station-dot.back-station { background-color: var(--back-color); }
         body.dark-mode .station-dot { background-color: #60a5fa; }
-        body.dark-mode .time-pill.bg-slate-200 { background-color: #334155; color: #cbd5e1; }
+        /* FIX 3: 確保深色模式下的文字顏色正確 */
+        body.dark-mode .time-pill.bg-slate-200 { background-color: #475569; color: #f1f5f9; }
         body.dark-mode .time-pill.bg-red-200 { background-color: #991b1b; color: #fecaca; }
         body.dark-mode .time-pill.bg-green-200 { background-color: #166534; color: #dcfce7; }
         body.dark-mode .time-pill.bg-blue-200 { background-color: #1e40af; color: #dbeafe; }
@@ -1123,76 +1148,58 @@
         #settingsPage {
             overflow-y: auto;
         }
-		#routeSelectionPage {
-    		overflow-y: auto;
-		}
 
 /* --- LANDSCAPE MODE NAVIGATION & LAYOUT --- */
         @media (orientation: landscape) {
-            /* Sidebar conversion with floating style */
             #mainNav {
-                top: 50%; /* 垂直置中 */
-                left: 12px; /* 修改：左側距離也稍微縮減 */
-                transform: translateY(-50%); /* 修正垂直置中 (覆蓋原本的 translateX) */
+                top: 50%;
+                left: 12px;
+                transform: translateY(-50%);
                 bottom: auto;
                 right: auto;
-                
-                width: 80px; /* 固定寬度 */
-                min-width: 80px; /* 新增：強制最小寬度，防止被 iframe 擠壓變小 */
-                height: auto; /* 高度自動 */
-                max-height: 85vh; /* 避免太高 */
-                
+                width: 80px;
+                min-width: 80px;
+                height: auto;
+                max-height: 85vh;
                 flex-direction: column;
-                
-                /* FIX 2: 修改這裡以修復炸開問題 */
-                justify-content: space-evenly; /* 改用平均分配，而不是置中 */
-                gap: 0; /* 移除固定間距，讓 flex 自動計算，避免高度不足時炸開 */
-                overflow-y: auto; /* 如果螢幕真的超級矮，允許選單內部滾動 */
-                scrollbar-width: none; /* Firefox 隱藏滾動條 */
-                -ms-overflow-style: none; /* IE/Edge 隱藏滾動條 */
-                
-                padding: 10px 0; /*稍微減少上下 padding */
+                justify-content: space-evenly;
+                gap: 0;
+                overflow-y: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding: 10px 0;
                 border-radius: 24px;
-                /* 修改：橫向時的邊框樣式 */
                 border: 1px solid rgba(148, 163, 184, 0.3);
                 box-shadow: 5px 0 25px rgba(0,0,0,0.1);
             }
-
-            /* Chrome/Safari 隱藏滾動條 */
             #mainNav::-webkit-scrollbar {
                 display: none;
             }
-            
             body.dark-mode #mainNav {
-                /* 修改：橫向深色模式邊框 */
                 border: 1px solid rgba(255, 255, 255, 0.15);
             }
-
             #mainNav button {
-                flex: 0 0 auto; /* 防止按鈕被過度拉伸 */
-                flex-shrink: 0; /* 新增：防止按鈕被擠壓縮小 */
-                width: 60px; /* 限制按鈕寬度 */
-                margin: 0 auto; /* 水平置中 */
+                flex: 0 0 auto;
+                flex-shrink: 0;
+                width: 60px;
+                margin: 0 auto;
                 padding: 10px 0;
                 border-bottom: none;
             }
 
-            /* Adjust main content containers */
             #routeSelectionPage .container, 
-            #mrtPage .container, 
+            #lrtPage .container, 
             #homePage .container,
             #settingsPage .container,
             #busTrackerPage .container,
             #favoriteStationsPage .container {
                 padding-bottom: 20px !important;
-                padding-left: 120px !important; /* 加大左側留白，避開懸浮選單 */
+                padding-left: 120px !important; 
                 max-width: 100% !important;
             }
 
-            #mrtPage .container {
-                padding-left: 100px !important;
-                padding-right: 0 !important;
-                padding-bottom: 0 !important;
+            #lrtPage .container {
+                padding-right: 20px !important;
             }
 
             #filterKeyboardContainer {
@@ -1209,50 +1216,33 @@
                  left: 50%;
             }
 
-            /* ---------------------------------------------------------
-               修改部分：地圖在右，列表在左
-               --------------------------------------------------------- */
-            
-            /* 1. 設定容器為橫向 Flex */
             #busTrackerPage #content-wrapper {
                 flex-direction: row !important;
                 overflow: hidden;
             }
-
-            /* 2. 地圖：放在順序 2 (右邊) */
             #busTrackerPage #map {
                 flex-grow: 1;
                 width: auto;
                 height: 100% !important;
-                order: 2; /* 關鍵：設定排序為第 2 個 */
+                order: 2; 
             }
-
-            /* 3. 路線列表：放在順序 1 (左邊) */
             #busTrackerPage #estimateTimesSection {
                 width: 400px;
                 max-width: 40vw;
                 height: 100% !important;
                 flex-shrink: 0;
-                order: 1; /* 關鍵：設定排序為第 1 個 */
-                
-                /* 邊框調整：因為在左邊，所以分隔線要在右側 */
+                order: 1; 
                 border-left: none; 
                 border-right: 1px solid #cbd5e1; 
                 border-top: none; 
             }
-
-            /* 深色模式下的分隔線顏色 */
             body.dark-mode #busTrackerPage #estimateTimesSection {
                 border-right-color: #475569;
                 border-left: none;
             }
-
-            /* 隱藏原本上下的拖拉手柄 */
             #busTrackerPage #dragHandle {
                 display: none !important;
             }
-
-            /* 調整列表容器的內距 */
             #busTrackerPage .station-list-container {
                 padding-top: 0 !important;
             }
@@ -1269,7 +1259,6 @@
     <div id="routeSelectionPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <!-- MODIFICATION: h1 changed to h2 -->
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="routeSelectionTitle">高雄市公車路線查詢</h2>
                 <p class="text-slate-500 mt-2" data-i18n="routeSelectionSubtitle">請使用下方鍵盤或直接輸入以查詢路線</p>
             </header>
@@ -1295,7 +1284,7 @@
                 </div>
              <p id="noResultsMessage" class="text-center py-10 text-slate-500 text-lg hidden" data-i18n="noMatchingRoutes">找不到相符的路線。</p>
         </div>
-        <div id="filterKeyboardContainer" class="fixed bottom-[1px] left-0 right-0 bg-slate-100 py-0 px-4 z-[999] shadow-lg">
+        <div id="filterKeyboardContainer" class="bg-slate-100 py-0 px-4 shadow-lg">
             <div class="container mx-auto max-w-4xl">
                 <div id="filterKeyboard" class="grid grid-cols-5 gap-x-0.5 gap-y-1 md:gap-2 py-2">
                     <button data-filter="紅" data-type="category" class="p-3 text-black font-bold bg-red-500 rounded-lg shadow-md">紅</button>
@@ -1328,11 +1317,11 @@
         <div class="container mx-auto max-w-4xl">
              <header class="p-4 flex-shrink-0">
                 <div class="flex items-center justify-center mb-2">
-                    <!-- MODIFICATION: h1 changed to h2 -->
                     <h2 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h2>
                 </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-4"></p>
-    <div class="direction-toggle-group flex justify-center mt-4 mb-0 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">                    <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold" data-direction="1">
+                <div class="direction-toggle-group flex justify-center mt-4 mb-0 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">                    
+                    <button id="goDirectionButton" class="direction-button flex-1 p-2 font-semibold" data-direction="1">
                         <span class="static-text" data-i18n="goDirection">去程</span>
                         <span class="marquee-container">
                             <span class="marquee-text"></span>
@@ -1376,7 +1365,6 @@
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
             <div class="flex-shrink-0">
                 <header class="text-center mb-6">
-                    <!-- MODIFICATION: h1 changed to h2 -->
                     <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="favoritesTitle">常用站牌</h2>
                     <p class="text-slate-500 mt-2" data-i18n="favoritesSubtitle">點擊可查看路線詳情，長按可移除，拖動以排序。</p>
                 </header>
@@ -1393,17 +1381,32 @@
             </div>
         </div>
     </div>
-    <div id="mrtPage" class="page">
+    <!-- NEW LRT PAGE (REPLACES MRT) -->
+    <div id="lrtPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
-            <div class="flex-grow relative -mx-4 -mb-4 md:-mx-6 md:-mb-6">
-                <iframe src="about:blank" id="mrtIframe" style="width: 100%; height: 100%; border: none;"></iframe>
+             <header class="text-center mb-6">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="lrtTitle">高雄輕軌即時動態</h2>
+                <p class="text-slate-500 mt-2" data-i18n="lrtSubtitle">請選擇行駛方向</p>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow items-center justify-center p-4">
+                 <button id="lrtClockwiseBtn" class="bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 border-2 border-green-500 rounded-xl p-8 shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center h-64 w-full">
+                    <span class="material-icons-outlined text-6xl text-green-600 dark:text-green-300 mb-4">tram</span>
+                    <h3 class="text-2xl font-bold text-green-800 dark:text-green-100" data-i18n="lrtClockwise">輕軌順行 (3000)</h3>
+                    <p class="mt-2 text-green-700 dark:text-green-200 text-center">籬仔內 → 凱旋公園</p>
+                 </button>
+                 
+                 <button id="lrtCounterClockwiseBtn" class="bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 border-2 border-purple-500 rounded-xl p-8 shadow-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center h-64 w-full">
+                    <span class="material-icons-outlined text-6xl text-purple-600 dark:text-purple-300 mb-4">tram</span>
+                    <h3 class="text-2xl font-bold text-purple-800 dark:text-purple-100" data-i18n="lrtCounterClockwise">輕軌逆行 (3001)</h3>
+                    <p class="mt-2 text-purple-700 dark:text-purple-200 text-center">籬仔內 → 凱旋公園</p>
+                 </button>
             </div>
         </div>
     </div>
+
     <div id="homePage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-4">
-                <!-- MODIFICATION: This is the main h1 -->
                 <h1 class="text-2xl md:text-3xl font-bold text-slate-800" data-i18n="appTitle">高雄公車 App</h1>
                 <p class="text-slate-500 mt-1" data-i18n="appSubtitle">您的即時公車夥伴</p>
             </header>
@@ -1452,7 +1455,6 @@
     <div id="settingsPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl">
             <header class="text-center mb-6">
-                <!-- MODIFICATION: h1 changed to h2 -->
                 <h2 class="text-3xl md:text-4xl font-bold text-slate-800" data-i18n="settingsTitle">設定</h2>
                 <p class="text-slate-500 mt-2" data-i18n="settingsSubtitle">調整應用程式設定。</p>
             </header>
@@ -1508,7 +1510,7 @@
                                 <option value="home" data-i18n="navHome">首頁</option>
                                 <option value="dynamic" data-i18n="navDynamic">動態</option>
                                 <option value="favoriteStations" data-i18n="navFavorites">最愛</option>
-                                <option value="mrt" data-i18n="navMrt">捷運</option>
+                                <option value="lrt" data-i18n="navLrt">輕軌</option>
                             </select>
                         </div>
                     </div>
@@ -1603,9 +1605,9 @@
             <span class="material-icons-outlined">favorite</span>
             <span data-i18n="navFavorites">最愛</span>
          </button>
-        <button id="navMrt" data-page="mrt">
+        <button id="navLrt" data-page="lrt">
             <span class="material-icons-outlined">tram</span>
-            <span data-i18n="navMrt">捷運</span>
+            <span data-i18n="navLrt">輕軌</span>
         </button>
         <button id="navSettings" data-page="settings">
             <span class="material-icons-outlined">settings</span>
@@ -1758,10 +1760,9 @@
                     const routeSelectionPage = document.getElementById('routeSelectionPage');
                     const busTrackerPage = document.getElementById('busTrackerPage');
                     const favoriteStationsPage = document.getElementById('favoriteStationsPage');
-                    const mrtPage = document.getElementById('mrtPage');
+                    const lrtPage = document.getElementById('lrtPage');
                     const homePage = document.getElementById('homePage');
                     const settingsPage = document.getElementById('settingsPage');
-                    const mrtIframe = document.getElementById('mrtIframe');
                     const routeSearchInput = document.getElementById('routeSearchInput');
                     const categoryDisplay = document.getElementById('categoryDisplay');
                     const routeListContainer = document.getElementById('routeListContainer');
@@ -1824,7 +1825,9 @@
                     const announcementContent = document.getElementById('announcementContent');
                     const announcementLoading = document.getElementById('announcementLoading');
                     const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
-                    
+                    const lrtClockwiseBtn = document.getElementById('lrtClockwiseBtn');
+                    const lrtCounterClockwiseBtn = document.getElementById('lrtCounterClockwiseBtn');
+
                     let allRoutes = [];
                     let currentRouteData = null;
                     let currentDirection = 1; 
@@ -1848,7 +1851,6 @@
                     let lastPage = null;
                     let weatherDataLoaded = false;
                     let announcementsDataLoaded = false;
-                    let mrtIframeLoaded = false;
                     let resolveCustomPrompt;
                     let resolveCustomConfirm;
                     const favoritePage = document.getElementById('favoriteStationsPage');
@@ -1951,11 +1953,14 @@
                             navHome: '首頁',
                             navDynamic: '動態',
                             navFavorites: '最愛',
-                            navMrt: '捷運',
+                            navLrt: '輕軌',
                             navSettings: '設定',
                             noData: '無資料',
                             routeInfoNotFound: '找不到該路線的資訊，請確認路線代號是否正確。',
-                            mrtTitle: '高雄捷運路網圖',
+                            lrtTitle: '高雄輕軌即時動態',
+                            lrtSubtitle: '請選擇行駛方向',
+                            lrtClockwise: '輕軌順行 (3000)',
+                            lrtCounterClockwise: '輕軌逆行 (3001)',
                             weatherTitle: '高雄天氣',
                             weatherLoadError: '無法載入天氣資料，請稍後再試。',
                             apparentTemperature: '體感溫度',
@@ -2076,11 +2081,14 @@
                             navHome: 'Home',
                             navDynamic: 'Dynamic',
                             navFavorites: 'Favorites',
-                            navMrt: 'MRT',
+                            navLrt: 'Light Rail',
                             navSettings: 'Settings',
                             noData: 'No Data',
                             routeInfoNotFound: 'Route information not found. Please check if the route number is correct.',
-                            mrtTitle: 'Kaohsiung MRT Map',
+                            lrtTitle: 'Light Rail Live Tracking',
+                            lrtSubtitle: 'Please select direction',
+                            lrtClockwise: 'LRT Clockwise (3000)',
+                            lrtCounterClockwise: 'LRT Counter-Clockwise (3001)',
                             weatherTitle: 'Kaohsiung Weather',
                             weatherLoadError: 'Failed to load weather data, please try again later.',
                             apparentTemperature: 'Apparent Temp',
@@ -2370,7 +2378,12 @@
                         });
                         let navButtonId = activePage.replace('Page', '');
                         if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
-                            navButtonId = 'dynamic';
+                            // If it's LRT tracker (3000/3001), highlight LRT nav
+                            if (currentRouteId === '3000' || currentRouteId === '3001') {
+                                navButtonId = 'lrt';
+                            } else {
+                                navButtonId = 'dynamic';
+                            }
                         }
                         const navButton = document.querySelector(`#mainNav button[data-page="${navButtonId}"]`);
                         if (navButton) {
@@ -2410,15 +2423,7 @@
                             }
                         });
                     }
-                    function updateMrtIframeSrc() {
-                        const isDarkMode = body.classList.contains('dark-mode');
-                        const darkSrc = 'https://krtc.pages.dev/?mode=dark';
-                        const lightSrc = 'https://krtc.pages.dev/';
-                        const newSrc = isDarkMode ? darkSrc : lightSrc;
-                        if (mrtIframeLoaded) {
-                            mrtIframe.src = newSrc;
-                        }
-                    }
+
                     function applyInitialTheme() {
                         const isDarkMode = localStorage.getItem('darkMode') === 'true';
                         darkModeToggle.checked = isDarkMode;
@@ -2427,7 +2432,6 @@
                         } else {
                             body.classList.remove('dark-mode');
                         }
-                        updateMrtIframeSrc();
                     }
                     function updateTrackerLayout() {
                         const mapEnabled = localStorage.getItem('mapDisplayEnabled') !== 'false';
@@ -2551,12 +2555,10 @@
                         
                         toastContainer.appendChild(toast);
                         
-                        // Animate in
                         setTimeout(() => {
                             toast.classList.remove('translate-y-4', 'opacity-0');
                         }, 10);
 
-                        // Animate out
                         setTimeout(() => {
                             toast.classList.add('opacity-0');
                             toast.addEventListener('transitionend', () => toast.remove());
@@ -2565,14 +2567,12 @@
 
                     async function fetchWithRetry(query, variables, retries = 1, delay = 2000) {
                         try {
-                            // Use the original fetchAPI function for the actual request
                             return await fetchAPI(query, variables);
                         } catch (error) {
                             if (retries > 0 && navigator.onLine) {
                                 await new Promise(resolve => setTimeout(resolve, delay));
                                 return await fetchWithRetry(query, variables, retries - 1, delay);
                             } else {
-                                // Re-throw the error after all retries fail or if offline
                                 throw error;
                             }
                         }
@@ -2646,7 +2646,6 @@
                             if (data) {
                                 favoriteData = JSON.parse(data);
                                 if (!favoriteData.groupOrder) {
-                                    console.log("Migrating favorites to include new ordering system.");
                                     favoriteData.groupOrder = {};
                                     favoriteData.groupOrder.all = favoriteData.favorites.map(f => `${f.routeId}-${f.stationId}-${f.direction}`);
                                     favoriteData.groups.forEach(group => {
@@ -2788,6 +2787,7 @@
                              let pageName = pageId.replace('Page', '');
                              if (pageId === 'routeSelectionPage') pageName = 'dynamic';
                              if (pageId === 'busTrackerPage') pageName = 'tracker';
+                             if (pageId === 'lrtPage') pageName = 'lrt';
                              let url = `?page=${pageName}`;
                              if (pageId === 'busTrackerPage' && currentRouteId) {
                                 state.routeId = currentRouteId;
@@ -2812,12 +2812,10 @@
                         
                         if (pageId === 'routeSelectionPage') {
                             resetSearch();
-                            filterKeyboardContainer.style.display = 'block';
                             updateCountdownButton.style.display = 'none';
                             adjustContentPadding();
                         } else if (pageId === 'busTrackerPage') {
                             updateTrackerLayout();
-                            filterKeyboardContainer.style.display = 'none';
                             if (navigator.onLine) {
                                 updateCountdownButton.style.display = 'flex';
                             } else {
@@ -2827,12 +2825,7 @@
                                 setTimeout(() => map.invalidateSize(), 10);
                             }
                         } else {
-                            filterKeyboardContainer.style.display = 'none';
                             updateCountdownButton.style.display = 'none';
-                            const container = document.querySelector(`#${pageId} .container`);
-                            if(container) {
-                                /* container.style.paddingBottom = '90px'; */ /* CSS handled */
-                            }
                         }
                         updateNavHighlight();
                         if (pageId === 'favoriteStationsPage') {
@@ -2844,10 +2837,6 @@
                         else if (pageId === 'homePage') {
                             if (!weatherDataLoaded) fetchWeather();
                             if (!announcementsDataLoaded) fetchAnnouncements();
-                        }
-                        else if (pageId === 'mrtPage' && !mrtIframeLoaded) {
-                            mrtIframeLoaded = true;
-                            updateMrtIframeSrc();
                         }
                     }
                     function resetSearch() {
@@ -2894,7 +2883,7 @@
                             const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang });
                             allRoutes = data.data.routes.edges
                                 .map(edge => edge.node)
-                                .filter(route => route.id !== 0)
+                                .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001') // Filter out LRT
                                 .sort((a, b) => a.seq - b.seq);
                             try {
                                 localStorage.setItem('cachedRoutes', JSON.stringify(allRoutes));
@@ -3002,8 +2991,12 @@
                         if (remainingSearchTerm) {
                             const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
                             filteredRoutes = finalFilterTarget.filter(route =>
-                                route.name.toLowerCase().includes(remainingSearchTerm) ||
-                                (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
+                                String(route.id) !== '3000' && String(route.id) !== '3001' && // Ensure LRT filtered out in search too
+                                (
+                                    route.name.toLowerCase().startsWith(remainingSearchTerm) || 
+                                    (route.description && route.description.toLowerCase().includes(remainingSearchTerm)) ||
+                                    route.id.toString() === remainingSearchTerm 
+                                )
                             );
                         }
                         displayRoutes(filteredRoutes);
@@ -3021,8 +3014,11 @@
                         const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
                         const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
                         
-                        goStaticText.textContent = `${translations[currentLang].goDirection} `;
-                        backStaticText.textContent = `${translations[currentLang].backDirection} `;
+                        // FIX 7: Hide static text for LRT
+                        const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
+                        
+                        goStaticText.textContent = isLrt ? "" : `${translations[currentLang].goDirection} `;
+                        backStaticText.textContent = isLrt ? "" : `${translations[currentLang].backDirection} `;
                         
                         const goText = currentRouteData.destination;
                         const backText = currentRouteData.departure;
@@ -3087,10 +3083,10 @@
 
                         if (isOffline) {
                             timeDisplay = translations[currentLang].offlineStatus;
-                            pillBgColorClass = 'bg-slate-200 text-slate-800';
+                            pillBgColorClass = 'bg-slate-200';
                         } else {
                             timeDisplay = translations[currentLang].lastBusDeparted;
-                            pillBgColorClass = 'bg-slate-200 text-slate-800';
+                            pillBgColorClass = 'bg-slate-200';
                             if (estimate && estimate.etas && estimate.etas.length > 0) {
                                 const closestEta = estimate.etas[0];
                                 busId = closestEta.busId;
@@ -3126,12 +3122,12 @@
                                 <div class="table table-fixed w-full">
                                     <div class="table-cell w-[6.5rem] align-middle">
                                         <div class="info-cycler">
-                                            <div class="time-item cycler-item active">
+                                            <div class="time-item cycler-item time-pill active">
                                                 <div class="marquee-container w-full text-center">
                                                     <div class="marquee-text"><span data-original-text=""></span></div>
                                                 </div>
                                             </div>
-                                            <div class="plate-item cycler-item bg-yellow-200 text-yellow-800" style="display: none;">
+                                            <div class="plate-item cycler-item time-pill bg-yellow-200 text-yellow-800" style="display: none;">
                                                 <span class="material-icons-outlined !text-sm mr-1">directions_bus</span>
                                                 <span class="plate-number font-semibold whitespace-nowrap"></span>
                                             </div>
@@ -3244,7 +3240,7 @@
                             }
                             const currentClasses = timeItem.className.split(' ');
                             const activeClass = currentClasses.includes('active') ? 'active' : '';
-                            timeItem.className = `time-item cycler-item ${activeClass} ${pillBgColorClass}`;
+                            timeItem.className = `time-item cycler-item time-pill ${activeClass} ${pillBgColorClass}`;
 
                             if (plateVisibleStations.has(station.id)) {
 							    const plateNum = plateVisibleStations.get(station.id);
@@ -3284,7 +3280,6 @@
                             isFirstMapLoad = true;
                             trackerLoading.style.display = 'flex';
                             
-                            // (原本的初始化 UI 邏輯保持不變，但在這裡我們稍後會根據 scrollToStationId 重新判斷方向)
                             if (currentDirection === 1) {
                                 stationListGo.classList.remove('hidden');
                                 stationListBack.classList.add('hidden');
@@ -3315,19 +3310,15 @@
                             if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
                             currentRouteData = result.data.route;
                             
-                            // --- 新增邏輯開始：自動判斷目標站點的方向 ---
                             if (scrollToStationId && currentRouteData.stations) {
-                                // 搜尋目標站點在 API 資料中的方向 (goBack: 1=去程, 2=返程)
                                 const targetEdge = currentRouteData.stations.edges.find(edge => 
                                     String(edge.node.id) === String(scrollToStationId)
                                 );
 
                                 if (targetEdge) {
                                     const targetDirection = targetEdge.goBack;
-                                    // 如果目標方向與當前方向不同，強制切換
                                     if (targetDirection !== currentDirection) {
                                         currentDirection = targetDirection;
-                                        // 立即更新 UI 顯示正確的列表
                                         if (currentDirection === 1) {
                                             stationListGo.classList.remove('hidden');
                                             stationListBack.classList.add('hidden');
@@ -3338,7 +3329,6 @@
                                     }
                                 }
                             }
-                            // --- 新增邏輯結束 ---
 
                             try {
                                 let cachedDetails = JSON.parse(localStorage.getItem('cachedRouteDetails') || '{}');
@@ -3351,22 +3341,20 @@
                             renderAllDirections(currentRouteData, isInitialLoad, false);
                             renderMap(currentRouteData);
                             
-                            updateDirectionButtons(); // 這會根據上面的 currentDirection 更新按鈕狀態
+                            updateDirectionButtons();
 
                             if (scrollToStationId) {
-                                await new Promise(resolve => setTimeout(resolve, 500)); // 延遲稍長一點確保 DOM 渲染完畢
+                                await new Promise(resolve => setTimeout(resolve, 500)); 
                                 
-                                // 1. 列表滾動
                                 const activeList = currentDirection === 1 ? stationListGoContent : stationListBackContent;
                                 const targetStationCard = activeList.querySelector(`[data-station-id="${scrollToStationId}"]`);
                                 if (targetStationCard) {
                                     targetStationCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     targetStationCard.style.transition = 'background-color 0.5s';
-                                    targetStationCard.style.backgroundColor = 'rgba(59, 130, 246, 0.2)'; // 加深高亮顏色
+                                    targetStationCard.style.backgroundColor = 'rgba(59, 130, 246, 0.2)'; 
                                     setTimeout(() => { targetStationCard.style.backgroundColor = ''; }, 1500);
                                 }
 
-                                // 2. 地圖移動
                                 if (map && currentRouteData && currentRouteData.stations) {
                                     const targetStationEdge = currentRouteData.stations.edges.find(edge => 
                                         String(edge.node.id) === String(scrollToStationId) && 
@@ -3374,13 +3362,11 @@
                                     );
 
                                     if (targetStationEdge && targetStationEdge.node.lat && targetStationEdge.node.lon) {
-                                        map.flyTo([targetStationEdge.node.lat, targetStationEdge.node.lon], 18, { // Zoom 改為 18 更清楚
+                                        map.flyTo([targetStationEdge.node.lat, targetStationEdge.node.lon], 18, { 
                                             animate: true,
                                             duration: 1.5 
                                         });
                                         
-                                        // 如果地圖上有對應的 Marker，自動打開 Popup
-                                        // 注意：這需要遍歷 layerGroup，因為我們沒有儲存 station markers 的參照
                                         const targetLayerGroup = currentDirection === 1 ? goLayerGroup : backLayerGroup;
                                         targetLayerGroup.eachLayer(layer => {
                                             if (layer.getLatLng && layer.getLatLng().lat === targetStationEdge.node.lat && layer.getLatLng().lng === targetStationEdge.node.lon) {
@@ -3392,7 +3378,6 @@
                             }
 
                         } catch (error) {
-                            // (錯誤處理保持不變)
                             console.error("Failed to fetch route details:", error);
                             const isTrulyOffline = !navigator.onLine;
                             
@@ -3999,6 +3984,8 @@
                      function updateBusMarkers(buses) {
                         if(!map) return;
                         const newBusIds = new Set(buses.map(bus => bus.node.id));
+                        const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
+                        
                         buses.forEach(bus => {
                             const busId = bus.node.id;
                             const latLng = [bus.node.lat, bus.node.lon];
@@ -4013,7 +4000,8 @@
                                    busMarkers[busId].options.direction = direction;
                                 }
                             } else {
-                                const icon = createBusIcon(direction);
+                                // FIX 7: Pass isLrt flag
+                                const icon = createBusIcon(direction, isLrt);
                                 busMarkers[busId] = L.marker(latLng, { icon: icon, direction: direction, pane: 'busPane' })
                                     .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
                                     .addTo(layerGroup);
@@ -4026,7 +4014,24 @@
                             }
                         }
                     }
-                    function createBusIcon(direction){return L.divIcon({className:`bus-icon ${direction==="go"?"go-bus":"back-bus"}`,html:'<span class="material-icons-outlined">directions_bus</span>',iconSize:[32,32],iconAnchor:[16,16]})}
+                    // FIX 7: Create TRAM icon if needed
+                    function createBusIcon(direction, isLrt) {
+                        let className = `bus-icon ${direction==="go"?"go-bus":"back-bus"}`;
+                        let iconName = 'directions_bus';
+                        
+                        if (isLrt) {
+                            className = `bus-icon tram-icon ${direction==="go"?"go-tram":"back-tram"}`;
+                            iconName = 'tram';
+                        }
+                        
+                        return L.divIcon({
+                            className: className,
+                            html: `<span class="material-icons-outlined">${iconName}</span>`,
+                            iconSize: [32,32],
+                            iconAnchor: [16,16]
+                        });
+                    }
+                    
                     function createStationIcon(number,direction){return L.divIcon({className:`station-number-icon ${direction==="go"?"go-station":"back-station"}`,html:`<span>${number}</span>`,iconSize:[24,24],iconAnchor:[12,12]})}
                     function createPopupContent(stop, etas) {
                         return `<div class="popup-header">${stop.node.name}</div><div class="popup-info"><strong>${translations[currentLang].mapStopOrder}</strong> ${stop.orderNo}</div><div class="popup-info"><strong>${translations[currentLang].mapRealTimeStatus}</strong></div>${formatEtas(etas)}`
@@ -4066,16 +4071,15 @@
 
                     function adjustContentPadding() {
                         const mainNavHeight = mainNav.offsetHeight;
-                        filterKeyboardContainer.style.display = 'block';
-                        const keyboardHeight = filterKeyboardContainer.offsetHeight;
-                        if (!routeSelectionPage.classList.contains('active')) {
-                            filterKeyboardContainer.style.display = 'none';
+                        const keyboardContainer = document.getElementById('filterKeyboardContainer');
+                        if (routeSelectionPage.classList.contains('active')) {
+                             keyboardContainer.style.display = 'block';
+                        } else {
+                             keyboardContainer.style.display = 'none';
                         }
-                        const totalFixedBottomHeight = mainNavHeight + keyboardHeight + 10;
-                        const routeSelectionContainer = document.querySelector('#routeSelectionPage .container');
-                        if (routeSelectionContainer) {
-                            routeSelectionContainer.style.paddingBottom = `${totalFixedBottomHeight}px`;
-                        }
+                        
+                        // FIX 1: Flex layout handles padding, just ensure container doesn't have excess
+                        // logic removed as it's handled by CSS flex-grow now
                     }
                     function handleHashChange(isPopState = false) {
                         const hash = window.location.hash;
@@ -4132,19 +4136,15 @@
                         addNewGroupBtnInModal.className = 'w-full flex items-center justify-center text-left py-3 px-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 font-medium';
                         addNewGroupBtnInModal.innerHTML = `<span class="material-icons-outlined mr-2">add</span> ${translations[currentLang].addNewGroup}`;
                         
-                        // BUG FIX: Replaced the entire event listener for adding a new group.
                         addNewGroupBtnInModal.addEventListener('click', async () => {
-                            // 1. Close the current modal.
                             if (window.location.hash.includes('#select-group')) {
                                 history.back();
                             } else {
                                 selectGroupModal.classList.remove('show');
                             }
                             
-                            // 2. Wait a fraction of a second for the UI to settle before showing the next modal.
                             await new Promise(resolve => setTimeout(resolve, 50)); 
 
-                            // 3. Show the prompt to get the new group name.
                             const name = await customPrompt(
                                 translations[currentLang].addNewGroup,
                                 translations[currentLang].enterNewGroupName
@@ -4153,13 +4153,11 @@
                             if (name && name.trim()) {
                                 const newGroupName = name.trim();
                                 
-                                // 4. Check for duplicate name.
                                 if (favoriteData.groups.some(g => g.name.toLowerCase() === newGroupName.toLowerCase())) {
                                     showToast(translations[currentLang].groupNameExists, 'warning');
                                     return; 
                                 }
 
-                                // 5. Create the new group and save it.
                                 const newGroup = {
                                     id: Date.now().toString(),
                                     name: newGroupName,
@@ -4168,10 +4166,8 @@
                                 favoriteData.groups.push(newGroup);
                                 saveFavorites();
                                 
-                                // 6. Add the current station (from the outer scope) to this new group.
                                 addFavorite(stationData, newGroup.id);
                                 
-                                // 7. Give user feedback.
                                 showToast(`${translations[currentLang].addedToGroup} "${newGroupName}"`, 'info');
                             }
                         });
@@ -4367,7 +4363,7 @@
                             case 'dynamic': return 'routeSelectionPage';
                             case 'tracker': return 'busTrackerPage';
                             case 'favoriteStations': return 'favoriteStationsPage';
-                            case 'mrt': return 'mrtPage';
+                            case 'lrt': return 'lrtPage';
                             case 'settings': return 'settingsPage';
                             default: return null;
                         }
@@ -4413,7 +4409,6 @@
                                 body.classList.remove('dark-mode');
                                 localStorage.setItem('darkMode', 'false');
                             }
-                            updateMrtIframeSrc();
                         });
                         splashScreenToggle.addEventListener('change', () => {
                             localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
@@ -4437,6 +4432,14 @@
                             }
                         });
                         
+                        // FIX: LRT Buttons logic
+                        lrtClockwiseBtn.addEventListener('click', () => {
+                           navigateToTracker('3000', translations[currentLang].lrtClockwise, '籬仔內 → 凱旋公園');
+                        });
+                        lrtCounterClockwiseBtn.addEventListener('click', () => {
+                           navigateToTracker('3001', translations[currentLang].lrtCounterClockwise, '籬仔內 → 凱旋公園');
+                        });
+
                         window.addEventListener('popstate', async (event) => {
                             const modalWasClosed = handleHashChange(true);
                             if (modalWasClosed) {
@@ -4531,8 +4534,8 @@
                             else if (page === 'favoriteStations') {
                                 showPage('favoriteStationsPage');
                             }
-                            else if (page === 'mrt') {
-                                showPage('mrtPage');
+                            else if (page === 'lrt') {
+                                showPage('lrtPage');
                             }
                             else if (page === 'home') {
                                 showPage('homePage');
@@ -4703,17 +4706,19 @@
                         const urlParams = new URLSearchParams(window.location.search);
                         const pageFromUrl = urlParams.get('page');
                         const routeIdFromUrl = urlParams.get('route');
-                        // 新增：讀取 station 參數
                         const stationIdFromUrl = urlParams.get('station'); 
 
                         let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
 
                         if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
+                            // Try to find in standard routes first
                             const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
                             if (route) {
-                                // 修改：將 stationIdFromUrl 傳入第 5 個參數 (scrollToStationId)
-                                // navigateToTracker(routeId, routeName, routeDesc, pushState, scrollToStationId, direction)
                                 navigateToTracker(route.id, route.name, route.description, false, stationIdFromUrl, 1);
+                            } else if (routeIdFromUrl === '3000' || routeIdFromUrl === '3001') {
+                                // Direct deep link to LRT
+                                const name = routeIdFromUrl === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
+                                navigateToTracker(routeIdFromUrl, name, '籬仔內 → 凱旋公園', false, stationIdFromUrl, 1);
                             } else {
                                 await showPage('routeSelectionPage', true);
                             }
