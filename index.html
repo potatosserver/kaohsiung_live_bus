@@ -94,15 +94,41 @@
         #filterKeyboardContainer {
             flex: 0 0 auto;
             position: relative;
-            bottom: auto;
-            left: auto;
-            right: auto;
             z-index: 500;
             width: 100%;
-            background-color: #f1f5f9;
-            border-top: 1px solid #cbd5e1;
-            padding-bottom:70px; /* 新增這一行：為底部導覽列預留空間 */
+            /* 背景改為半透明，配合模糊效果 */
+            background-color: rgba(241, 245, 249, 0.85); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            
+            /* 移除原本生硬的邊框 */
+            border-top: none; 
+            
+            /* 改用淡淡的向上陰影，創造層次感但沒有明顯邊界 */
+            box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.08);
+            
+            /* 頂部導圓角，讓視覺更柔和 */
+            border-radius: 24px 24px 0 0; 
+            
+            /* 增加內部間距，讓按鈕不要貼邊 */
+            padding-top: 16px;
+            padding-left: 8px;
+            padding-right: 8px;
+            
+            /* 這是上一題修復被導覽列遮住的 padding */
+            padding-bottom: 100px; 
+            
+            /* 加上轉場效果 */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
 
+        /* 針對橫向模式的微調 */
+        @media (orientation: landscape) {
+            #filterKeyboardContainer {
+                border-radius: 0; /* 橫向時不需要圓角 */
+                padding-bottom: 10px !important;
+                left: 0;
+            }
         }
 
         #estimateTimesSection {
@@ -226,13 +252,20 @@
                 margin-left: auto;
                 margin-right: auto;
             }
-            #filterKeyboard > button {
-                aspect-ratio: 1 / 1;
-                padding: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+            /* 調整鍵盤按鈕的通用樣式 */
+	        #filterKeyboard > button {
+	            border-radius: 16px; /* 更圓潤的按鈕 (原本是 rounded-lg) */
+	            border: 1px solid rgba(255,255,255,0.4); /* 微弱的白邊增加質感 */
+	            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* 更柔和的陰影 */
+	            font-weight: 600;
+	            transition: all 0.1s ease;
+	        }
+	
+	        /* 按下按鈕時的效果 */
+	        #filterKeyboard > button:active {
+	            transform: scale(0.95);
+	            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+	        }
             #filterKeyboard .bus-taxi-button {
                 padding: 4px;
                 line-height: 1.1;
@@ -1043,11 +1076,13 @@
         }
         body.dark-mode #noResultsMessage, body.dark-mode #noFavoritesMessage { color: #94a3b8; }
         body.dark-mode #filterKeyboardContainer {
-            background-color: #1e293b; 
-            border-top-color: #334155; 
+            background-color: rgba(15, 23, 42, 0.85); /* 深色半透明 */
+            border-top: none; /* 確保沒有邊框 */
+            box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.3); /* 深色陰影 */
         }
         body.dark-mode #filterKeyboard button {
-             transition: background-color 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
         body.dark-mode #filterKeyboard button[data-type="number"],
         body.dark-mode #filterKeyboard button[data-filter="幹線"],
