@@ -942,10 +942,21 @@
         #busTrackerPage.map-hidden #dragHandle {
             display: none;
         }
+        /* 修改後的樣式：關閉地圖時移除區塊感，讓列表融入背景 */
         #busTrackerPage.map-hidden #estimateTimesSection {
             height: 100% !important;
             flex-grow: 1;
-            border-radius: 1.5rem; /* Full rounded corners when map is hidden */
+            /* 強制移除圓角、陰影、邊框與背景色 */
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            background-color: transparent !important;
+        }
+        /* 確保在深色模式下背景也透明 */
+        body.dark-mode #busTrackerPage.map-hidden #estimateTimesSection {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
         }
         #busTrackerPage #estimateTimesSection {
             flex-shrink: 0;
