@@ -1309,6 +1309,11 @@
             #busTrackerPage.map-hidden #estimateTimesSection {
                  height: 100% !important;
                  flex-grow: 1;
+                 /* 新增以下樣式以達成加寬與置中 */
+                 width: 100% !important;      /* 覆蓋原本的固定寬度 */
+                 max-width: 900px !important; /* 設定較寬的最大寬度，提升閱讀性 */
+                 margin: 0 auto !important;   /* 水平置中 */
+                 border: none !important;     /* 移除側邊欄邊框 */
             }
             #busTrackerPage #estimateTimesSection {
                 width: 400px;
@@ -1336,16 +1341,6 @@
             /* Fix Goal 2: Reset internal list padding in landscape */
             #stationListGoContent, #stationListBackContent {
                 padding-bottom: 20px !important; /* Remove the 40px portrait padding */
-            }
-            #busTrackerPage.map-hidden #estimateTimesSection {
-                width: 100% !important;       /* 覆蓋原本的 400px 寬度限制 */
-                max-width: 900px !important;  /* 設定最大寬度，避免在寬螢幕上太寬難閱讀 */
-                margin: 0 auto !important;    /* 水平置中 */
-                border-right: none !important;/* 移除原本作為側邊欄時的右側分隔線 */
-                order: unset !important;      /* 重置 Flex 順序 */
-            }
-            #busTrackerPage.map-hidden #content-wrapper {
-                justify-content: center !important;
             }
         }
     </style>
