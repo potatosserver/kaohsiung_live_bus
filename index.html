@@ -3125,6 +3125,66 @@
                             isAnimatingDirection = false;
                         }, 310);
                     }
+                    function updateDirectionButtons() {
+                        // 如果沒有路線資料，隱藏按鈕群組
+                        if (!currentRouteData) {
+                            if (goDirectionButton && goDirectionButton.parentElement) {
+                                goDirectionButton.parentElement.style.display = 'none';
+                            }
+                            return;
+                        }
+                        
+                        // 顯示按鈕群組
+                        if (goDirectionButton && goDirectionButton.parentElement) {
+                            goDirectionButton.parentElement.style.display = 'flex';
+                        }
+                        
+                        const goStaticText = goDirectionButton.querySelector('.static-text');
+                        const goMarqueeContainer = goDirectionButton.querySelector('.marquee-container');
+                        const goMarqueeText = goDirectionButton.querySelector('.marquee-text');
+                        const backStaticText = backDirectionButton.querySelector('.static-text');
+                        const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
+                        const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
+                        
+                        // 判斷是否為輕軌 (3000, 3001)
+                        const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
+                        
+                        // 設定靜態文字 (輕軌不需要 "去程往/返程往")
+                        goStaticText.textContent = isLrt ? "" : `${translations[currentLang].goDirection} `;
+                        backStaticText.textContent = isLrt ? "" : `${translations[currentLang].backDirection} `;
+                        
+                        const goText = currentRouteData.destination;
+                        const backText = currentRouteData.departure;
+                        
+                        // 檢查跑馬燈
+                        checkMarqueeOverflow(goMarqueeContainer, goMarqueeText, goText);
+                        checkMarqueeOverflow(backMarqueeContainer, backMarqueeText, backText);
+
+                        // 設定按鈕啟用狀態樣式
+                        if (currentDirection === 1) {
+                            goDirectionButton.classList.add('bg-blue-500', 'text-white');
+                            goDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
+                            backDirectionButton.classList.add('bg-transparent', 'text-blue-500');
+                            backDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                            if(map) {
+                                if(goLayerGroup) goLayerGroup.addTo(map); 
+                                if(backLayerGroup) backLayerGroup.removeFrom(map);
+                                if(goBusLayerGroup) goBusLayerGroup.addTo(map); 
+                                if(backBusLayerGroup) backBusLayerGroup.removeFrom(map);
+                            }
+                        } else {
+                            backDirectionButton.classList.add('bg-blue-500', 'text-white');
+                            backDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
+                            goDirectionButton.classList.add('bg-transparent', 'text-blue-500');
+                            goDirectionButton.classList.remove('bg-blue-500', 'text-white');
+                             if(map) {
+                                if(backLayerGroup) backLayerGroup.addTo(map); 
+                                if(goLayerGroup) goLayerGroup.removeFrom(map);
+                                if(backBusLayerGroup) backBusLayerGroup.addTo(map); 
+                                if(goBusLayerGroup) goBusLayerGroup.removeFrom(map);
+                            }
+                        }
+                    }
                     function getStatusInfo(estimate, isOffline = false) {
                         let timeDisplay, pillBgColorClass, busId = null;
 
