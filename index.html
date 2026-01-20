@@ -3000,6 +3000,8 @@
                         let filteredRoutes = [...allRoutes];
                         let categoryMatched = false;
                         let remainingSearchTerm = lowerCaseTerm;
+                        
+                        // 1. 先處理分類篩選 (這部分邏輯保持不變)
                         for (const category of categoryFilters) {
                             const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
                             if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
@@ -3030,63 +3032,28 @@
                                 break;
                             }
                         }
+
+                        // 2. 處理剩餘關鍵字比對 (修正的部分)
                         if (remainingSearchTerm) {
                             const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
+                            
                             filteredRoutes = finalFilterTarget.filter(route =>
-                                String(route.id) !== '3000' && String(route.id) !== '3001' && // Ensure LRT filtered out in search too
+                                String(route.id) !== '3000' && String(route.id) !== '3001' && // 排除輕軌
                                 (
-                                    route.name.toLowerCase().startsWith(remainingSearchTerm) || 
+                                    // 修正重點：
+                                    // 1. 如果已有分類 (categoryMatched)，使用 includes (因為名稱包含前綴，如"紅56"包含"56")
+                                    // 2. 如果沒有分類，允許 includes 以便輸入 "56" 也能找到 "紅56"
+                                    route.name.toLowerCase().includes(remainingSearchTerm) || 
+                                    
+                                    // 描述搜尋
                                     (route.description && route.description.toLowerCase().includes(remainingSearchTerm)) ||
-                                    route.id.toString() === remainingSearchTerm 
+                                    
+                                    // ID 搜尋 (支援輸入 856 找到紅56)
+                                    route.id.toString() === remainingSearchTerm
                                 )
                             );
                         }
                         displayRoutes(filteredRoutes);
-                    }
-                    function updateDirectionButtons() {
-                        if (!currentRouteData) {
-                            goDirectionButton.parentElement.style.display = 'none';
-                            return;
-                        }
-                        goDirectionButton.parentElement.style.display = 'flex';
-                        const goStaticText = goDirectionButton.querySelector('.static-text');
-                        const goMarqueeContainer = goDirectionButton.querySelector('.marquee-container');
-                        const goMarqueeText = goDirectionButton.querySelector('.marquee-text');
-                        const backStaticText = backDirectionButton.querySelector('.static-text');
-                        const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
-                        const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
-                        
-                        // FIX 7: Hide static text for LRT
-                        const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
-                        
-                        goStaticText.textContent = isLrt ? "" : `${translations[currentLang].goDirection} `;
-                        backStaticText.textContent = isLrt ? "" : `${translations[currentLang].backDirection} `;
-                        
-                        const goText = currentRouteData.destination;
-                        const backText = currentRouteData.departure;
-                        
-                        checkMarqueeOverflow(goMarqueeContainer, goMarqueeText, goText);
-                        checkMarqueeOverflow(backMarqueeContainer, backMarqueeText, backText);
-
-                        if (currentDirection === 1) {
-                            goDirectionButton.classList.add('bg-blue-500', 'text-white');
-                            goDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
-                            backDirectionButton.classList.add('bg-transparent', 'text-blue-500');
-                            backDirectionButton.classList.remove('bg-blue-500', 'text-white');
-                            if(map) {
-                                goLayerGroup.addTo(map); backLayerGroup.removeFrom(map);
-                                goBusLayerGroup.addTo(map); backBusLayerGroup.removeFrom(map);
-                            }
-                        } else {
-                            backDirectionButton.classList.add('bg-blue-500', 'text-white');
-                            backDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
-                            goDirectionButton.classList.add('bg-transparent', 'text-blue-500');
-                            goDirectionButton.classList.remove('bg-blue-500', 'text-white');
-                             if(map) {
-                                backLayerGroup.addTo(map); goLayerGroup.removeFrom(map);
-                                backBusLayerGroup.addTo(map); goBusLayerGroup.removeFrom(map);
-                            }
-                        }
                     }
 
                     function handleDirectionToggle(newDirection) {
