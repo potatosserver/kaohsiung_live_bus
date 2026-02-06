@@ -4104,40 +4104,47 @@
                             marker.bindPopup(createPopupContent(stop, estimate ? estimate.node.etas : []));
                         });
                     }
-                     function updateBusMarkers(buses) {
-                        if(!map) return;
-                        const newBusIds = new Set(buses.map(bus => bus.node.id));
-                        const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
-                        
-                        buses.forEach(bus => {
-                            const busId = bus.node.id;
-                            const latLng = [bus.node.lat, bus.node.lon];
-                            const direction = bus.goBack === 1 ? 'go' : 'back';
-                            const layerGroup = direction === 'go' ? goBusLayerGroup : backBusLayerGroup;
-
-                            if (busMarkers[busId]) {
-                                busMarkers[busId].setLatLng(latLng);
-                                if (busMarkers[busId].options.direction !== direction) {
-                                   busMarkers[busId].remove();
-                                   busMarkers[busId].addTo(layerGroup);
-                                   busMarkers[busId].options.direction = direction;
-                                }
-                            } else {
-                                // FIX 7: Pass isLrt flag
-                                const icon = createBusIcon(direction, isLrt);
-                                busMarkers[busId] = L.marker(latLng, { icon: icon, direction: direction, pane: 'busPane' })
-                                    .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
-                                    .addTo(layerGroup);
-                            }
-                        });
-                        for (const busId in busMarkers) {
-                            if (!newBusIds.has(busId)) {
-                                busMarkers[busId].remove();
-                                delete busMarkers[busId];
-                            }
-                        }
-                    }
-                    // FIX 7: Create TRAM icon if needed
+                    function updateBusMarkers(buses) {
+					    if(!map) return;
+					    const newBusIds = new Set(buses.map(bus => bus.node.id));
+					    const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
+					    
+					    buses.forEach(bus => {
+					        const busId = bus.node.id;
+					        const latLng = [bus.node.lat, bus.node.lon];
+					        const direction = bus.goBack === 1 ? 'go' : 'back';
+					        const layerGroup = direction === 'go' ? goBusLayerGroup : backBusLayerGroup;
+					
+					        // 檢查：如果車子已存在，但方向不對，直接殺掉舊的
+					        if (busMarkers[busId] && busMarkers[busId].options.direction !== direction) {
+					            busMarkers[busId].remove(); // 從地圖移除
+					            delete busMarkers[busId];   // 從記憶體移除
+					        }
+					
+					        if (busMarkers[busId]) {
+					            // 情境 A: 車子存在且方向正確 -> 只更新位置 (效能最好)
+					            busMarkers[busId].setLatLng(latLng);
+					        } else {
+					            // 情境 B: 新車子，或是剛剛因為方向不對被殺掉的車子 -> 建立全新的
+					            const icon = createBusIcon(direction, isLrt);
+					            busMarkers[busId] = L.marker(latLng, { 
+					                icon: icon, 
+					                direction: direction, // 記住目前的行駛方向
+					                pane: 'busPane' 
+					            })
+					            .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
+					            .addTo(layerGroup);
+					        }
+					    });
+					
+					    // 清理已經從 API 消失的車子
+					    for (const busId in busMarkers) {
+					        if (!newBusIds.has(busId)) {
+					            busMarkers[busId].remove();
+					            delete busMarkers[busId];
+					        }
+					    }
+					}
                     function createBusIcon(direction, isLrt) {
                         let className = `bus-icon ${direction==="go"?"go-bus":"back-bus"}`;
                         let iconName = 'directions_bus';
