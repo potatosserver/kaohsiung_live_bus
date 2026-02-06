@@ -4106,30 +4106,37 @@
                     }
                     function updateBusMarkers(buses) {
 					    if(!map) return;
-					    const newBusIds = new Set(buses.map(bus => bus.node.id));
+					    
+					    // 1. 強制將所有新資料的 ID 轉為字串，建立 Set 清單
+					    const newBusIds = new Set(buses.map(bus => String(bus.node.id)));
 					    const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
 					    
 					    buses.forEach(bus => {
-					        const busId = bus.node.id;
+					        // 2. 這裡也強制轉為字串
+					        const busId = String(bus.node.id);
 					        const latLng = [bus.node.lat, bus.node.lon];
 					        const direction = bus.goBack === 1 ? 'go' : 'back';
 					        const layerGroup = direction === 'go' ? goBusLayerGroup : backBusLayerGroup;
 					
-					        // 檢查：如果車子已存在，但方向不對，直接殺掉舊的
-					        if (busMarkers[busId] && busMarkers[busId].options.direction !== direction) {
-					            busMarkers[busId].remove(); // 從地圖移除
-					            delete busMarkers[busId];   // 從記憶體移除
+					        // 3. 檢查：如果車子已存在，但「方向不對」或「ID參照異常」
+					        if (busMarkers[busId]) {
+					            if (busMarkers[busId].options.direction !== direction) {
+					                // 方向改變：必須移除舊的，稍後重建
+					                busMarkers[busId].remove();
+					                delete busMarkers[busId];
+					            }
 					        }
 					
+					        // 4. 建立或更新
 					        if (busMarkers[busId]) {
-					            // 情境 A: 車子存在且方向正確 -> 只更新位置 (效能最好)
+					            // 車子存在且方向正確 -> 只更新位置和平滑移動
 					            busMarkers[busId].setLatLng(latLng);
 					        } else {
-					            // 情境 B: 新車子，或是剛剛因為方向不對被殺掉的車子 -> 建立全新的
+					            // 新車子，或是剛剛因為方向不對被移除的車子 -> 建立全新的
 					            const icon = createBusIcon(direction, isLrt);
 					            busMarkers[busId] = L.marker(latLng, { 
 					                icon: icon, 
-					                direction: direction, // 記住目前的行駛方向
+					                direction: direction, 
 					                pane: 'busPane' 
 					            })
 					            .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
@@ -4137,11 +4144,14 @@
 					        }
 					    });
 					
-					    // 清理已經從 API 消失的車子
+					    // 5. 清理迴圈：移除不在新資料中的舊車
 					    for (const busId in busMarkers) {
+					        // busId 在 for..in 迴圈中永遠是 String，這也是為什麼步驟 1 必須轉 String 的原因
 					        if (!newBusIds.has(busId)) {
-					            busMarkers[busId].remove();
-					            delete busMarkers[busId];
+					            if (busMarkers[busId]) {
+					                busMarkers[busId].remove(); // 從地圖上移除
+					            }
+					            delete busMarkers[busId]; // 從記憶體中移除
 					        }
 					    }
 					}
