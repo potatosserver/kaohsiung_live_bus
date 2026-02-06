@@ -4105,56 +4105,80 @@
                         });
                     }
                     function updateBusMarkers(buses) {
-					    if(!map) return;
-					    
-					    // 1. 強制將所有新資料的 ID 轉為字串，建立 Set 清單
-					    const newBusIds = new Set(buses.map(bus => String(bus.node.id)));
-					    const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
-					    
-					    buses.forEach(bus => {
-					        // 2. 這裡也強制轉為字串
-					        const busId = String(bus.node.id);
-					        const latLng = [bus.node.lat, bus.node.lon];
-					        const direction = bus.goBack === 1 ? 'go' : 'back';
-					        const layerGroup = direction === 'go' ? goBusLayerGroup : backBusLayerGroup;
-					
-					        // 3. 檢查：如果車子已存在，但「方向不對」或「ID參照異常」
-					        if (busMarkers[busId]) {
-					            if (busMarkers[busId].options.direction !== direction) {
-					                // 方向改變：必須移除舊的，稍後重建
-					                busMarkers[busId].remove();
-					                delete busMarkers[busId];
-					            }
-					        }
-					
-					        // 4. 建立或更新
-					        if (busMarkers[busId]) {
-					            // 車子存在且方向正確 -> 只更新位置和平滑移動
-					            busMarkers[busId].setLatLng(latLng);
-					        } else {
-					            // 新車子，或是剛剛因為方向不對被移除的車子 -> 建立全新的
-					            const icon = createBusIcon(direction, isLrt);
-					            busMarkers[busId] = L.marker(latLng, { 
-					                icon: icon, 
-					                direction: direction, 
-					                pane: 'busPane' 
-					            })
-					            .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
-					            .addTo(layerGroup);
-					        }
-					    });
-					
-					    // 5. 清理迴圈：移除不在新資料中的舊車
-					    for (const busId in busMarkers) {
-					        // busId 在 for..in 迴圈中永遠是 String，這也是為什麼步驟 1 必須轉 String 的原因
-					        if (!newBusIds.has(busId)) {
-					            if (busMarkers[busId]) {
-					                busMarkers[busId].remove(); // 從地圖上移除
-					            }
-					            delete busMarkers[busId]; // 從記憶體中移除
-					        }
-					    }
-					}
+				    if(!map) return;
+				    
+				    // 1. 強制將所有新資料的 ID 轉為字串，確保比對精確
+				    const newBusIds = new Set(buses.map(bus => String(bus.node.id)));
+				    const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
+				    
+				    buses.forEach(bus => {
+				        const busId = String(bus.node.id); // 強制轉字串
+				        const latLng = [bus.node.lat, bus.node.lon];
+				        
+				        // 判斷這台車現在應該在的方向與圖層
+				        // API 資料: 1=Go (去程), 2=Back (返程)
+				        // 程式邏輯: 'go' / 'back'
+				        const currentDirection = bus.goBack === 1 ? 'go' : 'back';
+				        const targetLayerGroup = currentDirection === 'go' ? goBusLayerGroup : backBusLayerGroup;
+				
+				        // --- 檢查舊車是否存在 ---
+				        if (busMarkers[busId]) {
+				            const marker = busMarkers[busId];
+				            const oldDirection = marker.options.direction; // 取得標記上紀錄的舊方向
+				
+				            // 如果「方向發生改變」 (例如從去程變返程)
+				            if (oldDirection !== currentDirection) {
+				                
+				                // [關鍵修正]: 根據「舊方向」找出「舊圖層」，強制移除
+				                if (oldDirection === 'go') {
+				                    goBusLayerGroup.removeLayer(marker);
+				                } else {
+				                    backBusLayerGroup.removeLayer(marker);
+				                }
+				                
+				                // 雙重保險：再呼叫一次 remove() 確保從地圖消失
+				                marker.remove(); 
+				                
+				                // 從記憶體刪除舊物件，強迫下方邏輯重建
+				                delete busMarkers[busId];
+				            }
+				        }
+				
+				        // --- 建立或更新車輛 ---
+				        if (busMarkers[busId]) {
+				            // 情境 A: 車子存在且方向正確 -> 平滑更新位置
+				            busMarkers[busId].setLatLng(latLng);
+				        } else {
+				            // 情境 B: 新車子，或是剛剛因為換方向被刪除的車子 -> 重新建立
+				            // 這樣可以確保 Icon 顏色、分組、Popup 資訊絕對是新的
+				            
+				            const icon = createBusIcon(currentDirection, isLrt);
+				            
+				            busMarkers[busId] = L.marker(latLng, { 
+				                icon: icon, 
+				                direction: currentDirection, // 寫入方向屬性以供下次比對
+				                pane: 'busPane' 
+				            })
+				            .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
+				            .addTo(targetLayerGroup); // 加入正確的圖層群組
+				        }
+				    });
+				
+				    // --- 清理幽靈車 ---
+				    // 移除已經不在 API 回傳清單中的車輛
+				    for (const busId in busMarkers) {
+				        if (!newBusIds.has(busId)) {
+				            const marker = busMarkers[busId];
+				            
+				            // 從所有可能的圖層中移除，寧可錯殺不可放過
+				            goBusLayerGroup.removeLayer(marker);
+				            backBusLayerGroup.removeLayer(marker);
+				            marker.remove();
+				            
+				            delete busMarkers[busId];
+				        }
+				    }
+				}
                     function createBusIcon(direction, isLrt) {
                         let className = `bus-icon ${direction==="go"?"go-bus":"back-bus"}`;
                         let iconName = 'directions_bus';
