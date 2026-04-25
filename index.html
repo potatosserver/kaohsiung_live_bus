@@ -21,7 +21,7 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "高雄即時公車動態",
-    "alternateName": ["高雄公車", "Kaohsiung Live Bus"],
+    "alternateName":["高雄公車", "Kaohsiung Live Bus"],
     "url": "https://kaohsiung-live-bus.pages.dev/"
     }
     </script>
@@ -1557,9 +1557,6 @@
                              data-ad-slot="4243800284"
                              data-ad-format="auto"
                              data-full-width-responsive="true"></ins>
-                        <script>
-                             (adsbygoogle = window.adsbygoogle ||[]).push({});
-                        </script>
                     </div>
                 </div>
             </div>
@@ -1778,32 +1775,6 @@
         window.addEventListener('resize', setViewportHeight);
         window.addEventListener('orientationchange', setViewportHeight);
         document.addEventListener('DOMContentLoaded', async () => {
-						// 加入這個函數定義
-			function updateSEO(routeName, routeDesc) {
-			    const titleEl = document.getElementById('pageTitle');
-			    const metaDescEl = document.getElementById('metaDescription');
-			    const lang = currentLang || "zh";
-			
-			    if (routeName) {
-			        const title = `${routeName} 高雄公車即時動態 - 到站時間與路線圖 | 高雄即時公車動態`;
-			        const description = `${routeName} 公車：${routeDesc || ""}。提供高雄市公車 ${routeName} 號即時動態、站點資訊、首末班車與地圖查詢。`;
-			        
-			        if (titleEl) titleEl.textContent = title;
-			        if (metaDescEl) metaDescEl.setAttribute('content', description);
-			        
-			        // SEO 加強：動態更新 Canonical 網址
-			        let canonical = document.querySelector('link[rel="canonical"]');
-			        if (!canonical) {
-			            canonical = document.createElement('link');
-			            canonical.setAttribute('rel', 'canonical');
-			            document.head.appendChild(canonical);
-			        }
-			        canonical.setAttribute('href', `https://kaohsiung-live-bus.pages.dev/route/${currentRouteId}`);
-			    } else {
-			        if (titleEl) titleEl.textContent = "高雄市公車動態查詢器 : 一個簡單、美觀、低流量的高雄公車查詢器";
-			        if (metaDescEl) metaDescEl.setAttribute('content', "一個專為高雄市公車設計的簡單、美觀且低流量站點搜尋器。");
-			    }
-			}
             const splashScreen = document.getElementById('splashScreen');
             const body = document.body;
             if (localStorage.getItem('darkMode') === 'true') {
@@ -2015,6 +1986,32 @@
 
                     const MARQUEE_SPEED_PPS = 50;
                     let infoCyclerInterval = null;
+
+                    function updateSEO(routeName, routeDesc) {
+                        const titleEl = document.getElementById('pageTitle');
+                        const metaDescEl = document.getElementById('metaDescription');
+                        const lang = currentLang || "zh";
+                    
+                        if (routeName) {
+                            const title = `${routeName} 高雄公車即時動態 - 到站時間與路線圖 | 高雄即時公車動態`;
+                            const description = `${routeName} 公車：${routeDesc || ""}。提供高雄市公車 ${routeName} 號即時動態、站點資訊、首末班車與地圖查詢。`;
+                            
+                            if (titleEl) titleEl.textContent = title;
+                            if (metaDescEl) metaDescEl.setAttribute('content', description);
+                            
+                            // SEO 加強：動態更新 Canonical 網址
+                            let canonical = document.querySelector('link[rel="canonical"]');
+                            if (!canonical) {
+                                canonical = document.createElement('link');
+                                canonical.setAttribute('rel', 'canonical');
+                                document.head.appendChild(canonical);
+                            }
+                            canonical.setAttribute('href', `https://kaohsiung-live-bus.pages.dev/route/${currentRouteId}`);
+                        } else {
+                            if (titleEl) titleEl.textContent = "高雄市公車動態查詢器 : 一個簡單、美觀、低流量的高雄公車查詢器";
+                            if (metaDescEl) metaDescEl.setAttribute('content', "一個專為高雄市公車設計的簡單、美觀且低流量站點搜尋器。");
+                        }
+                    }
                     
                     const translations = {
                         zh: {
@@ -2967,6 +2964,16 @@
 					    } else if (pageId === 'homePage') {
 					        if (!weatherDataLoaded) fetchWeather();
 					        if (!announcementsDataLoaded) fetchAnnouncements();
+					        
+					        // 當首頁正確顯示(具有寬度)時，才執行 AdSense 初始化
+					        const adIns = document.querySelector('#homePage .adsbygoogle');
+					        if (adIns && !adIns.getAttribute('data-adsbygoogle-status')) {
+					            try {
+					                (window.adsbygoogle = window.adsbygoogle ||[]).push({});
+					            } catch(e) {
+					                console.error('AdSense error:', e);
+					            }
+					        }
 					    }
 					}
                     function resetSearch() {
@@ -3317,7 +3324,7 @@
                             return;
                         }
                         
-                        const estimatesMap = new Map(data.estimateTimes.edges.filter(e => e.node.goBack === direction).map(e => [e.node.id, e.node]));
+                        const estimatesMap = new Map(data.estimateTimes.edges.filter(e => e.node.goBack === direction).map(e =>[e.node.id, e.node]));
                         
                         const nearestStopForBus = new Map();
                         if (!isOffline) {
@@ -3870,7 +3877,7 @@
                         });
                     }
                     function getDragAfterElement(container, y) {
-                        const draggableElements = [...container.querySelectorAll('.favorite-card-item:not(.placeholder)')];
+                        const draggableElements =[...container.querySelectorAll('.favorite-card-item:not(.placeholder)')];
                         return draggableElements.reduce((closest, child) => {
                             const box = child.getBoundingClientRect();
                             const offset = y - box.top - box.height / 2;
@@ -4060,7 +4067,7 @@
                                     groupedMessages.set(key, {
                                         title: msg.title,
                                         description: msg.description,
-                                        routeNames: [msg.routeName]
+                                        routeNames:[msg.routeName]
                                     });
                                 }
                             });
@@ -4102,7 +4109,7 @@
                         goLayerGroup.clearLayers();
                         backLayerGroup.clearLayers();
 
-                        const goStops = [], backStops =[];
+                        const goStops =[], backStops =[];
                         routeData.stations.edges.forEach(edge => {
                             if (edge.node.lat && edge.node.lon) {
                                 if (edge.goBack === 1) goStops.push(edge);
@@ -4232,7 +4239,7 @@
                             className: className,
                             html: `<span class="material-icons-outlined">${iconName}</span>`,
                             iconSize: [32,32],
-                            iconAnchor: [16,16]
+                            iconAnchor:[16,16]
                         });
                     }
                     
