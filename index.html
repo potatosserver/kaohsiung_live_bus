@@ -4653,7 +4653,22 @@
                             }
                             const destinationState = event.state || { page: 'homePage' };
                             const destinationPageId = destinationState.page;
-                            if (destinationPageId && destinationPageId !== activePage) {
+                            
+                            // [修復]: 當返回到路線頁面時，不只要切換 UI，還要重新載入路線資料
+                            if (destinationPageId === 'busTrackerPage' && destinationState.routeId) {
+                                const routeId = destinationState.routeId.toString();
+                                const route = allRoutes.find(r => r.id.toString() === routeId);
+                                
+                                if (route) {
+                                    // pushState 設為 false，因為我們只是在瀏覽歷史中移動
+                                    navigateToTracker(route.id, route.name, route.description, false);
+                                } else if (routeId === '3000' || routeId === '3001') {
+                                    const name = routeId === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
+                                    navigateToTracker(routeId, name, '籬仔內 → 凱旋公園', false);
+                                } else {
+                                    await showPage('routeSelectionPage', false);
+                                }
+                            } else if (destinationPageId && destinationPageId !== activePage) {
                                 await showPage(destinationPageId, false);
                             }
                         });
@@ -4854,21 +4869,6 @@
                             }
                         });
                         window.addEventListener('hashchange', () => handleHashChange(false));
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const pageFromUrl = urlParams.get('page');
-                        const routeIdFromUrl = urlParams.get('route'); 
-
-                        let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
-
-                        if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
-                            currentRouteId = routeIdFromUrl; 
-                        }
-                        
-                        await showPage(initialPageId, false);
-                        history.replaceState({ page: initialPageId, routeId: routeIdFromUrl }, '', window.location.href);
-
-                        handleHashChange(false);
-                        updateNavHighlight(); 
                         countdownInterval = setInterval(() => {
                             if (busTrackerPage.classList.contains('active') && navigator.onLine) {
                                 updateCountdownButton.style.display = "flex";
@@ -4954,6 +4954,9 @@
 					    } else {
 					        await showPage(targetPage, false);
 					    }
+						history.replaceState({ page: targetPage, routeId: targetRoute }, '', window.location.href);
+                        handleHashChange(false);
+                        updateNavHighlight(); 
 					}
                     await initializeAppUI(); 
                     await loadInitialData(); 
