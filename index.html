@@ -1,3 +1,4 @@
+太棒了！我已經將您專屬的廣告單元 ID (4243800284) 完整填入程式碼中了。
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -33,6 +34,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/x-icon" href="/icons/icon.ico" />
+    
+    <!-- Google AdSense 廣告程式碼 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8566311266148076" crossorigin="anonymous"></script>
+
     <style>
         :root {
             --go-color: #3b82f6; /* Blue for Go */
@@ -1545,6 +1550,19 @@
                         </div>
                         <p id="noAnnouncementsMessage" class="text-center py-4 text-slate-500 hidden" data-i18n="noAnnouncements">目前沒有任何訊息通知喔</p>
                     </div>
+                    <!-- AD -->
+                    <div class="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4 overflow-hidden relative z-10 min-h-[100px]">
+                        <p class="text-[10px] text-slate-400 mb-2 text-center">ADVERTISEMENT</p>
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-client="ca-pub-8566311266148076"
+                             data-ad-slot="4243800284"
+                             data-ad-format="auto"
+                             data-full-width-responsive="true"></ins>
+                        <script>
+                             (adsbygoogle = window.adsbygoogle ||[]).push({});
+                        </script>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1787,13 +1805,13 @@
                 function startIconPhysics() {
                     const container = document.getElementById('icons-container');
                     if (!container) return;
-                    const iconNames = [
+                    const iconNames =[
                         'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
                         'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
                         'route', 'navigation', 'trip_origin'
                     ];
                     const numIcons = 200;
-                    let icons = [];
+                    let icons =[];
                     const gravity = 0.2;
                     const initialUpwardVelocity = -13;
                     for (let i = 0; i < numIcons; i++) {
@@ -1925,7 +1943,7 @@
                     const lrtClockwiseBtn = document.getElementById('lrtClockwiseBtn');
                     const lrtCounterClockwiseBtn = document.getElementById('lrtCounterClockwiseBtn');
 
-                    let allRoutes = [];
+                    let allRoutes =[];
                     let currentRouteData = null;
                     let currentDirection = 1; 
                     let currentRouteId = null;
@@ -1937,7 +1955,7 @@
                     let routeDataLang = null;
                     let activePage = 'homePage'; 
                     let selectedCategoryPrefix = '';
-                    let favoriteData = { groups: [], favorites: [], groupOrder: { all: [] } };
+                    let favoriteData = { groups:[], favorites: [], groupOrder: { all:[] } };
                     let activeGroupId = 'all'; 
                     let longPressTimer;
                     let currentStationContext = null;
@@ -2232,7 +2250,7 @@
                             offlineStatus: 'Offline'
                         }
                     };
-                    const categoryFilters = [
+                    const categoryFilters =[
                         { prefix: '公車小黃', filterValue: '小黃', i18nKey: 'busTaxi' },
                         { prefix: '紅', filterValue: '紅', i18nKey: 'redLine' },
                         { prefix: '橘', filterValue: '橘', i18nKey: 'orangeLine' },
@@ -2372,7 +2390,7 @@
                         const currentText = contentEl.textContent.trim();
                         const wasOverflowing = marqueeText.classList.contains('is-overflowing');
 
-                        const forceScrollInEnglish = [
+                        const forceScrollInEnglish =[
                             translations.en.approaching, 
                             translations.en.arrivingSoon,
                             translations.en.lastBusDeparted
@@ -2423,7 +2441,7 @@
                         }, 4000);
                     }
 
-                    function decodePolyline(t){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d}
+                    function decodePolyline(t){for(var n,o,u=0,l=0,r=0,d=[],h=0,i=0,a=null,c=Math.pow(10,5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d}
                     function findClosestPointOnPolyline(point, polyline) {
                         let minDistanceSquared = Infinity;
                         let closestPoint = null;
@@ -2755,9 +2773,9 @@
                                 }
                             } else {
                                 favoriteData = {
-                                    groups: [],
-                                    favorites: [],
-                                    groupOrder: { all: [] }
+                                    groups:[],
+                                    favorites:[],
+                                    groupOrder: { all:[] }
                                 };
                             }
                         } catch (e) {
@@ -2765,7 +2783,7 @@
                             favoriteData = {
                                 groups: [],
                                 favorites: [],
-                                groupOrder: { all: [] }
+                                groupOrder: { all:[] }
                             };
                         }
                     }
@@ -2789,10 +2807,10 @@
                             const newFavorite = { ...stationData, groupId };
                             favoriteData.favorites.push(newFavorite);
                             const favoriteId = `${newFavorite.routeId}-${newFavorite.stationId}-${newFavorite.direction}`;
-                            if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all = [];
+                            if (!favoriteData.groupOrder.all) favoriteData.groupOrder.all =[];
                             favoriteData.groupOrder.all.push(favoriteId);
                             if (groupId && !favoriteData.groupOrder[groupId]) {
-                                favoriteData.groupOrder[groupId] = [];
+                                favoriteData.groupOrder[groupId] =[];
                             }
                             if (groupId) {
                                 favoriteData.groupOrder[groupId].push(favoriteId);
@@ -3003,7 +3021,7 @@
                                 }
                             } catch (cacheError) {
                                 console.error("Cache also failed. App will start in a limited state.", cacheError);
-                                allRoutes = []; 
+                                allRoutes =[]; 
                                 displayNetworkErrorAnnouncement(true); 
                                 routeListContainer.innerHTML = `<p class="text-center py-10 text-red-500">${translations[currentLang].loadingRoutesError}</p>`;
                             }
@@ -3297,7 +3315,7 @@
                                 }
                             });
                         }
-                        const plateVisibleStations = new Map(Array.from(nearestStopForBus.values()).map(v => [v.stationId, v.busId]));
+                        const plateVisibleStations = new Map(Array.from(nearestStopForBus.values()).map(v =>[v.stationId, v.busId]));
 
                         filteredStations.forEach(stationData => {
                             const station = stationData.node;
@@ -3638,8 +3656,8 @@
                         sortableTabsContainer.addEventListener('drop', (e) => {
                             e.preventDefault();
                             if (!draggedGroupTab) return;
-                            const newOrderedIds = [...sortableTabsContainer.querySelectorAll('.group-tab[draggable="true"]')].map(tab => tab.dataset.groupId);
-                            const orderedGroups = [];
+                            const newOrderedIds =[...sortableTabsContainer.querySelectorAll('.group-tab[draggable="true"]')].map(tab => tab.dataset.groupId);
+                            const orderedGroups =[];
                             newOrderedIds.forEach(id => {
                                 const group = favoriteData.groups.find(g => g.id === id);
                                 if (group) orderedGroups.push(group);
@@ -3669,8 +3687,8 @@
                         } else {
                             stationsToDisplay = favoriteData.favorites.filter(fav => fav.groupId === activeGroupId);
                         }
-                        const order = favoriteData.groupOrder[activeGroupId] || [];
-                        const stationMap = new Map(stationsToDisplay.map(f => [`${f.routeId}-${f.stationId}-${f.direction}`, f]));
+                        const order = favoriteData.groupOrder[activeGroupId] ||[];
+                        const stationMap = new Map(stationsToDisplay.map(f =>[`${f.routeId}-${f.stationId}-${f.direction}`, f]));
                         const sortedStations = order
                             .map(id => stationMap.get(id))
                             .filter(Boolean); 
@@ -3784,7 +3802,7 @@
                         body.classList.remove('is-dragging-item');
                         ghost = null;
                         placeholder = null;
-                        const newOrderedElements = [...favoriteListContainer.querySelectorAll('.favorite-card-item')];
+                        const newOrderedElements =[...favoriteListContainer.querySelectorAll('.favorite-card-item')];
                         const newOrderedIds = newOrderedElements.map(elem => {
                             const { routeId, stationId, direction } = elem.dataset;
                             return `${routeId}-${stationId}-${direction}`;
@@ -3965,8 +3983,8 @@
                         noAnnouncementsMessage.classList.add('hidden');
                         announcementContent.innerHTML = '';
 
-                        const uniqueRouteIds = [...new Set(favoriteData.favorites.map(fav => fav.routeId))];
-                        let allMessages = [];
+                        const uniqueRouteIds =[...new Set(favoriteData.favorites.map(fav => fav.routeId))];
+                        let allMessages =[];
 
                         try {
                             const promises = uniqueRouteIds.map(routeId =>
@@ -3980,8 +3998,8 @@
                                     const favRoute = favoriteData.favorites.find(fav => fav.routeId === routeId);
                                     const routeName = favRoute ? favRoute.routeName : `Route ${routeId}`;
                                     
-                                    const clogMessages = result.value.data.clogMessages?.edges || [];
-                                    const abnormalMessages = result.value.data.abnormalMessages?.edges || [];
+                                    const clogMessages = result.value.data.clogMessages?.edges ||[];
+                                    const abnormalMessages = result.value.data.abnormalMessages?.edges ||[];
 
                                     clogMessages.forEach(edge => {
                                         allMessages.push({
@@ -4063,7 +4081,7 @@
                         goLayerGroup.clearLayers();
                         backLayerGroup.clearLayers();
 
-                        const goStops = [], backStops = [];
+                        const goStops = [], backStops =[];
                         routeData.stations.edges.forEach(edge => {
                             if (edge.node.lat && edge.node.lon) {
                                 if (edge.goBack === 1) goStops.push(edge);
@@ -4102,7 +4120,7 @@
                             const marker = L.marker(projectedLatLng, { icon: icon, pane: 'stationPane' }).addTo(layerGroup);
                             
                             const estimate = currentRouteData.estimateTimes.edges.find(e => e.node.id === stop.node.id && e.node.goBack === stop.goBack);
-                            marker.bindPopup(createPopupContent(stop, estimate ? estimate.node.etas : []));
+                            marker.bindPopup(createPopupContent(stop, estimate ? estimate.node.etas :[]));
                         });
                     }
                     function updateBusMarkers(buses) {
@@ -4114,7 +4132,7 @@
 				    
 				    buses.forEach(bus => {
 				        const busId = String(bus.node.id); // 強制轉字串
-				        const latLng = [bus.node.lat, bus.node.lon];
+				        const latLng =[bus.node.lat, bus.node.lon];
 				        
 				        // 判斷這台車現在應該在的方向與圖層
 				        // API 資料: 1=Go (去程), 2=Back (返程)
@@ -4341,7 +4359,7 @@
                         selectGroupModal.classList.add('show');
                     }
                     const getDragAfterGroupItem = (container, y) => {
-                        const draggableElements = [...container.querySelectorAll('.manage-group-item:not(.group-placeholder)')];
+                        const draggableElements =[...container.querySelectorAll('.manage-group-item:not(.group-placeholder)')];
                         return draggableElements.reduce((closest, child) => {
                             if (child === groupPlaceholder) return closest;
                             const box = child.getBoundingClientRect();
@@ -4388,7 +4406,7 @@
                         body.classList.remove('is-dragging-item');
                         groupGhost = null;
                         groupPlaceholder = null;
-                        const newOrderedElements = [...manageGroupsModalBody.querySelectorAll('.manage-group-item')];
+                        const newOrderedElements =[...manageGroupsModalBody.querySelectorAll('.manage-group-item')];
                         const newOrderedIds = newOrderedElements.map(elem => elem.dataset.groupId);
                         favoriteData.groups.sort((a, b) => newOrderedIds.indexOf(a.id) - newOrderedIds.indexOf(b.id));
                         saveFavorites();
@@ -4407,7 +4425,7 @@
                     function handleManageGroupsDrop(e) {
                         e.preventDefault();
                         if (!draggedGroupItem) return;
-                        const newOrderedElements = [...manageGroupsModalBody.querySelectorAll('.manage-group-item')];
+                        const newOrderedElements =[...manageGroupsModalBody.querySelectorAll('.manage-group-item')];
                         const newOrderedIds = newOrderedElements.map(elem => elem.dataset.groupId);
                         favoriteData.groups.sort((a, b) => newOrderedIds.indexOf(a.id) - newOrderedIds.indexOf(b.id));
                         saveFavorites();
@@ -4746,7 +4764,7 @@
                             const diffX = favTouchEndX - favTouchStartX;
                             const diffY = favTouchEndY - favTouchStartY;
                             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
-                                const groupTabsIds = ['all', ...favoriteData.groups.map(g => g.id)];
+                                const groupTabsIds =['all', ...favoriteData.groups.map(g => g.id)];
                                 const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
                                 if (currentGroupIndex === -1) return;
                                 let nextGroupIndex;
