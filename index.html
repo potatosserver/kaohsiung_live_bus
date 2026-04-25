@@ -2879,79 +2879,70 @@
                         }, { once: true });
                     }
                     async function showPage(pageId, pushState = true) {
-                        if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
-                            if (pageId === 'routeSelectionPage') {
-                                resetSearch();
-                                await initRouteSelection();
-                            }
-                            return; 
-                        }
-                        if (favoriteUpdateInterval) {
-                            clearInterval(favoriteUpdateInterval);
-                            favoriteUpdateInterval = null;
-                        }
-                        if (infoCyclerInterval) {
-                            clearInterval(infoCyclerInterval);
-                            infoCyclerInterval = null;
-                        }
-                        const oldPageId = activePage;
-                        if (pushState) {
-                             const state = { page: pageId };
-                             let pageName = pageId.replace('Page', '');
-                             if (pageId === 'routeSelectionPage') pageName = 'dynamic';
-                             if (pageId === 'busTrackerPage') pageName = 'tracker';
-                             if (pageId === 'lrtPage') pageName = 'lrt';
-                             let url = `?page=${pageName}`;
-                             if (pageId === 'busTrackerPage' && currentRouteId) {
-                                state.routeId = currentRouteId;
-                                url += `&route=${currentRouteId}`;
-                             }
-                             history.pushState(state, '', url);
-                        } else if (pageId === 'homePage' && oldPageId !== 'homePage' && !window.location.search.includes('page=home')) {
-                            history.pushState({ page: 'homePage' }, '', '?page=home');
-                        }
-                        
-                        lastPage = activePage;
-                        activePage = pageId;
-                        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-                        const newPage = document.getElementById(pageId);
-                        if (newPage) {
-                            newPage.classList.add('active');
-                        } else {
-                            console.error(`Page with ID "${pageId}" not found.`);
-                            document.getElementById('homePage').classList.add('active');
-                            activePage = 'homePage';
-                        }
-                        
-                        if (pageId === 'routeSelectionPage') {
-                            resetSearch();
-                            updateCountdownButton.style.display = 'none';
-                            adjustContentPadding();
-                        } else if (pageId === 'busTrackerPage') {
-                            updateTrackerLayout();
-                            if (navigator.onLine) {
-                                updateCountdownButton.style.display = 'flex';
-                            } else {
-                                updateCountdownButton.style.display = 'none';
-                            }
-                            if(map) {
-                                setTimeout(() => map.invalidateSize(), 10);
-                            }
-                        } else {
-                            updateCountdownButton.style.display = 'none';
-                        }
-                        updateNavHighlight();
-                        if (pageId === 'favoriteStationsPage') {
-                            await displayFavoriteStations();
-                            if (!favoriteUpdateInterval) {
-                                favoriteUpdateInterval = setInterval(refreshFavoriteTimes, 30000);
-                            }
-                        }
-                        else if (pageId === 'homePage') {
-                            if (!weatherDataLoaded) fetchWeather();
-                            if (!announcementsDataLoaded) fetchAnnouncements();
-                        }
-                    }
+					    if (activePage === pageId && document.getElementById(pageId)?.classList.contains('active')) {
+					        if (pageId === 'routeSelectionPage') {
+					            resetSearch();
+					            await initRouteSelection();
+					        }
+					        return; 
+					    }
+					    if (favoriteUpdateInterval) {
+					        clearInterval(favoriteUpdateInterval);
+					        favoriteUpdateInterval = null;
+					    }
+					    if (infoCyclerInterval) {
+					        clearInterval(infoCyclerInterval);
+					        infoCyclerInterval = null;
+					    }
+					    
+					    const oldPageId = activePage;
+					    
+					    // 更新網址結構為乾淨路徑
+					    if (pushState) {
+					        const state = { page: pageId };
+					        let url = '/';
+					        
+					        if (pageId === 'routeSelectionPage') url = '/search';
+					        else if (pageId === 'favoriteStationsPage') url = '/favorites';
+					        else if (pageId === 'lrtPage') url = '/lrt';
+					        else if (pageId === 'settingsPage') url = '/settings';
+					        else if (pageId === 'busTrackerPage' && currentRouteId) {
+					            state.routeId = currentRouteId;
+					            url = `/route/${currentRouteId}`;
+					        } else if (pageId === 'homePage') url = '/';
+					
+					        history.pushState(state, '', url);
+					    }
+					    
+					    lastPage = activePage;
+					    activePage = pageId;
+					    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+					    const newPage = document.getElementById(pageId);
+					    if (newPage) {
+					        newPage.classList.add('active');
+					    }
+					
+					    if (pageId === 'routeSelectionPage') {
+					        resetSearch();
+					        updateCountdownButton.style.display = 'none';
+					        updateSEO(); // 回復預設標題
+					    } else if (pageId === 'busTrackerPage') {
+					        updateTrackerLayout();
+					        updateCountdownButton.style.display = navigator.onLine ? 'flex' : 'none';
+					    } else {
+					        updateCountdownButton.style.display = 'none';
+					        updateSEO(); // 回復預設標題
+					    }
+					    
+					    updateNavHighlight();
+					    if (pageId === 'favoriteStationsPage') {
+					        await displayFavoriteStations();
+					        if (!favoriteUpdateInterval) favoriteUpdateInterval = setInterval(refreshFavoriteTimes, 30000);
+					    } else if (pageId === 'homePage') {
+					        if (!weatherDataLoaded) fetchWeather();
+					        if (!announcementsDataLoaded) fetchAnnouncements();
+					    }
+					}
                     function resetSearch() {
                         selectedCategoryPrefix = '';
                         routeSearchInput.value = '';
@@ -3546,17 +3537,23 @@
                         }
                     }
                     function navigateToTracker(routeId, routeName, routeDesc, pushState = true, scrollToStationId = null, direction = 1) {
-                        currentRouteId = routeId;
-                        currentRouteName = routeName;
-                        currentDirection = direction;
-                        showPage('busTrackerPage', pushState);
-                        routeTitle.textContent = routeName;
-                        routeDescription.textContent = routeDesc;
-                        loadBusData(currentRouteId, true, scrollToStationId).then(() => {
-                           startInfoCycler();
-                        });
-                        countdownTimer.reset();
-                    }
+					    currentRouteId = routeId;
+					    currentRouteName = routeName;
+					    currentDirection = direction;
+					    
+					    // 先執行 showPage 更新網址
+					    showPage('busTrackerPage', pushState);
+					    
+					    // 更新網頁標題 (重要 SEO 步驟)
+					    updateSEO(routeName, routeDesc);
+					    
+					    routeTitle.textContent = routeName;
+					    routeDescription.textContent = routeDesc;
+					    loadBusData(currentRouteId, true, scrollToStationId).then(() => {
+					       startInfoCycler();
+					    });
+					    countdownTimer.reset();
+					}
                     function createTimePillHtml(estimate) {
                         let timeDisplay = translations[currentLang].lastBusDeparted;
                         let pillBgColorClass = 'bg-slate-200';
@@ -4883,28 +4880,54 @@
 
                     }
                     async function loadInitialData() {
-                        await initRouteSelection();
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const pageFromUrl = urlParams.get('page');
-                        const routeIdFromUrl = urlParams.get('route');
-                        const stationIdFromUrl = urlParams.get('station'); 
-
-                        let initialPageId = mapPageNameToId(pageFromUrl) || mapPageNameToId(defaultStartPage) || 'homePage';
-
-                        if (initialPageId === 'busTrackerPage' && routeIdFromUrl) {
-                            // Try to find in standard routes first
-                            const route = allRoutes.find(r => r.id.toString() === routeIdFromUrl);
-                            if (route) {
-                                navigateToTracker(route.id, route.name, route.description, false, stationIdFromUrl, 1);
-                            } else if (routeIdFromUrl === '3000' || routeIdFromUrl === '3001') {
-                                // Direct deep link to LRT
-                                const name = routeIdFromUrl === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
-                                navigateToTracker(routeIdFromUrl, name, '籬仔內 → 凱旋公園', false, stationIdFromUrl, 1);
-                            } else {
-                                await showPage('routeSelectionPage', true);
-                            }
-                        }
-                    }
+					    await initRouteSelection();
+					    
+					    // 1. 解析路徑 (Pathname)
+					    const path = window.location.pathname;
+					    const pathParts = path.split('/').filter(p => p);
+					    
+					    // 2. 解析參數 (Query String - 為了相容舊網址)
+					    const urlParams = new URLSearchParams(window.location.search);
+					    
+					    let targetPage = 'homePage';
+					    let targetRoute = urlParams.get('route');
+					    let targetStation = urlParams.get('station');
+					
+					    // 路由規則判斷
+					    if (pathParts[0] === 'route' && pathParts[1]) {
+					        targetPage = 'busTrackerPage';
+					        targetRoute = pathParts[1];
+					    } else if (pathParts[0] === 'search') {
+					        targetPage = 'routeSelectionPage';
+					    } else if (pathParts[0] === 'favorites') {
+					        targetPage = 'favoriteStationsPage';
+					    } else if (pathParts[0] === 'lrt') {
+					        targetPage = 'lrtPage';
+					    } else if (pathParts[0] === 'settings') {
+					        targetPage = 'settingsPage';
+					    } else {
+					        // 如果沒有匹配路徑，檢查舊參數
+					        const pageParam = urlParams.get('page');
+					        if (pageParam === 'tracker' || targetRoute) targetPage = 'busTrackerPage';
+					        else if (pageParam === 'dynamic') targetPage = 'routeSelectionPage';
+					        else targetPage = mapPageNameToId(pageParam) || mapPageNameToId(defaultStartPage) || 'homePage';
+					    }
+					
+					    if (targetPage === 'busTrackerPage' && targetRoute) {
+					        currentRouteId = targetRoute;
+					        const route = allRoutes.find(r => r.id.toString() === targetRoute);
+					        if (route) {
+					            navigateToTracker(route.id, route.name, route.description, false, targetStation, 1);
+					        } else if (targetRoute === '3000' || targetRoute === '3001') {
+					            const name = targetRoute === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
+					            navigateToTracker(targetRoute, name, '籬仔內 → 凱旋公園', false, targetStation, 1);
+					        } else {
+					            await showPage('routeSelectionPage', false);
+					        }
+					    } else {
+					        await showPage(targetPage, false);
+					    }
+					}
                     await initializeAppUI(); 
                     await loadInitialData(); 
                 } catch (error) {
