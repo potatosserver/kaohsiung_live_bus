@@ -2945,14 +2945,16 @@
 					        newPage.classList.add('active');
 					    }
 					
-					    if (pageId === 'routeSelectionPage') {
-					        resetSearch();
-					        updateCountdownButton.style.display = 'none';
-					        updateSEO(); // 回復預設標題
-					    } else if (pageId === 'busTrackerPage') {
-					        updateTrackerLayout();
-					        updateCountdownButton.style.display = navigator.onLine ? 'flex' : 'none';
-					    } else {
+						if (pageId === 'routeSelectionPage') {
+                            // [修復]: 切換到搜尋頁面時，確保檢查並重新載入對應語言的路線資料
+                            await initRouteSelection(); 
+                            resetSearch();
+                            updateCountdownButton.style.display = 'none';
+                            updateSEO(); // 回復預設標題
+                        } else if (pageId === 'busTrackerPage') {
+                            updateTrackerLayout();
+                            updateCountdownButton.style.display = navigator.onLine ? 'flex' : 'none';
+                        } else {
 					        updateCountdownButton.style.display = 'none';
 					        updateSEO(); // 回復預設標題
 					    }
