@@ -2,12 +2,15 @@ name: Auto Update Sitemap
 
 on:
   schedule:
-    # 每天 UTC 時間 00:00 執行 (大約是台灣時間早上 08:00)
     - cron: '0 0 * * *'
-  workflow_dispatch: # 允許在 GitHub 網頁上手動點擊 "Run workflow" 觸發
+  workflow_dispatch:
 
 permissions:
-  contents: write # 給予 GitHub Actions 寫入 Repo 的權限，這樣才能推播 Commit
+  contents: write
+
+# 加入環境變數強制使用 Node 24 來消除警告
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   update-sitemap:
@@ -20,19 +23,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # 使用支援原生地 fetch 的 Node 版本
+          node-version: '24' # 這裡更新為 24
 
       - name: Generate sitemap.xml
         run: node generate-sitemap.js
 
       - name: Commit and Push changes
         run: |
-          # 設定 Git Bot 身份
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
-          # 加入變更的檔案
           git add sitemap.xml
-          
-          # 檢查是否有差異，如果有則 commit 並 push
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto update sitemap.xml" && git push)
