@@ -1418,7 +1418,7 @@
         <div class="container mx-auto max-w-4xl">
              <header class="p-4 flex-shrink-0">
                 <div class="flex items-center justify-center mb-2">
-                    <h2 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h2>
+                    <h1 id="routeTitle" class="text-xl md:text-2xl font-bold text-slate-800 text-center flex-grow"></h1>
                 </div>
                 <p id="routeDescription" class="text-sm text-slate-500 text-center mb-4"></p>
                 <div class="direction-toggle-group flex justify-center mt-4 mb-0 rounded-lg border-2 border-blue-500 overflow-hidden text-sm">                    
@@ -1785,14 +1785,21 @@
 			    const lang = currentLang || "zh";
 			
 			    if (routeName) {
-			        // 這是針對特定路線的 SEO 優化標題
 			        const title = `${routeName} 高雄公車即時動態 - 到站時間與路線圖 | 高雄即時公車動態`;
 			        const description = `${routeName} 公車：${routeDesc || ""}。提供高雄市公車 ${routeName} 號即時動態、站點資訊、首末班車與地圖查詢。`;
 			        
 			        if (titleEl) titleEl.textContent = title;
 			        if (metaDescEl) metaDescEl.setAttribute('content', description);
+			        
+			        // SEO 加強：動態更新 Canonical 網址
+			        let canonical = document.querySelector('link[rel="canonical"]');
+			        if (!canonical) {
+			            canonical = document.createElement('link');
+			            canonical.setAttribute('rel', 'canonical');
+			            document.head.appendChild(canonical);
+			        }
+			        canonical.setAttribute('href', `https://kaohsiung-live-bus.pages.dev/route/${currentRouteId}`);
 			    } else {
-			        // 回復預設首頁標題
 			        if (titleEl) titleEl.textContent = "高雄市公車動態查詢器 : 一個簡單、美觀、低流量的高雄公車查詢器";
 			        if (metaDescEl) metaDescEl.setAttribute('content', "一個專為高雄市公車設計的簡單、美觀且低流量站點搜尋器。");
 			    }
