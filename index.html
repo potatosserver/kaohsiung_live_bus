@@ -4281,17 +4281,11 @@
                     };
 
                     function adjustContentPadding() {
-                        const mainNavHeight = mainNav.offsetHeight;
-                        const keyboardContainer = document.getElementById('filterKeyboardContainer');
-                        if (routeSelectionPage.classList.contains('active')) {
-                             keyboardContainer.style.display = 'block';
-                        } else {
-                             keyboardContainer.style.display = 'none';
-                        }
-                        
-                        // FIX 1: Flex layout handles padding, just ensure container doesn't have excess
-                        // logic removed as it's handled by CSS flex-grow now
-                    }
+					    const keyboardContainer = document.getElementById('filterKeyboardContainer');
+					    if (keyboardContainer) {
+					        keyboardContainer.style.display = ''; 
+					    }
+					}
                     function handleHashChange(isPopState = false) {
                         const hash = window.location.hash;
                         let modalWasClosed = false;
