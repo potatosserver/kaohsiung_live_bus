@@ -8,7 +8,6 @@ on:
 permissions:
   contents: write
 
-# 加入環境變數強制使用 Node 24 來消除警告
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -23,14 +22,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24' # 這裡更新為 24
+          node-version: '24'
 
       - name: Generate sitemap.xml
         run: node generate-sitemap.js
+
+      - name: Submit to IndexNow
+        run: node submit-indexnow.js
 
       - name: Commit and Push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add sitemap.xml
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto update sitemap.xml" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: auto update sitemap.xml and submit IndexNow" && git push)
