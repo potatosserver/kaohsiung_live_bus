@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta name="google-site-verification" content="ahdkishmook7wgZXJ6JVA43nNO5SSccNOlvmB575Od4" />
-	<meta name="google-adsense-account" content="ca-pub-8566311266148076">
     <meta charset="UTF-8">
     <meta name="color-scheme" content="light dark" />
     <meta name="author" content="卓稟鈞(AndrewCho)">
@@ -12,9 +11,14 @@
 	<meta name="description" id="metaDescription" content="一個專為高雄市公車設計的簡單、美觀且低流量站點搜尋器，提供快速查詢路線資訊功能，滿足即時需求，適合所有用戶使用。">
 	<title id="pageTitle">高雄市公車動態查詢器 : 一個簡單、美觀、低流量的高雄公車查詢器</title>
 
+    <!-- API 預先連線 (加速低頻寬環境的載入) -->
+    <link rel="preconnect" href="https://ibus.tbkc.gov.tw" crossorigin>
+    <link rel="dns-prefetch" href="https://ibus.tbkc.gov.tw">
+    <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+
     <!-- Leaflet.js (for Map) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 
     <script type="application/ld+json">
     {
@@ -33,9 +37,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined&display=swap" rel="stylesheet">
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/x-icon" href="/icons/icon.ico" />
-    
-    <!-- Google AdSense 廣告程式碼 -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8566311266148076" crossorigin="anonymous"></script>
 
     <style>
         :root {
@@ -101,36 +102,22 @@
             position: relative;
             z-index: 500;
             width: 100%;
-            /* 背景改為半透明，配合模糊效果 */
             background-color: rgba(241, 245, 249, 0.85); 
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            
-            /* 移除原本生硬的邊框 */
             border-top: none; 
-            
-            /* 改用淡淡的向上陰影，創造層次感但沒有明顯邊界 */
             box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.08);
-            
-            /* 頂部導圓角，讓視覺更柔和 */
             border-radius: 24px 24px 0 0; 
-            
-            /* 增加內部間距，讓按鈕不要貼邊 */
             padding-top: 16px;
             padding-left: 8px;
             padding-right: 8px;
-            
-            /* 這是上一題修復被導覽列遮住的 padding */
             padding-bottom: 70px; 
-            
-            /* 加上轉場效果 */
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* 針對橫向模式的微調 */
         @media (orientation: landscape) {
             #filterKeyboardContainer {
-                border-radius: 0; /* 橫向時不需要圓角 */
+                border-radius: 0; 
                 padding-bottom: 10px !important;
                 left: 0;
             }
@@ -257,16 +244,13 @@
                 margin-left: auto;
                 margin-right: auto;
             }
-            /* 調整鍵盤按鈕的通用樣式 */
 	        #filterKeyboard > button {
-	            border-radius: 16px; /* 更圓潤的按鈕 (原本是 rounded-lg) */
-	            border: 1px solid rgba(255,255,255,0.4); /* 微弱的白邊增加質感 */
-	            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* 更柔和的陰影 */
+	            border-radius: 16px; 
+	            border: 1px solid rgba(255,255,255,0.4); 
+	            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); 
 	            font-weight: 600;
 	            transition: all 0.1s ease;
 	        }
-	
-	        /* 按下按鈕時的效果 */
 	        #filterKeyboard > button:active {
 	            transform: scale(0.95);
 	            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
@@ -431,7 +415,7 @@
             position: absolute;
             left: -18px; 
             z-index: 1;
-            background-color: #ffffff; /* Fallback for transparency overlap */
+            background-color: #ffffff; 
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -920,44 +904,40 @@
             animation: marquee-scroll 10s linear infinite;
         }
 
-        /* --- MAP.HTML MERGED STYLES START --- */
         #busTrackerPage .container { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column; 
             min-height: 0; 
-            padding-bottom: 80px; /* Enhanced bottom padding for portrait to clear nav/update btn */
+            padding-bottom: 80px;
         }
         #content-wrapper { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column; 
             min-height: 0;
-            gap: 12px; /* Add gap between rounded blocks */
+            gap: 12px; 
         }
         #map {
             flex-grow: 1;
             width: 100%;
             background-color: #e5e7eb;
-            border-radius: 1.5rem; /* Rounded corners for map block */
-            overflow: hidden; /* Ensure content doesn't bleed */
+            border-radius: 1.5rem; 
+            overflow: hidden; 
             z-index: 0;
         }
         #busTrackerPage.map-hidden #map,
         #busTrackerPage.map-hidden #dragHandle {
             display: none;
         }
-        /* 修改後的樣式：關閉地圖時移除區塊感，讓列表融入背景 */
         #busTrackerPage.map-hidden #estimateTimesSection {
             height: 100% !important;
             flex-grow: 1;
-            /* 強制移除圓角、陰影、邊框與背景色 */
             border-radius: 0 !important;
             box-shadow: none !important;
             border: none !important;
             background-color: transparent !important;
         }
-        /* 確保在深色模式下背景也透明 */
         body.dark-mode #busTrackerPage.map-hidden #estimateTimesSection {
             background-color: transparent !important;
             box-shadow: none !important;
@@ -965,13 +945,13 @@
         }
         #busTrackerPage #estimateTimesSection {
             flex-shrink: 0;
-            height: 40vh; /* Initial height */
+            height: 40vh; 
             background-color: #f1f5f9;
             display: flex;
             flex-direction: column;
             border-top-left-radius: 1.5rem;
             border-top-right-radius: 1.5rem;
-            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06); /* Upward shadow */
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06); 
             border: 1px solid rgba(0,0,0,0.05);
             z-index: 10;
         }
@@ -983,7 +963,7 @@
         #busTrackerPage .station-list-container {
             height: 100%;
             overflow-y: auto;
-            padding: 1rem 1rem 1rem 0; /* Adjusted padding */
+            padding: 1rem 1rem 1rem 0; 
         }
         #dragHandle {
             flex-shrink: 0;
@@ -1015,9 +995,8 @@
         }
         .bus-icon.go-bus { background-color: var(--back-color); } 
         .bus-icon.back-bus { background-color: var(--go-color); } 
-        /* Goal 7: Light Rail Icons */
-        .bus-icon.tram-icon.go-tram { background-color: #22c55e; } /* Green for Go/Clockwise */
-        .bus-icon.tram-icon.back-tram { background-color: #a855f7; } /* Purple for Back/Counter-Clockwise */
+        .bus-icon.tram-icon.go-tram { background-color: #22c55e; } 
+        .bus-icon.tram-icon.back-tram { background-color: #a855f7; } 
         
         .bus-icon .material-icons-outlined { font-size: 22px; }
         .station-number-icon {
@@ -1035,9 +1014,7 @@
         .eta-soon { background-color: #f39c12; }
         .no-data { color: #95a5a6; font-style: italic; }
         .station-list-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        /* --- MAP.HTML MERGED STYLES END --- */
 
-        /* --- NEW MARQUEE & CYCLER STYLES START --- */
         @keyframes marquee-scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
@@ -1064,7 +1041,6 @@
         .cycler-item.active { opacity: 1; visibility: visible; }
         @keyframes spin-once { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .is-refreshing { animation: spin-once 0.5s ease-out; }
-        /* --- NEW MARQUEE & CYCLER STYLES END --- */
 
         body.dark-mode {
             background-color: #0f172a; 
@@ -1092,9 +1068,9 @@
         }
         body.dark-mode #noResultsMessage, body.dark-mode #noFavoritesMessage { color: #94a3b8; }
         body.dark-mode #filterKeyboardContainer {
-            background-color: rgba(15, 23, 42, 0.85); /* 深色半透明 */
-            border-top: none; /* 確保沒有邊框 */
-            box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.3); /* 深色陰影 */
+            background-color: rgba(15, 23, 42, 0.85); 
+            border-top: none; 
+            box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.3); 
         }
         body.dark-mode #filterKeyboard button {
             border: 1px solid rgba(255,255,255,0.05);
@@ -1127,7 +1103,6 @@
         .station-dot.go-station { background-color: var(--go-color); }
         .station-dot.back-station { background-color: var(--back-color); }
         body.dark-mode .station-dot { background-color: #60a5fa; }
-        /* FIX 3: 確保深色模式下的文字顏色正確 */
         body.dark-mode .time-pill.bg-slate-200 { background-color: #475569; color: #f1f5f9; }
         body.dark-mode .time-pill.bg-red-200 { background-color: #991b1b; color: #fecaca; }
         body.dark-mode .time-pill.bg-green-200 { background-color: #166534; color: #dcfce7; }
@@ -1225,7 +1200,6 @@
             overflow-y: auto;
         }
 
-/* --- LANDSCAPE MODE NAVIGATION & LAYOUT --- */
         @media (orientation: landscape) {
             #mainNav {
                 top: 50%;
@@ -1278,15 +1252,14 @@
                 padding-right: 20px !important;
             }
 
-            /* Fix Goal 2: Remove extra height/padding in landscape */
             #busTrackerPage .container {
-                padding-bottom: 10px !important; /* Reduce padding significantly */
+                padding-bottom: 10px !important; 
             }
 
             #filterKeyboardContainer {
                 left: 0px;
                 width: 100%;
-                padding-bottom: 10px !important; /* 新增這一行：橫向模式時移除底部過多的留白 */
+                padding-bottom: 10px !important; 
             }
             
             #updateCountdown {
@@ -1307,18 +1280,17 @@
                 width: auto;
                 height: 100% !important;
                 order: 2; 
-                border-radius: 1.5rem; /* Ensure rounded corners */
-                margin-right: 16px; /* Spacing */
-                margin-bottom: 0; /* Remove portrait spacing */
+                border-radius: 1.5rem; 
+                margin-right: 16px; 
+                margin-bottom: 0; 
             }
             #busTrackerPage.map-hidden #estimateTimesSection {
                  height: 100% !important;
                  flex-grow: 1;
-                 /* 新增以下樣式以達成加寬與置中 */
-                 width: 100% !important;      /* 覆蓋原本的固定寬度 */
-                 max-width: 900px !important; /* 設定較寬的最大寬度，提升閱讀性 */
-                 margin: 0 auto !important;   /* 水平置中 */
-                 border: none !important;     /* 移除側邊欄邊框 */
+                 width: 100% !important;      
+                 max-width: 900px !important; 
+                 margin: 0 auto !important;   
+                 border: none !important;     
             }
             #busTrackerPage #estimateTimesSection {
                 width: 400px;
@@ -1327,10 +1299,10 @@
                 flex-shrink: 0;
                 order: 1; 
                 border-left: none; 
-                border-right: 1px solid rgba(0,0,0,0.05); /* Softer border */
+                border-right: 1px solid rgba(0,0,0,0.05); 
                 border-top: none; 
-                border-radius: 1.5rem; /* Rounded corners for the block */
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+                border-radius: 1.5rem; 
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
             }
             body.dark-mode #busTrackerPage #estimateTimesSection {
                 border-right-color: #475569;
@@ -1343,9 +1315,8 @@
                 padding-top: 0 !important;
             }
             
-            /* Fix Goal 2: Reset internal list padding in landscape */
             #stationListGoContent, #stationListBackContent {
-                padding-bottom: 20px !important; /* Remove the 40px portrait padding */
+                padding-bottom: 20px !important; 
             }
         }
     </style>
@@ -1482,7 +1453,6 @@
             </div>
         </div>
     </div>
-    <!-- NEW LRT PAGE (REPLACES MRT) -->
     <div id="lrtPage" class="page">
         <div class="container mx-auto p-4 md:p-6 max-w-4xl h-screen flex flex-col">
              <header class="text-center mb-6">
@@ -1548,15 +1518,6 @@
                             <p class="mt-2 text-slate-600" data-i18n="loadingAnnouncements">正在載入訊息公告...</p>
                         </div>
                         <p id="noAnnouncementsMessage" class="text-center py-4 text-slate-500 hidden" data-i18n="noAnnouncements">目前沒有任何訊息通知喔</p>
-                    </div>
-                    <!-- AD -->
-                    <div class="mt-6 overflow-hidden relative z-10 min-h-[100px]">
-                        <ins class="adsbygoogle"
-                             style="display:block"
-                             data-ad-client="ca-pub-8566311266148076"
-                             data-ad-slot="4243800284"
-                             data-ad-format="auto"
-                             data-full-width-responsive="true"></ins>
                     </div>
                 </div>
             </div>
@@ -1785,17 +1746,18 @@
             const isUserEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
             const showSplashScreen = isUserEnabled && !isDeepLink;
 
+            // 調整: 改為平行載入以提升體感速度
             const startApp = () => {
                 const splashScreen = document.getElementById('splashScreen');
                 if(splashScreen) {
-                    splashScreen.style.transition = 'opacity 0.5s ease-out';
+                    splashScreen.style.transition = 'opacity 0.4s ease-out';
                     splashScreen.style.opacity = '0';
                     splashScreen.addEventListener('transitionend', () => {
                         if (splashScreen) splashScreen.remove(); 
                     }, { once: true });
                 }
-                initializeApp(); 
             };
+            
             if (showSplashScreen) {
                 function startIconPhysics() {
                     const container = document.getElementById('icons-container');
@@ -1851,8 +1813,11 @@
                     }
                     update();
                 }
-                setTimeout(startIconPhysics, 600);
-                setTimeout(startApp, 2800); 
+                setTimeout(startIconPhysics, 100);
+                // 立刻開始載入資料，不強制鎖定 2.8 秒
+                initializeApp().then(() => {
+                    setTimeout(startApp, 500); // 資料載好後最短顯示時間
+                }); 
             } else {
                 if(splashScreen) {
                     splashScreen.remove();
@@ -1999,7 +1964,6 @@
                             if (titleEl) titleEl.textContent = title;
                             if (metaDescEl) metaDescEl.setAttribute('content', description);
                             
-                            // SEO 加強：動態更新 Canonical 網址
                             let canonical = document.querySelector('link[rel="canonical"]');
                             if (!canonical) {
                                 canonical = document.createElement('link');
@@ -2514,7 +2478,6 @@
                         });
                         let navButtonId = activePage.replace('Page', '');
                         if (activePage === 'routeSelectionPage' || activePage === 'busTrackerPage') {
-                            // If it's LRT tracker (3000/3001), highlight LRT nav
                             if (currentRouteId === '3000' || currentRouteId === '3001') {
                                 navButtonId = 'lrt';
                             } else {
@@ -2601,8 +2564,8 @@
                                 await displayFavoriteStations();
                                 break;
                             case 'homePage':
-                                await fetchWeather();
-                                await fetchAnnouncements();
+                                fetchWeather(); // 非同步呼叫，不阻擋
+                                fetchAnnouncements();
                                 break;
                         }
                     }
@@ -2646,12 +2609,14 @@
                             countdownTimer.updateDisplay();
                         }
                     }
-                    async function fetchAPI(query, variables) {
+                    
+                    async function fetchAPI(query, variables, customOptions = {}) {
                         try {
                             const response = await fetch(API_URL, {
                                 method: 'POST',
                                 headers: HEADERS,
-                                body: JSON.stringify({ query, variables })
+                                body: JSON.stringify({ query, variables }),
+                                ...customOptions
                             });
                             if (!response.ok) throw new Error(`${translations[currentLang].errorTitle} HTTP error! status: ${response.status}`);
                             return await response.json();
@@ -2920,7 +2885,6 @@
 					    
 					    const oldPageId = activePage;
 					    
-					    // 更新網址結構為乾淨路徑
 					    if (pushState) {
 					        const state = { page: pageId };
 					        let url = '/';
@@ -2946,17 +2910,16 @@
 					    }
 					
 						if (pageId === 'routeSelectionPage') {
-                            // [修復]: 切換到搜尋頁面時，確保檢查並重新載入對應語言的路線資料
                             await initRouteSelection(); 
                             resetSearch();
                             updateCountdownButton.style.display = 'none';
-                            updateSEO(); // 回復預設標題
+                            updateSEO(); 
                         } else if (pageId === 'busTrackerPage') {
                             updateTrackerLayout();
                             updateCountdownButton.style.display = navigator.onLine ? 'flex' : 'none';
                         } else {
 					        updateCountdownButton.style.display = 'none';
-					        updateSEO(); // 回復預設標題
+					        updateSEO(); 
 					    }
 					    
 					    updateNavHighlight();
@@ -2964,18 +2927,8 @@
 					        await displayFavoriteStations();
 					        if (!favoriteUpdateInterval) favoriteUpdateInterval = setInterval(refreshFavoriteTimes, 30000);
 					    } else if (pageId === 'homePage') {
-					        if (!weatherDataLoaded) fetchWeather();
+					        if (!weatherDataLoaded) fetchWeather(); // 非同步執行，不阻擋 UI 切換
 					        if (!announcementsDataLoaded) fetchAnnouncements();
-					        
-					        // 當首頁正確顯示(具有寬度)時，才執行 AdSense 初始化
-					        const adIns = document.querySelector('#homePage .adsbygoogle');
-					        if (adIns && !adIns.getAttribute('data-adsbygoogle-status')) {
-					            try {
-					                (window.adsbygoogle = window.adsbygoogle ||[]).push({});
-					            } catch(e) {
-					                console.error('AdSense error:', e);
-					            }
-					        }
 					    }
 					}
                     function resetSearch() {
@@ -3011,47 +2964,67 @@
                         `;
                         announcementContent.prepend(errorCard);
                     }
+                    
                     async function initRouteSelection() {
+                        // 【優化】優先從 localStorage 快取載入畫面，背景再更新 (Stale-While-Revalidate)
+                        let hasCachedData = false;
                         try {
-                            if (allRoutes.length > 0 && routeDataLang === currentLang) {
-                                displayInitialPrompt();
-                                return;
+                            const cachedRoutes = localStorage.getItem('cachedRoutes');
+                            const cachedRoutesLang = localStorage.getItem('cachedRoutesLang');
+                            if (cachedRoutes && cachedRoutesLang === currentLang) {
+                                allRoutes = JSON.parse(cachedRoutes);
+                                displayInitialPrompt(); // 瞬間畫出 UI
+                                hasCachedData = true;
                             }
-                            initialLoading.style.display = 'block';
-                            routeListContainer.innerHTML = '';
-                            const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang });
+                        } catch (e) { console.error(e); }
+
+                        if (allRoutes.length > 0 && routeDataLang === currentLang && hasCachedData) {
+                            // 已有資料且語言相同，但仍在背景執行一次更新確保資料正確
+                        } else {
+                            if (!hasCachedData) {
+                                initialLoading.style.display = 'block';
+                                routeListContainer.innerHTML = '';
+                            }
+                        }
+
+                        try {
+                            // 背景靜默更新 (設定稍微短一點的 timeout 以免卡住)
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 秒超時
+                            
+                            const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang }, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            
                             allRoutes = data.data.routes.edges
                                 .map(edge => edge.node)
                                 .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001') // Filter out LRT
                                 .sort((a, b) => a.seq - b.seq);
+                                
                             try {
                                 localStorage.setItem('cachedRoutes', JSON.stringify(allRoutes));
                                 localStorage.setItem('cachedRoutesLang', currentLang);
                             } catch (e) {
                                 console.error("Error saving routes to localStorage", e);
                             }
-                            displayInitialPrompt();
+                            
+                            // 若當前沒有正在搜尋，或一開始沒有快取，才重新繪製以避免閃爍
+                            if (!hasCachedData || routeSearchInput.value === '') {
+                                displayInitialPrompt();
+                            } else {
+                                applySearch(selectedCategoryPrefix + routeSearchInput.value); // 套用最新資料的搜尋結果
+                            }
+                            routeDataLang = currentLang;
                         } catch (fetchError) {
-                            console.warn("API fetch failed. Attempting to load from cache.", fetchError);
-                            try {
-                                const cachedRoutes = localStorage.getItem('cachedRoutes');
-                                const cachedRoutesLang = localStorage.getItem('cachedRoutesLang');
-                                if (cachedRoutes && cachedRoutesLang === currentLang) {
-                                    allRoutes = JSON.parse(cachedRoutes);
-                                    displayInitialPrompt();
-                                    displayNetworkErrorAnnouncement(false); 
-                                } else {
-                                    throw new Error("No valid cached data available for the current language.");
-                                }
-                            } catch (cacheError) {
-                                console.error("Cache also failed. App will start in a limited state.", cacheError);
+                            console.warn("API fetch failed. Using cache.", fetchError);
+                            if (!hasCachedData) {
                                 allRoutes =[]; 
                                 displayNetworkErrorAnnouncement(true); 
                                 routeListContainer.innerHTML = `<p class="text-center py-10 text-red-500">${translations[currentLang].loadingRoutesError}</p>`;
+                            } else {
+                                displayNetworkErrorAnnouncement(false); 
                             }
                         } finally {
                             initialLoading.style.display = 'none';
-                            routeDataLang = currentLang;
                         }
                     }
                     function displayInitialPrompt() {
@@ -3098,7 +3071,6 @@
                         let categoryMatched = false;
                         let remainingSearchTerm = lowerCaseTerm;
                         
-                        // 1. 先處理分類篩選 (這部分邏輯保持不變)
                         for (const category of categoryFilters) {
                             const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
                             if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
@@ -3130,22 +3102,14 @@
                             }
                         }
 
-                        // 2. 處理剩餘關鍵字比對 (修正的部分)
                         if (remainingSearchTerm) {
                             const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
                             
                             filteredRoutes = finalFilterTarget.filter(route =>
-                                String(route.id) !== '3000' && String(route.id) !== '3001' && // 排除輕軌
+                                String(route.id) !== '3000' && String(route.id) !== '3001' && 
                                 (
-                                    // 修正重點：
-                                    // 1. 如果已有分類 (categoryMatched)，使用 includes (因為名稱包含前綴，如"紅56"包含"56")
-                                    // 2. 如果沒有分類，允許 includes 以便輸入 "56" 也能找到 "紅56"
                                     route.name.toLowerCase().includes(remainingSearchTerm) || 
-                                    
-                                    // 描述搜尋
                                     (route.description && route.description.toLowerCase().includes(remainingSearchTerm)) ||
-                                    
-                                    // ID 搜尋 (支援輸入 856 找到紅56)
                                     route.id.toString() === remainingSearchTerm
                                 )
                             );
@@ -3185,7 +3149,6 @@
                         }, 310);
                     }
                     function updateDirectionButtons() {
-                        // 如果沒有路線資料，隱藏按鈕群組
                         if (!currentRouteData) {
                             if (goDirectionButton && goDirectionButton.parentElement) {
                                 goDirectionButton.parentElement.style.display = 'none';
@@ -3193,7 +3156,6 @@
                             return;
                         }
                         
-                        // 顯示按鈕群組
                         if (goDirectionButton && goDirectionButton.parentElement) {
                             goDirectionButton.parentElement.style.display = 'flex';
                         }
@@ -3205,21 +3167,17 @@
                         const backMarqueeContainer = backDirectionButton.querySelector('.marquee-container');
                         const backMarqueeText = backDirectionButton.querySelector('.marquee-text');
                         
-                        // 判斷是否為輕軌 (3000, 3001)
                         const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
                         
-                        // 設定靜態文字 (輕軌不需要 "去程往/返程往")
                         goStaticText.textContent = isLrt ? "" : `${translations[currentLang].goDirection} `;
                         backStaticText.textContent = isLrt ? "" : `${translations[currentLang].backDirection} `;
                         
                         const goText = currentRouteData.destination;
                         const backText = currentRouteData.departure;
                         
-                        // 檢查跑馬燈
                         checkMarqueeOverflow(goMarqueeContainer, goMarqueeText, goText);
                         checkMarqueeOverflow(backMarqueeContainer, backMarqueeText, backText);
 
-                        // 設定按鈕啟用狀態樣式
                         if (currentDirection === 1) {
                             goDirectionButton.classList.add('bg-blue-500', 'text-white');
                             goDirectionButton.classList.remove('bg-transparent', 'text-blue-500');
@@ -3576,10 +3534,7 @@
 					    currentRouteName = routeName;
 					    currentDirection = direction;
 					    
-					    // 先執行 showPage 更新網址
 					    showPage('busTrackerPage', pushState);
-					    
-					    // 更新網頁標題 (重要 SEO 步驟)
 					    updateSEO(routeName, routeDesc);
 					    
 					    routeTitle.textContent = routeName;
@@ -3966,8 +3921,15 @@
                         const latitude = 22.6273;
                         const longitude = 120.3014;
                         const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m&timezone=Asia%2FTaipei&forecast_days=1`;
+                        
                         try {
-                            const response = await fetch(apiUrl);
+                            // 加入 Timeout，避免在網路極慢時卡住
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5秒超時放棄
+                            
+                            const response = await fetch(apiUrl, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            
                             if (!response.ok) {
                                 throw new Error(`HTTP 錯誤! 狀態: ${response.status}`);
                             }
@@ -3990,7 +3952,7 @@
                                 throw new Error(translations[currentLang].weatherLoadError);
                             }
                         } catch (error) {
-                            console.error("取得天氣資料時發生錯誤:", error);
+                            console.error("取得天氣資料時發生錯誤或超時:", error);
                             weatherErrorMessageElement.textContent = translations[currentLang].weatherLoadError;
                             weatherErrorMessageElement.classList.remove('hidden');
                             weatherDataLoaded = false; 
@@ -4017,10 +3979,15 @@
                         let allMessages =[];
 
                         try {
+                            // 加入 Timeout (透過我們前面改寫的 fetchAPI 選項)
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超時
+
                             const promises = uniqueRouteIds.map(routeId =>
-                                fetchAPI(GQL.QUERY_CLOGS, { routeId: parseInt(routeId) })
+                                fetchAPI(GQL.QUERY_CLOGS, { routeId: parseInt(routeId) }, { signal: controller.signal })
                             );
                             const results = await Promise.allSettled(promises);
+                            clearTimeout(timeoutId);
 
                             results.forEach((result, index) => {
                                 if (result.status === 'fulfilled' && result.value.data) {
@@ -4156,74 +4123,52 @@
                     function updateBusMarkers(buses) {
 				    if(!map) return;
 				    
-				    // 1. 強制將所有新資料的 ID 轉為字串，確保比對精確
 				    const newBusIds = new Set(buses.map(bus => String(bus.node.id)));
 				    const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
 				    
 				    buses.forEach(bus => {
-				        const busId = String(bus.node.id); // 強制轉字串
+				        const busId = String(bus.node.id); 
 				        const latLng =[bus.node.lat, bus.node.lon];
 				        
-				        // 判斷這台車現在應該在的方向與圖層
-				        // API 資料: 1=Go (去程), 2=Back (返程)
-				        // 程式邏輯: 'go' / 'back'
 				        const currentDirection = bus.goBack === 1 ? 'go' : 'back';
 				        const targetLayerGroup = currentDirection === 'go' ? goBusLayerGroup : backBusLayerGroup;
 				
-				        // --- 檢查舊車是否存在 ---
 				        if (busMarkers[busId]) {
 				            const marker = busMarkers[busId];
-				            const oldDirection = marker.options.direction; // 取得標記上紀錄的舊方向
+				            const oldDirection = marker.options.direction; 
 				
-				            // 如果「方向發生改變」 (例如從去程變返程)
 				            if (oldDirection !== currentDirection) {
-				                
-				                // [關鍵修正]: 根據「舊方向」找出「舊圖層」，強制移除
 				                if (oldDirection === 'go') {
 				                    goBusLayerGroup.removeLayer(marker);
 				                } else {
 				                    backBusLayerGroup.removeLayer(marker);
 				                }
-				                
-				                // 雙重保險：再呼叫一次 remove() 確保從地圖消失
 				                marker.remove(); 
-				                
-				                // 從記憶體刪除舊物件，強迫下方邏輯重建
 				                delete busMarkers[busId];
 				            }
 				        }
 				
-				        // --- 建立或更新車輛 ---
 				        if (busMarkers[busId]) {
-				            // 情境 A: 車子存在且方向正確 -> 平滑更新位置
 				            busMarkers[busId].setLatLng(latLng);
 				        } else {
-				            // 情境 B: 新車子，或是剛剛因為換方向被刪除的車子 -> 重新建立
-				            // 這樣可以確保 Icon 顏色、分組、Popup 資訊絕對是新的
-				            
 				            const icon = createBusIcon(currentDirection, isLrt);
 				            
 				            busMarkers[busId] = L.marker(latLng, { 
 				                icon: icon, 
-				                direction: currentDirection, // 寫入方向屬性以供下次比對
+				                direction: currentDirection,
 				                pane: 'busPane' 
 				            })
 				            .bindPopup(`<b>${translations[currentLang].mapBusPlate} ${busId}</b>`)
-				            .addTo(targetLayerGroup); // 加入正確的圖層群組
+				            .addTo(targetLayerGroup); 
 				        }
 				    });
 				
-				    // --- 清理幽靈車 ---
-				    // 移除已經不在 API 回傳清單中的車輛
 				    for (const busId in busMarkers) {
 				        if (!newBusIds.has(busId)) {
 				            const marker = busMarkers[busId];
-				            
-				            // 從所有可能的圖層中移除，寧可錯殺不可放過
 				            goBusLayerGroup.removeLayer(marker);
 				            backBusLayerGroup.removeLayer(marker);
 				            marker.remove();
-				            
 				            delete busMarkers[busId];
 				        }
 				    }
@@ -4639,7 +4584,6 @@
                             }
                         });
                         
-                        // FIX: LRT Buttons logic
                         lrtClockwiseBtn.addEventListener('click', () => {
                            navigateToTracker('3000', translations[currentLang].lrtClockwise, '籬仔內 → 凱旋公園');
                         });
@@ -4656,13 +4600,11 @@
                             const destinationState = event.state || { page: 'homePage' };
                             const destinationPageId = destinationState.page;
                             
-                            // [修復]: 當返回到路線頁面時，不只要切換 UI，還要重新載入路線資料
                             if (destinationPageId === 'busTrackerPage' && destinationState.routeId) {
                                 const routeId = destinationState.routeId.toString();
                                 const route = allRoutes.find(r => r.id.toString() === routeId);
                                 
                                 if (route) {
-                                    // pushState 設為 false，因為我們只是在瀏覽歷史中移動
                                     navigateToTracker(route.id, route.name, route.description, false);
                                 } else if (routeId === '3000' || routeId === '3001') {
                                     const name = routeId === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
@@ -4897,7 +4839,6 @@
                             if (document.visibilityState === 'visible') {
                                 updateNavHighlight();
                                 if (busTrackerPage.classList.contains('active')) {
-                                    // Delay update slightly to allow network to reconnect
                                     setTimeout(() => {
                                         if (navigator.onLine) {
                                             countdownTimer.update();
@@ -4909,20 +4850,18 @@
 
                     }
                     async function loadInitialData() {
-					    await initRouteSelection();
+                        // 在背景嘗試獲取資料 (Stale-While-Revalidate)，不會卡住接下來的渲染
+					    initRouteSelection();
 					    
-					    // 1. 解析路徑 (Pathname)
 					    const path = window.location.pathname;
 					    const pathParts = path.split('/').filter(p => p);
 					    
-					    // 2. 解析參數 (Query String - 為了相容舊網址)
 					    const urlParams = new URLSearchParams(window.location.search);
 					    
 					    let targetPage = 'homePage';
 					    let targetRoute = urlParams.get('route');
 					    let targetStation = urlParams.get('station');
 					
-					    // 路由規則判斷
 					    if (pathParts[0] === 'route' && pathParts[1]) {
 					        targetPage = 'busTrackerPage';
 					        targetRoute = pathParts[1];
@@ -4935,7 +4874,6 @@
 					    } else if (pathParts[0] === 'settings') {
 					        targetPage = 'settingsPage';
 					    } else {
-					        // 如果沒有匹配路徑，檢查舊參數
 					        const pageParam = urlParams.get('page');
 					        if (pageParam === 'tracker' || targetRoute) targetPage = 'busTrackerPage';
 					        else if (pageParam === 'dynamic') targetPage = 'routeSelectionPage';
