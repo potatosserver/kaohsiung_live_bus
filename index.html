@@ -2315,6 +2315,8 @@
                             throw error;
                         }
                     }
+
+                    const getMarqueeSyncDelay = (contentEl, wasOverflowing) => {
                         const currentCard = contentEl.closest('.bus-card');
                         if (!currentCard) return '0s';
                         let referenceEl = null;
