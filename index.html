@@ -2299,6 +2299,129 @@
                         return url.toString();
                     }
 
+                    // Centralized API Response Parser
+                    // Handles all format conversions from new OData API to internal data structures
+                    const ApiParser = {
+                        // Parse routes list - deduplicate by routeid, handle null gxcode
+                        parseRoutes(rawData) {
+                            if (!Array.isArray(rawData)) return [];
+                            
+                            // Deduplicate by routeid (API returns both directions)
+                            const routeMap = new Map();
+                            rawData.forEach(route => {
+                                const id = route.routeid;
+                                if (!routeMap.has(id) || (route.direction === 0 && routeMap.get(id).direction === 1)) {
+                                    routeMap.set(id, route);
+                                }
+                            });
+                            const uniqueRoutes = Array.from(routeMap.values());
+                            
+                            return uniqueRoutes
+                                .map(route => ({
+                                    id: route.routeid,
+                                    seq: route.gxcode ? parseInt(route.gxcode) : 999999,
+                                    name: currentLang === 'en' ? route.routename_en : route.routename_zh_tw,
+                                    description: currentLang === 'en' ? route.headsign_en_corrected : route.headsign_zh_tw_corrected,
+                                    opType: route.busroutetype,
+                                    direction: route.direction
+                                }))
+                                .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001')
+                                .sort((a, b) => a.seq - b.seq);
+                        },
+
+                        // Parse estimates - handle JSON string, null strings, direction mapping
+                        parseEstimates(rawData) {
+                            if (!Array.isArray(rawData)) return [];
+                            
+                            return rawData.map(e => {
+                                let parsedEstimates = [];
+                                if (e.estimates && typeof e.estimates === 'string') {
+                                    try { parsedEstimates = JSON.parse(e.estimates); } catch { parsedEstimates = []; }
+                                } else if (Array.isArray(e.estimates)) {
+                                    parsedEstimates = e.estimates;
+                                }
+                                parsedEstimates = parsedEstimates.filter(eta => eta && eta.etaTime !== null && eta.etaTime !== undefined);
+                                
+                                const estimatetime = e.estimatetime;
+                                return {
+                                    stopId: e.stopid,
+                                    stopName: e.stopname_zh_tw,
+                                    stopSequence: e.stopsequence,
+                                    etas: parsedEstimates,
+                                    comeTime: e.cometime,
+                                    nextBusTime: e.nextbustime,
+                                    direction: e.direction,
+                                    estimateTime: (estimatetime && estimatetime !== 'null' && estimatetime !== '') ? parseInt(estimatetime) : null
+                                };
+                            }).filter(e => e.stopId);
+                        },
+
+                        // Parse stops - filter invalid, map direction
+                        parseStops(rawData, currentDirection) {
+                            if (!Array.isArray(rawData)) return [];
+                            
+                            return rawData
+                                .filter(s => s.stopid && s.positionlat && s.positionlon)
+                                .filter(s => (s.direction === 0 && currentDirection === 1) || (s.direction === 1 && currentDirection === 2))
+                                .map(s => ({
+                                    goBack: s.direction === 0 ? 1 : 2,
+                                    orderNo: s.stopsequence,
+                                    node: {
+                                        id: s.stopid,
+                                        name: s.stopname_zh_tw,
+                                        lat: s.positionlat,
+                                        lon: s.positionlon
+                                    }
+                                }));
+                        },
+
+                        // Parse shapes - filter empty geometry, map direction
+                        parseShapes(rawData) {
+                            if (!Array.isArray(rawData)) return [];
+                            
+                            return rawData
+                                .filter(s => s.geometry && s.geometry.trim() !== '')
+                                .map(s => ({
+                                    direction: s.direction === 0 ? 1 : 2,
+                                    geometry: s.geometry
+                                }));
+                        },
+
+                        // Parse realtime buses - normalize fields, map direction
+                        parseRealtime(rawData) {
+                            if (!Array.isArray(rawData)) return [];
+                            
+                            return rawData
+                                .filter(b => b.platenumb && b.positionlat && b.positionlon)
+                                .map(b => ({
+                                    goBack: b.direction === 0 ? 1 : 2,
+                                    node: {
+                                        id: b.platenumb,
+                                        lat: parseFloat(b.positionlat),
+                                        lon: parseFloat(b.positionlon)
+                                    }
+                                }));
+                        },
+
+                        // Build complete route data structure
+                        buildRouteData(routeId, routeName, currentDirection, estimatesRes, stopsRes, shapesRes, realtimeRes) {
+                            const estimates = this.parseEstimates(estimatesRes.data || []);
+                            const stops = this.parseStops(stopsRes.data || [], currentDirection);
+                            const shapes = this.parseShapes(shapesRes.data || []);
+                            const buses = this.parseRealtime(realtimeRes.data || []);
+                            
+                            return {
+                                routeId: routeId,
+                                routeName: routeName,
+                                direction: currentDirection,
+                                estimates: estimates,
+                                stations: { edges: stops },
+                                shapes: { edges: shapes },
+                                buses: { edges: buses }
+                            };
+                        }
+                    };
+
                     // REST API fetch function
                     async function fetchAPI(endpoint, params = {}, customOptions = {}) {
                         try {
@@ -2974,28 +3097,9 @@
                             const data = await fetchAPI('routes', { '$top': '1000' }, { signal: controller.signal });
                             clearTimeout(timeoutId);
                             
-                            // Deduplicate routes by routeid (API returns both directions)
-                            const routeMap = new Map();
-                            data.data.forEach(route => {
-                                const id = route.routeid;
-                                if (!routeMap.has(id) || (route.direction === 0 && routeMap.get(id).direction === 1)) {
-                                    routeMap.set(id, route);
-                                }
-                            });
-                            const uniqueRoutes = Array.from(routeMap.values());
+                            // Use centralized parser
+                            allRoutes = ApiParser.parseRoutes(data.data);
                             
-                            allRoutes = uniqueRoutes
-                                .map(route => ({
-                                    id: route.routeid,
-                                    seq: route.gxcode ? parseInt(route.gxcode) : 999999, // fallback for null gxcode
-                                    name: currentLang === 'en' ? route.routename_en : route.routename_zh_tw,
-                                    description: currentLang === 'en' ? route.headsign_en_corrected : route.headsign_zh_tw_corrected,
-                                    opType: route.busroutetype,
-                                    direction: route.direction
-                                }))
-                                .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001') // Filter out LRT
-                                .sort((a, b) => a.seq - b.seq);
-                                
                             try {
                                 localStorage.setItem('cachedRoutes', JSON.stringify(allRoutes));
                                 localStorage.setItem('cachedRoutesLang', currentLang);
@@ -3464,73 +3568,9 @@
                                 })
                             ]);
 
-                            // Transform estimates data - handle new API format
-                            const rawEstimates = estimatesRes.data || [];
-                            const estimates = rawEstimates.map(e => {
-                                // Parse estimates JSON string if needed
-                                let parsedEstimates = [];
-                                if (e.estimates && typeof e.estimates === 'string') {
-                                    try { parsedEstimates = JSON.parse(e.estimates); } catch { parsedEstimates = []; }
-                                } else if (Array.isArray(e.estimates)) {
-                                    parsedEstimates = e.estimates;
-                                }
-                                // Filter out invalid estimates
-                                parsedEstimates = parsedEstimates.filter(eta => eta && eta.etaTime !== null && eta.etaTime !== undefined);
-                                
-                                const estimatetime = e.estimatetime;
-                                return {
-                                    stopId: e.stopid,
-                                    stopName: e.stopname_zh_tw,
-                                    stopSequence: e.stopsequence,
-                                    etas: parsedEstimates,
-                                    comeTime: e.cometime,
-                                    nextBusTime: e.nextbustime,
-                                    direction: e.direction,
-                                    estimateTime: (estimatetime && estimatetime !== 'null' && estimatetime !== '') ? parseInt(estimatetime) : null
-                                };
-                            }).filter(e => e.stopId); // Filter out invalid entries
-                            
-                            const stops = (stopsRes.data || []).filter(s => s.stopid && s.positionlat && s.positionlon);
-                            const shapes = (shapesRes.data || []).filter(s => s.geometry && s.geometry.trim() !== '');
-                            const realtime = (realtimeRes.data || []).filter(b => b.platenumb && b.positionlat && b.positionlon);
-
-                            // Build route data structure compatible with existing render functions
-                            currentRouteData = {
-                                routeId: routeId,
-                                routeName: allRoutes.find(r => r.id === routeId)?.name || routeId,
-                                direction: currentDirection,
-                                estimates: estimates,
-                                stations: {
-                                    edges: stops
-                                        .filter(s => (s.direction === 0 && currentDirection === 1) || (s.direction === 1 && currentDirection === 2))
-                                        .map(s => ({
-                                            goBack: s.direction === 0 ? 1 : 2,
-                                            orderNo: s.stopsequence,
-                                            node: {
-                                                id: s.stopid,
-                                                name: s.stopname_zh_tw,
-                                                lat: s.positionlat,
-                                                lon: s.positionlon
-                                            }
-                                        }))
-                                },
-                                shapes: {
-                                    edges: shapes.map(s => ({
-                                        direction: s.direction === 0 ? 1 : 2,
-                                        geometry: s.geometry
-                                    }))
-                                },
-                                buses: {
-                                    edges: realtime.map(b => ({
-                                        goBack: b.direction,
-                                        node: {
-                                            id: b.platenumb,
-                                            lat: parseFloat(b.positionlat),
-                                            lon: parseFloat(b.positionlon)
-                                        }
-                                    }))
-                                }
-                            };
+                            // Use centralized parser
+                            const routeName = allRoutes.find(r => r.id === routeId)?.name || routeId;
+                            currentRouteData = ApiParser.buildRouteData(routeId, routeName, currentDirection, estimatesRes, stopsRes, shapesRes, realtimeRes);
 
                             if (scrollToStationId && currentRouteData.stations) {
                                 const targetEdge = currentRouteData.stations.edges.find(edge => 
@@ -3838,7 +3878,8 @@
                         results.forEach((result, index) => {
                             if (result.status === 'fulfilled' && result.value.data) {
                                 const routeId = Array.from(routeIdsToFetch)[index];
-                                routeDataMap.set(Number(routeId), result.value.data);
+                                // Use centralized parser
+                                routeDataMap.set(Number(routeId), ApiParser.parseEstimates(result.value.data));
                             }
                         });
                         timeDisplayDivs.forEach(div => {
