@@ -2974,10 +2974,20 @@
                             const data = await fetchAPI('routes', { '$top': '1000' }, { signal: controller.signal });
                             clearTimeout(timeoutId);
                             
-                            allRoutes = data.data
+                            // Deduplicate routes by routeid (API returns both directions)
+                            const routeMap = new Map();
+                            data.data.forEach(route => {
+                                const id = route.routeid;
+                                if (!routeMap.has(id) || (route.direction === 0 && routeMap.get(id).direction === 1)) {
+                                    routeMap.set(id, route);
+                                }
+                            });
+                            const uniqueRoutes = Array.from(routeMap.values());
+                            
+                            allRoutes = uniqueRoutes
                                 .map(route => ({
                                     id: route.routeid,
-                                    seq: route.gxcode ? parseInt(route.gxcode) : 0,
+                                    seq: route.gxcode ? parseInt(route.gxcode) : 999999, // fallback for null gxcode
                                     name: currentLang === 'en' ? route.routename_en : route.routename_zh_tw,
                                     description: currentLang === 'en' ? route.headsign_en_corrected : route.headsign_zh_tw_corrected,
                                     opType: route.busroutetype,
@@ -3288,13 +3298,16 @@
                         // Build estimates map from flat array
                         const estimatesMap = new Map(
                             data.estimates
-                                .filter(e => e.stopSequence && e.direction === direction)  // filter by direction field
+                                .filter(e => e.stopSequence && ((e.direction === 0 && direction === 1) || (e.direction === 1 && direction === 2)))  // API direction 0=go, 1=back; frontend 1=go, 2=back
                                 .map(e => [e.stopId, e])
                         );
                         
                         const nearestStopForBus = new Map();
                         if (!isOffline) {
                             data.estimates.forEach(e => {
+                                // Map API direction (0=go, 1=back) to frontend direction (1=go, 2=back)
+                                const eDirection = e.direction === 0 ? 1 : 2;
+                                if (eDirection !== direction) return;
                                 if (e.etas && e.etas.length > 0) {
                                     const eta = e.etas[0];
                                     if (!nearestStopForBus.has(eta.busId) || eta.etaTime < nearestStopForBus.get(eta.busId).etaTime) {
@@ -3461,7 +3474,10 @@
                                 } else if (Array.isArray(e.estimates)) {
                                     parsedEstimates = e.estimates;
                                 }
+                                // Filter out invalid estimates
+                                parsedEstimates = parsedEstimates.filter(eta => eta && eta.etaTime !== null && eta.etaTime !== undefined);
                                 
+                                const estimatetime = e.estimatetime;
                                 return {
                                     stopId: e.stopid,
                                     stopName: e.stopname_zh_tw,
@@ -3470,13 +3486,13 @@
                                     comeTime: e.cometime,
                                     nextBusTime: e.nextbustime,
                                     direction: e.direction,
-                                    estimateTime: e.estimatetime !== 'null' ? parseInt(e.estimatetime) : null
+                                    estimateTime: (estimatetime && estimatetime !== 'null' && estimatetime !== '') ? parseInt(estimatetime) : null
                                 };
-                            });
+                            }).filter(e => e.stopId); // Filter out invalid entries
                             
-                            const stops = stopsRes.data || [];
-                            const shapes = shapesRes.data || [];
-                            const realtime = realtimeRes.data || [];
+                            const stops = (stopsRes.data || []).filter(s => s.stopid && s.positionlat && s.positionlon);
+                            const shapes = (shapesRes.data || []).filter(s => s.geometry && s.geometry.trim() !== '');
+                            const realtime = (realtimeRes.data || []).filter(b => b.platenumb && b.positionlat && b.positionlon);
 
                             // Build route data structure compatible with existing render functions
                             currentRouteData = {
@@ -3486,9 +3502,9 @@
                                 estimates: estimates,
                                 stations: {
                                     edges: stops
-                                        .filter(s => s.direction === currentDirection)
+                                        .filter(s => (s.direction === 0 && currentDirection === 1) || (s.direction === 1 && currentDirection === 2))
                                         .map(s => ({
-                                            goBack: s.direction,
+                                            goBack: s.direction === 0 ? 1 : 2,
                                             orderNo: s.stopsequence,
                                             node: {
                                                 id: s.stopid,
@@ -3500,7 +3516,7 @@
                                 },
                                 shapes: {
                                     edges: shapes.map(s => ({
-                                        direction: s.direction,
+                                        direction: s.direction === 0 ? 1 : 2,
                                         geometry: s.geometry
                                     }))
                                 },
@@ -3830,8 +3846,10 @@
                             const estimates = routeDataMap.get(Number(routeId));
                             let timeHtml = createTimePillHtml(null);
                             if (estimates) {
+                                // Map frontend direction (1=go, 2=back) to API direction (0=go, 1=back)
+                                const apiDirection = direction == '1' ? 0 : 1;
                                 const estimate = estimates.find(e => 
-                                    String(e.stopId) === String(stationId) && e.direction === Number(direction)
+                                    String(e.stopId) === String(stationId) && e.direction === apiDirection
                                 );
                                 timeHtml = createTimePillHtml(estimate);
                             }
@@ -4208,13 +4226,17 @@
                     
                     function parseWKTLineString(wkt) {
                         // Parse WKT LINESTRING(120.31990 22.73263,120.32037 22.73109,...)
+                        if (!wkt || typeof wkt !== 'string') return [];
                         const match = wkt.match(/LINESTRING\s*\(([^)]+)\)/i);
                         if (!match) return [];
                         
                         const coords = match[1].split(',').map(c => {
-                            const [lon, lat] = c.trim().split(/\s+/).map(parseFloat);
+                            const parts = c.trim().split(/\s+/);
+                            if (parts.length < 2) return null;
+                            const [lon, lat] = parts.map(parseFloat);
+                            if (isNaN(lat) || isNaN(lon)) return null;
                             return [lat, lon]; // Leaflet uses [lat, lon]
-                        });
+                        }).filter(c => c !== null);
                         return coords;
                     }
 
@@ -4240,17 +4262,27 @@
                         });
                     }
                     function updateBusMarkers(buses) {
-				    if(!map) return;
-				    
-				    const newBusIds = new Set(buses.map(bus => String(bus.node.id)));
-				    const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
-				    
-				    buses.forEach(bus => {
-				        const busId = String(bus.node.id); 
-				        const latLng =[bus.node.lat, bus.node.lon];
-				        
-				        const currentDirection = bus.goBack === 1 ? 'go' : 'back';
-				        const targetLayerGroup = currentDirection === 'go' ? goBusLayerGroup : backBusLayerGroup;
+                    				if(!map) return;
+				
+                    				// Handle new API format: buses have platenumb, positionlat, positionlon, direction
+                    				const normalizedBuses = buses.map(bus => ({
+                    					node: {
+                    						id: bus.platenumb,
+                    						lat: parseFloat(bus.positionlat),
+                    						lon: parseFloat(bus.positionlon)
+                    					},
+                    					goBack: bus.direction === 0 ? 1 : 2  // direction 0=go, 1=back
+                    				})).filter(b => b.node.id && !isNaN(b.node.lat) && !isNaN(b.node.lon));
+				
+                    				const newBusIds = new Set(normalizedBuses.map(bus => String(bus.node.id)));
+                    				const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
+				
+                    				normalizedBuses.forEach(bus => {
+                    					const busId = String(bus.node.id); 
+                    					const latLng =[bus.node.lat, bus.node.lon];
+					
+                    					const currentDirection = bus.goBack === 1 ? 'go' : 'back';
+                    					const targetLayerGroup = currentDirection === 'go' ? goBusLayerGroup : backBusLayerGroup;
 				
 				        if (busMarkers[busId]) {
 				            const marker = busMarkers[busId];
