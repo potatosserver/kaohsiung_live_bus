@@ -3212,6 +3212,19 @@
                                         pillBgColorClass = 'bg-blue-200 text-blue-800';
                                     }
                                 }
+                            } else if (estimate && estimate.estimateTime !== undefined && estimate.estimateTime !== null) {
+                                // Fallback to estimateTime field (from estimatetime)
+                                const etaTime = estimate.estimateTime;
+                                if (etaTime <= 1) {
+                                    timeDisplay = translations[currentLang].approaching;
+                                    pillBgColorClass = 'bg-red-200 text-red-800';
+                                } else if (etaTime <= 3) {
+                                    timeDisplay = translations[currentLang].arrivingSoon;
+                                    pillBgColorClass = 'bg-green-200 text-green-800';
+                                } else {
+                                    timeDisplay = `${etaTime} ${translations[currentLang].minutes}`;
+                                    pillBgColorClass = 'bg-blue-200 text-blue-800';
+                                }
                             } else if (estimate && estimate.comeTime) {
                                 timeDisplay = estimate.comeTime;
                             } else if (estimate && estimate.nextBusTime) {
@@ -3275,7 +3288,7 @@
                         // Build estimates map from flat array
                         const estimatesMap = new Map(
                             data.estimates
-                                .filter(e => e.stopSequence && direction === currentDirection)  // filter by current direction
+                                .filter(e => e.stopSequence && e.direction === direction)  // filter by direction field
                                 .map(e => [e.stopId, e])
                         );
                         
@@ -3438,8 +3451,29 @@
                                 })
                             ]);
 
-                            // Transform estimates data
-                            const estimates = estimatesRes.data || [];
+                            // Transform estimates data - handle new API format
+                            const rawEstimates = estimatesRes.data || [];
+                            const estimates = rawEstimates.map(e => {
+                                // Parse estimates JSON string if needed
+                                let parsedEstimates = [];
+                                if (e.estimates && typeof e.estimates === 'string') {
+                                    try { parsedEstimates = JSON.parse(e.estimates); } catch { parsedEstimates = []; }
+                                } else if (Array.isArray(e.estimates)) {
+                                    parsedEstimates = e.estimates;
+                                }
+                                
+                                return {
+                                    stopId: e.stopid,
+                                    stopName: e.stopname_zh_tw,
+                                    stopSequence: e.stopsequence,
+                                    etas: parsedEstimates,
+                                    comeTime: e.cometime,
+                                    nextBusTime: e.nextbustime,
+                                    direction: e.direction,
+                                    estimateTime: e.estimatetime !== 'null' ? parseInt(e.estimatetime) : null
+                                };
+                            });
+                            
                             const stops = stopsRes.data || [];
                             const shapes = shapesRes.data || [];
                             const realtime = realtimeRes.data || [];
@@ -3449,14 +3483,7 @@
                                 routeId: routeId,
                                 routeName: allRoutes.find(r => r.id === routeId)?.name || routeId,
                                 direction: currentDirection,
-                                estimates: estimates.map(e => ({
-                                    stopId: e.stopid,
-                                    stopName: e.stopname_zh_tw,
-                                    stopSequence: e.stopsequence,
-                                    etas: e.estimates ? JSON.parse(e.estimates) : [],
-                                    comeTime: e.cometime,
-                                    nextBusTime: e.nextbustime
-                                })),
+                                estimates: estimates,
                                 stations: {
                                     edges: stops
                                         .filter(s => s.direction === currentDirection)
@@ -4061,10 +4088,10 @@
                                     alerts.forEach(alert => {
                                         allMessages.push({
                                             type: 'alert',
-                                            routeId: routeId,
-                                            routeName: routeName,
-                                            id: alert.id,
-                                            title: alert.title || alert.description?.substring(0, 50) || '公告',
+                                            routeId: alert.routeid || routeId,
+                                            routeName: alert.routename_zh_tw || routeName,
+                                            id: alert.alertid,
+                                            title: alert.title || '公告',
                                             description: alert.description || ''
                                         });
                                     });
