@@ -2340,6 +2340,7 @@
                                 } else if (Array.isArray(e.estimates)) {
                                     parsedEstimates = e.estimates;
                                 }
+                                // Filter out invalid estimates but keep all fields from official API
                                 parsedEstimates = parsedEstimates.filter(eta => eta && eta.etaTime !== null && eta.etaTime !== undefined);
                                 
                                 const estimatetime = e.estimatetime;
@@ -2347,11 +2348,19 @@
                                     stopId: e.stopid,
                                     stopName: e.stopname_zh_tw,
                                     stopSequence: e.stopsequence,
-                                    etas: parsedEstimates,
+                                    etas: parsedEstimates,  // Contains: etaTime, busId, crowding, carType
                                     comeTime: e.cometime,
                                     nextBusTime: e.nextbustime,
-                                    direction: e.direction,
-                                    estimateTime: (estimatetime && estimatetime !== 'null' && estimatetime !== '') ? parseInt(estimatetime) : null
+                                    direction: e.direction,  // 0=go, 1=back
+                                    estimateTime: (estimatetime && estimatetime !== 'null' && estimatetime !== '') ? parseInt(estimatetime) : null,
+                                    // Official status fields
+                                    isSuspended: e.issuspended === 1,
+                                    isOperationDay: e.isoperationday === 1,
+                                    isConstruction: e.isconstruction === 1,
+                                    isEvent: e.isevent === 1,
+                                    clogtype: e.clogtype,
+                                    srcUpdateTime: e.srcupdatetime,
+                                    updateTime: e.updatetime
                                 };
                             }).filter(e => e.stopId);
                         },
@@ -2369,9 +2378,15 @@
                                     node: {
                                         id: s.stopid,
                                         name: s.stopname_zh_tw,
-                                        lat: s.positionlat,
-                                        lon: s.positionlon
-                                    }
+                                        lat: parseFloat(s.positionlat),
+                                        lon: parseFloat(s.positionlon)
+                                    },
+                                    // Additional fields from official API
+                                    stationId: s.stationid,
+                                    stopNameEn: s.stopname_en,
+                                    isLowFloor: s.islowfloor === 1,
+                                    isBike: s.isbike === 1,
+                                    isMRT: s.ismrt === 1
                                 }));
                         },
 
@@ -2383,7 +2398,8 @@
                                 .filter(s => s.geometry && s.geometry.trim() !== '')
                                 .map(s => ({
                                     direction: s.direction === 0 ? 1 : 2,
-                                    geometry: s.geometry
+                                    geometry: s.geometry,
+                                    routeid: s.routeid
                                 }));
                         },
 
@@ -2399,7 +2415,14 @@
                                         id: b.platenumb,
                                         lat: parseFloat(b.positionlat),
                                         lon: parseFloat(b.positionlon)
-                                    }
+                                    },
+                                    // Additional fields from official API
+                                    carType: b.cartype,
+                                    crowding: b.crowding,
+                                    direction: b.direction,
+                                    stopId: b.stopid,
+                                    stopSequence: b.stopsequence,
+                                    etaTime: b.etatime
                                 }));
                         },
 
@@ -3311,10 +3334,19 @@
                         } else {
                             timeDisplay = translations[currentLang].lastBusDeparted;
                             pillBgColorClass = 'bg-slate-200';
-                            if (estimate && estimate.etas && estimate.etas.length > 0) {
+                            
+                            // Check if suspended/non-operation
+                            if (estimate && (estimate.isSuspended || !estimate.isOperationDay)) {
+                                timeDisplay = translations[currentLang].noTrans || '停駛';
+                                pillBgColorClass = 'bg-red-200 text-red-800';
+                            } else if (estimate && estimate.isConstruction) {
+                                timeDisplay = translations[currentLang].construction || '施工中';
+                                pillBgColorClass = 'bg-orange-200 text-orange-800';
+                            } else if (estimate && estimate.etas && estimate.etas.length > 0) {
+                                // Has real-time estimates (sub-buses)
                                 const closestEta = estimate.etas[0];
                                 busId = closestEta.busId;
-                                if (closestEta.etaTime !== null) {
+                                if (closestEta.etaTime !== null && closestEta.etaTime !== undefined) {
                                     if (closestEta.etaTime <= 1) {
                                         timeDisplay = translations[currentLang].approaching;
                                         pillBgColorClass = 'bg-red-200 text-red-800';
@@ -3340,9 +3372,16 @@
                                     pillBgColorClass = 'bg-blue-200 text-blue-800';
                                 }
                             } else if (estimate && estimate.comeTime) {
+                                // Scheduled time (comeTime)
                                 timeDisplay = estimate.comeTime;
+                                pillBgColorClass = 'bg-slate-200 text-slate-600';
                             } else if (estimate && estimate.nextBusTime) {
+                                // Next bus scheduled time
                                 timeDisplay = estimate.nextBusTime;
+                                pillBgColorClass = 'bg-slate-200 text-slate-600';
+                            } else if (estimate && estimate.isEvent) {
+                                timeDisplay = '活動影響';
+                                pillBgColorClass = 'bg-purple-200 text-purple-800';
                             }
                         }
                         return { timeDisplay, pillBgColorClass, busId };
@@ -4303,17 +4342,20 @@
                         });
                     }
                     function updateBusMarkers(buses) {
-                    				if(!map) return;
-				
-                    				// Handle new API format: buses have platenumb, positionlat, positionlon, direction
-                    				const normalizedBuses = buses.map(bus => ({
-                    					node: {
-                    						id: bus.platenumb,
-                    						lat: parseFloat(bus.positionlat),
-                    						lon: parseFloat(bus.positionlon)
-                    					},
-                    					goBack: bus.direction === 0 ? 1 : 2  // direction 0=go, 1=back
-                    				})).filter(b => b.node.id && !isNaN(b.node.lat) && !isNaN(b.node.lon));
+                    						if(!map) return;
+						
+                    						// Handle new API format: buses have platenumb, positionlat, positionlon, direction, carType, crowding, etaTime
+                    						const normalizedBuses = buses.map(bus => ({
+                    							node: {
+                    								id: bus.platenumb,
+                    								lat: parseFloat(bus.positionlat),
+                    								lon: parseFloat(bus.positionlon)
+                    							},
+                    							goBack: bus.direction === 0 ? 1 : 2,  // direction 0=go, 1=back
+                    							carType: bus.cartype,
+                    							crowding: bus.crowding,
+                    							etaTime: bus.etatime
+                    						})).filter(b => b.node.id && !isNaN(b.node.lat) && !isNaN(b.node.lon));
 				
                     				const newBusIds = new Set(normalizedBuses.map(bus => String(bus.node.id)));
                     				const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
