@@ -2605,22 +2605,6 @@
                         }
                     }
                     
-                    async function fetchAPI(query, variables, customOptions = {}) {
-                        try {
-                            const response = await fetch(API_URL, {
-                                method: 'POST',
-                                headers: HEADERS,
-                                body: JSON.stringify({ query, variables }),
-                                ...customOptions
-                            });
-                            if (!response.ok) throw new Error(`${translations[currentLang].errorTitle} HTTP error! status: ${response.status}`);
-                            return await response.json();
-                        } catch (error) {
-                            console.error("API Fetch Error:", error);
-                            throw error;
-                        }
-                    }
-                    
                     function showToast(message, type = 'info', duration = 3000) {
                         const toast = document.createElement('div');
                         let bgColor, textColor, icon;
