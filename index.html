@@ -2428,22 +2428,54 @@
 
                         // Build complete route data structure
                         buildRouteData(routeId, routeName, currentDirection, estimatesRes, stopsRes, shapesRes, realtimeRes) {
-                            const estimates = this.parseEstimates(estimatesRes.data || []);
-                            const stops = this.parseStops(stopsRes.data || [], currentDirection);
+                            const estimates = this.parseEstimates(estimatesRes.data || []);  // All directions
+                            const stops = this.parseStopsAll(stopsRes.data || []);  // All directions
                             const shapes = this.parseShapes(shapesRes.data || []);
                             const buses = this.parseRealtime(realtimeRes.data || []);
+                            
+                            // Filter for current direction for backward compatibility
+                            const currentEstimates = estimates.filter(e => 
+                                (e.direction === 0 && currentDirection === 1) || (e.direction === 1 && currentDirection === 2)
+                            );
+                            const currentStops = stops.filter(s => s.goBack === currentDirection);
                             
                             return {
                                 routeId: routeId,
                                 routeName: routeName,
                                 direction: currentDirection,
-                                estimates: estimates,
-                                stations: { edges: stops },
+                                estimates: currentEstimates,
+                                allEstimates: estimates,  // Keep all for direction switching
+                                stations: { edges: currentStops },
+                                allStations: { edges: stops },  // Keep all for direction switching
                                 shapes: { edges: shapes },
                                 buses: { edges: buses }
                             };
-                        }
-                    };
+                        },
+                        
+                        // Parse stops - all directions (no filtering)
+                        parseStopsAll(rawData) {
+                            if (!Array.isArray(rawData)) return [];
+                            
+                            return rawData
+                                .filter(s => s.stopid && s.positionlat && s.positionlon)
+                                .map(s => ({
+                                    goBack: s.direction === 0 ? 1 : 2,
+                                    orderNo: s.stopsequence,
+                                    node: {
+                                        id: s.stopid,
+                                        name: s.stopname_zh_tw,
+                                        lat: parseFloat(s.positionlat),
+                                        lon: parseFloat(s.positionlon)
+                                    },
+                                    // Additional fields from official API
+                                    stationId: s.stationid,
+                                    stopNameEn: s.stopname_en,
+                                    isLowFloor: s.islowfloor === 1,
+                                    isBike: s.isbike === 1,
+                                    isMRT: s.ismrt === 1,
+                                    direction: s.direction
+                                }));
+                        },
 
                     // REST API fetch function
                     async function fetchAPI(endpoint, params = {}, customOptions = {}) {
@@ -3241,36 +3273,81 @@
                     }
 
                     function handleDirectionToggle(newDirection) {
-                        if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
-                            return;
-                        }
-                        isAnimatingDirection = true;
-                        const outgoingList = (currentDirection === 1) ? stationListGo : stationListBack;
-                        const incomingList = (newDirection === 1) ? stationListGo : stationListBack;
-                        const slideOutClass = newDirection > currentDirection ? 'slide-out-left' : 'slide-out-right';
-                        const slideInClass = newDirection > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
+                                            if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
+                                                return;
+                                            }
+                                            isAnimatingDirection = true;
+                                            const outgoingList = (currentDirection === 1) ? stationListGo : stationListBack;
+                                            const incomingList = (newDirection === 1) ? stationListGo : stationListBack;
+                                            const slideOutClass = newDirection > currentDirection ? 'slide-out-left' : 'slide-out-right';
+                                            const slideInClass = newDirection > currentDirection ? 'slide-in-from-right' : 'slide-in-from-left';
                         
-                        incomingList.classList.remove('hidden');
-                        outgoingList.classList.add(slideOutClass);
-                        incomingList.classList.add(slideInClass);
+                                            incomingList.classList.remove('hidden');
+                                            outgoingList.classList.add(slideOutClass);
+                                            incomingList.classList.add(slideInClass);
                         
-                        currentDirection = newDirection;
-                        updateDirectionButtons();
+                                            currentDirection = newDirection;
+                                            updateDirectionButtons();
 
-                        setTimeout(() => {
-                            outgoingList.classList.add('hidden');
-                            outgoingList.classList.remove(slideOutClass);
-                            incomingList.classList.remove(slideInClass);
+                                            // Re-render the incoming direction's stations with correct estimates
+                                            if (currentRouteData.allStations) {
+                                                const allStops = currentRouteData.allStations.edges;
+                                                const allEstimates = currentRouteData.allEstimates || [];
+                                                const filteredStations = allStops
+                                                    .filter(edge => edge.goBack === newDirection)
+                                                    .sort((a, b) => a.orderNo - b.orderNo);
                             
-                            const stationNameElements = incomingList.querySelectorAll('.station-name');
-                            const timeElements = incomingList.querySelectorAll('.time-item span[data-original-text]');
+                                                // Build estimates map for new direction
+                                                const estimatesMap = new Map(
+                                                    allEstimates
+                                                        .filter(e => e.stopSequence && ((e.direction === 0 && newDirection === 1) || (e.direction === 1 && newDirection === 2)))
+                                                        .map(e => [e.stopId, e])
+                                                );
                             
-                            stationNameElements.forEach(el => scheduleMarqueeCheck(el));
-                            timeElements.forEach(el => scheduleMarqueeCheck(el));
+                                                // Render stations for the new direction
+                                                const targetContent = newDirection === 1 ? stationListGoContent : stationListBackContent;
+                                                targetContent.innerHTML = '';
+                                                filteredStations.forEach(stationData => {
+                                                    const station = stationData.node;
+                                                    const estimate = estimatesMap.get(station.id);
+                                                    const isCurrentlyFavorite = isFavorite(currentRouteId, station.id, newDirection);
+                                                    const cardHtml = createCardHtml({ ...stationData, estimate }, newDirection, isCurrentlyFavorite);
+                                                    targetContent.insertAdjacentHTML('beforeend', `<div class="station-item bus-card cursor-pointer" data-station-id="${station.id}">${cardHtml}</div>`);
+                                                    const card = targetContent.lastElementChild;
+                                
+                                                    card.addEventListener('click', (e) => {
+                                                        if(station.lat && station.lon && map) map.flyTo([station.lat, station.lon], 17);
+                                                    });
+                                                    card.addEventListener('contextmenu', (e) => {
+                                                        e.preventDefault();
+                                                        const stationContextData = { routeId: parseInt(currentRouteId), routeName: currentRouteName, stationId: station.id, stationName: station.name, direction: newDirection, destination: newDirection === 1 ? currentRouteData.destination : currentRouteData.departure };
+                                                        showFavoriteButton(stationContextData, e.clientX, e.clientY);
+                                                    });
+                                                });
+                            
+                                                // Update time pills for new direction
+                                                setTimeout(() => {
+                                                    renderOrUpdateEstimateTimes({ 
+                                                        estimates: allEstimates, 
+                                                        stations: { edges: filteredStations } 
+                                                    }, newDirection, targetContent);
+                                                }, 100);
+                                            }
 
-                            isAnimatingDirection = false;
-                        }, 310);
-                    }
+                                            setTimeout(() => {
+                                                outgoingList.classList.add('hidden');
+                                                outgoingList.classList.remove(slideOutClass);
+                                                incomingList.classList.remove(slideInClass);
+                            
+                                                const stationNameElements = incomingList.querySelectorAll('.station-name');
+                                                const timeElements = incomingList.querySelectorAll('.time-item span[data-original-text]');
+                            
+                                                stationNameElements.forEach(el => scheduleMarqueeCheck(el));
+                                                timeElements.forEach(el => scheduleMarqueeCheck(el));
+                            
+                                                isAnimatingDirection = false;
+                                            }, 310);
+                                        }
                     function updateDirectionButtons() {
                         if (!currentRouteData) {
                             if (goDirectionButton && goDirectionButton.parentElement) {
@@ -3592,9 +3669,11 @@
 
                         try {
                             // Fetch all required data in parallel
+                            // Note: API returns estimates and stops split by direction inconsistently
+                            // Fetch ALL directions for estimates and stops, let parser filter
                             const [estimatesRes, stopsRes, shapesRes, realtimeRes] = await Promise.all([
                                 fetchAPI('routeDetails', { 
-                                    '$filter': `routeid eq '${routeId}' and direction eq ${currentDirection}`
+                                    '$filter': `routeid eq '${routeId}'`
                                 }),
                                 fetchAPI('stops', { 
                                     '$filter': `routeid eq '${routeId}'`
