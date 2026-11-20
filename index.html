@@ -12,8 +12,8 @@
 	<title id="pageTitle">高雄市公車動態查詢器 : 一個簡單、美觀、低流量的高雄公車查詢器</title>
 
     <!-- API 預先連線 (加速低頻寬環境的載入) -->
-    <link rel="preconnect" href="https://ibus.tbkc.gov.tw" crossorigin>
-    <link rel="dns-prefetch" href="https://ibus.tbkc.gov.tw">
+    <link rel="preconnect" href="https://api.potatosserver.dpdns.org" crossorigin>
+    <link rel="dns-prefetch" href="https://api.potatosserver.dpdns.org">
     <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
 
     <!-- Leaflet.js (for Map) -->
@@ -1826,9 +1826,8 @@
             }
             async function initializeApp() {
                 try { 
-                    const API_URL = 'https://ibus.tbkc.gov.tw/ibus/graphql';
+                    const API_BASE = 'https://api.potatosserver.dpdns.org/api';
                     const HEADERS = {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     };
                     const body = document.body;
@@ -2279,49 +2278,43 @@
                     translations.en.orangeLine = 'Orange';
                     translations.en.yellowLine = 'Yellow';
                     translations.en.greenLine = 'Green';
-                    const GQL = {
-                        QUERY_SIDE_ROUTES: `query QUERY_SIDE_ROUTES($lang: String!) {
-                            routes(lang: $lang) {
-                                edges {
-                                    node {
-                                        id, opType, id, seq, name, description
-                                    }
-                                }
-                            }
-                        }`,
-                        QUERY_ROUTE_DETAILS: `
-                            fragment estimateTimesFragment on EstimateTimeConnection { edges { node { id, goBack, comeTime, etas { busId, etaTime } } } }
-                            fragment mapMarkerStationsFragment on RouteStationConnection { edges { goBack, orderNo, node { id, name, lat, lon } } }
-                            fragment busesFragment on RouteBusConnection { edges { goBack, node { id, lat, lon } } }
-                            query QUERY_ROUTE_FOR_MAP_CONTENT($routeId: Int!, $lang: String!) {
-                                route(xno: $routeId, lang: $lang) {
-                                    opType, departure, destination
-                                    routePoint { go, back }
-                                    estimateTimes { ...estimateTimesFragment }
-                                    stations { ...mapMarkerStationsFragment }
-                                    buses { ...busesFragment }
-                                }
-                            }
-                        `,
-                        QUERY_CLOGS: `query QUERY_CLOGS($routeId: Int!) {
-                            clogMessages(xno: $routeId) {
-                                edges {
-                                    node {
-                                        id, title, description
-                                    }
-                                }
-                            }
-                            abnormalMessages(xno: $routeId) {
-                                edges {
-                                    node {
-                                        id, type, title, description
-                                    }
-                                }
-                            }
-                        }`
+                    // API endpoint mapping - REST/OData endpoints
+                    const API_ENDPOINTS = {
+                        routes: '/routes',
+                        routeDetails: '/estimated_arrivals',
+                        stops: '/stops',
+                        shapes: '/shapes',
+                        realtime: '/realtime',
+                        clogs: '/alerts'
                     };
 
-                    const getMarqueeSyncDelay = (contentEl, wasOverflowing) => {
+                    // Build URL with OData query parameters
+                    function buildApiUrl(endpoint, params = {}) {
+                        const url = new URL(API_BASE + API_ENDPOINTS[endpoint]);
+                        Object.entries(params).forEach(([key, value]) => {
+                            if (value !== undefined && value !== null) {
+                                url.searchParams.append(key, value);
+                            }
+                        });
+                        return url.toString();
+                    }
+
+                    // REST API fetch function
+                    async function fetchAPI(endpoint, params = {}, customOptions = {}) {
+                        try {
+                            const url = buildApiUrl(endpoint, params);
+                            const response = await fetch(url, {
+                                method: 'GET',
+                                headers: HEADERS,
+                                ...customOptions
+                            });
+                            if (!response.ok) throw new Error(`${translations[currentLang].errorTitle} HTTP error! status: ${response.status}`);
+                            return await response.json();
+                        } catch (error) {
+                            console.error("API Fetch Error:", error);
+                            throw error;
+                        }
+                    }
                         const currentCard = contentEl.closest('.bus-card');
                         if (!currentCard) return '0s';
                         let referenceEl = null;
@@ -2666,13 +2659,13 @@
                         }, duration);
                     }
 
-                    async function fetchWithRetry(query, variables, retries = 1, delay = 2000) {
+                    async function fetchWithRetry(endpoint, params = {}, retries = 1, delay = 2000) {
                         try {
-                            return await fetchAPI(query, variables);
+                            return await fetchAPI(endpoint, params);
                         } catch (error) {
                             if (retries > 0 && navigator.onLine) {
                                 await new Promise(resolve => setTimeout(resolve, delay));
-                                return await fetchWithRetry(query, variables, retries - 1, delay);
+                                return await fetchWithRetry(endpoint, params, retries - 1, delay);
                             } else {
                                 throw error;
                             }
@@ -2992,11 +2985,18 @@
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 秒超時
                             
-                            const data = await fetchAPI(GQL.QUERY_SIDE_ROUTES, { lang: currentLang }, { signal: controller.signal });
+                            const data = await fetchAPI('routes', {}, { signal: controller.signal });
                             clearTimeout(timeoutId);
                             
-                            allRoutes = data.data.routes.edges
-                                .map(edge => edge.node)
+                            allRoutes = data.data
+                                .map(route => ({
+                                    id: route.routeid,
+                                    seq: route.gxcode ? parseInt(route.gxcode) : 0,
+                                    name: currentLang === 'en' ? route.routename_en : route.routename_zh_tw,
+                                    description: currentLang === 'en' ? route.headsign_en_corrected : route.headsign_zh_tw_corrected,
+                                    opType: route.busroutetype,
+                                    direction: route.direction
+                                }))
                                 .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001') // Filter out LRT
                                 .sort((a, b) => a.seq - b.seq);
                                 
@@ -3228,6 +3228,8 @@
                                 }
                             } else if (estimate && estimate.comeTime) {
                                 timeDisplay = estimate.comeTime;
+                            } else if (estimate && estimate.nextBusTime) {
+                                timeDisplay = estimate.nextBusTime;
                             }
                         }
                         return { timeDisplay, pillBgColorClass, busId };
@@ -3270,7 +3272,7 @@
                     }
                     
                     function renderOrUpdateEstimateTimes(data, direction, targetElement, isOffline = false) {
-                        if (!data || !data.estimateTimes || !data.stations) {
+                        if (!data || !data.estimates || !data.stations) {
                             targetElement.innerHTML = `<p class="text-center py-4 text-slate-500 text-sm">${translations[currentLang].noBusDataForDirection}</p>`;
                             return;
                         }
@@ -3284,15 +3286,20 @@
                             return;
                         }
                         
-                        const estimatesMap = new Map(data.estimateTimes.edges.filter(e => e.node.goBack === direction).map(e =>[e.node.id, e.node]));
+                        // Build estimates map from flat array
+                        const estimatesMap = new Map(
+                            data.estimates
+                                .filter(e => e.stopSequence && direction === currentDirection)  // filter by current direction
+                                .map(e => [e.stopId, e])
+                        );
                         
                         const nearestStopForBus = new Map();
                         if (!isOffline) {
-                            data.estimateTimes.edges.forEach(e => {
-                                if (e.node.goBack === direction && e.node.etas && e.node.etas.length > 0) {
-                                    const eta = e.node.etas[0];
+                            data.estimates.forEach(e => {
+                                if (e.etas && e.etas.length > 0) {
+                                    const eta = e.etas[0];
                                     if (!nearestStopForBus.has(eta.busId) || eta.etaTime < nearestStopForBus.get(eta.busId).etaTime) {
-                                        nearestStopForBus.set(eta.busId, { stationId: e.node.id, etaTime: eta.etaTime, busId: eta.busId });
+                                        nearestStopForBus.set(eta.busId, { stationId: e.stopId, etaTime: eta.etaTime, busId: eta.busId });
                                     }
                                 }
                             });
@@ -3429,11 +3436,73 @@
                         updateCountdownButton.disabled = true;
 
                         try {
-                            const result = await fetchWithRetry(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang });
-                            
-                            if (!result.data.route) throw new Error(translations[currentLang].routeInfoNotFound);
-                            currentRouteData = result.data.route;
-                            
+                            // Fetch all required data in parallel
+                            const [estimatesRes, stopsRes, shapesRes, realtimeRes] = await Promise.all([
+                                fetchAPI('routeDetails', { 
+                                    '$filter': `routeid eq '${routeId}' and direction eq ${currentDirection}`
+                                }),
+                                fetchAPI('stops', { 
+                                    '$filter': `routeid eq '${routeId}'`
+                                }),
+                                fetchAPI('shapes', { 
+                                    '$filter': `routeid eq '${routeId}'`
+                                }),
+                                fetchAPI('realtime', { 
+                                    '$filter': `routeid eq '${routeId}'`
+                                })
+                            ]);
+
+                            // Transform estimates data
+                            const estimates = estimatesRes.data || [];
+                            const stops = stopsRes.data || [];
+                            const shapes = shapesRes.data || [];
+                            const realtime = realtimeRes.data || [];
+
+                            // Build route data structure compatible with existing render functions
+                            currentRouteData = {
+                                routeId: routeId,
+                                routeName: allRoutes.find(r => r.id === routeId)?.name || routeId,
+                                direction: currentDirection,
+                                estimates: estimates.map(e => ({
+                                    stopId: e.stopid,
+                                    stopName: e.stopname_zh_tw,
+                                    stopSequence: e.stopsequence,
+                                    etas: e.estimates ? JSON.parse(e.estimates) : [],
+                                    comeTime: e.cometime,
+                                    nextBusTime: e.nextbustime
+                                })),
+                                stations: {
+                                    edges: stops
+                                        .filter(s => s.direction === currentDirection)
+                                        .map(s => ({
+                                            goBack: s.direction,
+                                            orderNo: s.stopsequence,
+                                            node: {
+                                                id: s.stopid,
+                                                name: s.stopname_zh_tw,
+                                                lat: s.positionlat,
+                                                lon: s.positionlon
+                                            }
+                                        }))
+                                },
+                                shapes: {
+                                    edges: shapes.map(s => ({
+                                        direction: s.direction,
+                                        geometry: s.geometry
+                                    }))
+                                },
+                                buses: {
+                                    edges: realtime.map(b => ({
+                                        goBack: b.direction,
+                                        node: {
+                                            id: b.platenumb,
+                                            lat: parseFloat(b.positionlat),
+                                            lon: parseFloat(b.positionlon)
+                                        }
+                                    }))
+                                }
+                            };
+
                             if (scrollToStationId && currentRouteData.stations) {
                                 const targetEdge = currentRouteData.stations.edges.find(edge => 
                                     String(edge.node.id) === String(scrollToStationId)
@@ -3728,25 +3797,29 @@
                             routeIdsToFetch.add(div.dataset.routeId);
                         });
                         if (routeIdsToFetch.size === 0) return;
+                        
+                        // Fetch estimates for all favorite routes in parallel
                         const promises = Array.from(routeIdsToFetch).map(routeId =>
-                            fetchAPI(GQL.QUERY_ROUTE_DETAILS, { routeId: parseInt(routeId), lang: currentLang })
+                            fetchAPI('routeDetails', { 
+                                '$filter': `routeid eq '${routeId}'`
+                            })
                         );
                         const results = await Promise.allSettled(promises);
                         const routeDataMap = new Map();
                         results.forEach((result, index) => {
-                            if (result.status === 'fulfilled' && result.value.data.route) {
+                            if (result.status === 'fulfilled' && result.value.data) {
                                 const routeId = Array.from(routeIdsToFetch)[index];
-                                routeDataMap.set(Number(routeId), result.value.data.route);
+                                routeDataMap.set(Number(routeId), result.value.data);
                             }
                         });
                         timeDisplayDivs.forEach(div => {
                             const { routeId, stationId, direction } = div.dataset;
-                            const routeData = routeDataMap.get(Number(routeId));
+                            const estimates = routeDataMap.get(Number(routeId));
                             let timeHtml = createTimePillHtml(null);
-                            if (routeData) {
-                                const estimate = routeData.estimateTimes.edges.find(edge =>
-                                    edge.node.id === stationId && edge.node.goBack === Number(direction)
-                                )?.node;
+                            if (estimates) {
+                                const estimate = estimates.find(e => 
+                                    String(e.stopId) === String(stationId) && e.direction === Number(direction)
+                                );
                                 timeHtml = createTimePillHtml(estimate);
                             }
                             div.innerHTML = timeHtml;
@@ -3979,12 +4052,14 @@
                         let allMessages =[];
 
                         try {
-                            // 加入 Timeout (透過我們前面改寫的 fetchAPI 選項)
+                            // 加入 Timeout 
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8秒超時
 
                             const promises = uniqueRouteIds.map(routeId =>
-                                fetchAPI(GQL.QUERY_CLOGS, { routeId: parseInt(routeId) }, { signal: controller.signal })
+                                fetchAPI('clogs', { 
+                                    '$filter': `routeid eq '${routeId}'`
+                                }, { signal: controller.signal })
                             );
                             const results = await Promise.allSettled(promises);
                             clearTimeout(timeoutId);
@@ -3995,28 +4070,16 @@
                                     const favRoute = favoriteData.favorites.find(fav => fav.routeId === routeId);
                                     const routeName = favRoute ? favRoute.routeName : `Route ${routeId}`;
                                     
-                                    const clogMessages = result.value.data.clogMessages?.edges ||[];
-                                    const abnormalMessages = result.value.data.abnormalMessages?.edges ||[];
-
-                                    clogMessages.forEach(edge => {
+                                    const alerts = result.value.data || [];
+                                    
+                                    alerts.forEach(alert => {
                                         allMessages.push({
-                                            type: 'clog',
+                                            type: 'alert',
                                             routeId: routeId,
                                             routeName: routeName,
-                                            id: edge.node.id,
-                                            title: edge.node.title,
-                                            description: edge.node.description
-                                        });
-                                    });
-
-                                    abnormalMessages.forEach(edge => {
-                                        allMessages.push({
-                                            type: 'abnormal',
-                                            routeId: routeId,
-                                            routeName: routeName,
-                                            id: edge.node.id,
-                                            title: edge.node.title,
-                                            description: edge.node.description
+                                            id: alert.id,
+                                            title: alert.title || alert.description?.substring(0, 50) || '公告',
+                                            description: alert.description || ''
                                         });
                                     });
                                 } else if (result.status === 'rejected') {
@@ -4089,14 +4152,57 @@
                         goStops.sort((a, b) => a.orderNo - b.orderNo);
                         backStops.sort((a, b) => a.orderNo - b.orderNo);
 
-                        drawRouteOnMap(routeData.routePoint.go, goStops, 'go');
-                        drawRouteOnMap(routeData.routePoint.back, backStops, 'back');
+                        // Draw route from shapes (WKT LINESTRING)
+                        const goShape = routeData.shapes.edges.find(s => s.direction === 1);
+                        const backShape = routeData.shapes.edges.find(s => s.direction === 2);
+                        
+                        if (goShape) drawRouteOnMapFromWKT(goShape.geometry, goStops, 'go');
+                        if (backShape) drawRouteOnMapFromWKT(backShape.geometry, backStops, 'back');
                         updateBusMarkers(routeData.buses.edges);
                         
                         if (isFirstMapLoad) {
                             if(goStops.length > 0) map.setView([goStops[0].node.lat, goStops[0].node.lon], 16);
+                            else if (backStops.length > 0) map.setView([backStops[0].node.lat, backStops[0].node.lon], 16);
                             isFirstMapLoad = false;
                         }
+                    }
+                    
+                    function drawRouteOnMapFromWKT(wktLinestring, stops, direction) {
+                        if (!wktLinestring || stops.length === 0 || !map) return;
+                        const layerGroup = direction === 'go' ? goLayerGroup : backLayerGroup;
+                        
+                        // Parse WKT LINESTRING
+                        const decodedPath = parseWKTLineString(wktLinestring);
+                        if (!decodedPath || decodedPath.length === 0) return;
+                        
+                        L.polyline(decodedPath, { 
+                            color: (direction === 'go' ? 'var(--go-color)' : 'var(--back-color)'), 
+                            weight: 6, opacity: 0.7, pane: 'routePane' 
+                        }).addTo(layerGroup);
+
+                        stops.forEach(stop => {
+                            const originalLatLng = L.latLng(stop.node.lat, stop.node.lon);
+                            const projectedLatLng = findClosestPointOnPolyline(originalLatLng, decodedPath);
+                            
+                            const icon = createStationIcon(stop.orderNo, direction);
+                            const marker = L.marker(projectedLatLng, { icon: icon, pane: 'stationPane' }).addTo(layerGroup);
+                            
+                            // Find estimate for this stop
+                            const estimate = currentRouteData.estimates?.find(e => e.stopId === stop.node.id);
+                            marker.bindPopup(createPopupContent(stop, estimate ? estimate.etas : []));
+                        });
+                    }
+                    
+                    function parseWKTLineString(wkt) {
+                        // Parse WKT LINESTRING(120.31990 22.73263,120.32037 22.73109,...)
+                        const match = wkt.match(/LINESTRING\s*\(([^)]+)\)/i);
+                        if (!match) return [];
+                        
+                        const coords = match[1].split(',').map(c => {
+                            const [lon, lat] = c.trim().split(/\s+/).map(parseFloat);
+                            return [lat, lon]; // Leaflet uses [lat, lon]
+                        });
+                        return coords;
                     }
 
                     function drawRouteOnMap(encodedPolyline, stops, direction) {
@@ -4116,8 +4222,8 @@
                             const icon = createStationIcon(stop.orderNo, direction);
                             const marker = L.marker(projectedLatLng, { icon: icon, pane: 'stationPane' }).addTo(layerGroup);
                             
-                            const estimate = currentRouteData.estimateTimes.edges.find(e => e.node.id === stop.node.id && e.node.goBack === stop.goBack);
-                            marker.bindPopup(createPopupContent(stop, estimate ? estimate.node.etas :[]));
+                            const estimate = currentRouteData.estimates?.find(e => e.stopId === stop.node.id);
+                            marker.bindPopup(createPopupContent(stop, estimate ? estimate.etas : []));
                         });
                     }
                     function updateBusMarkers(buses) {
