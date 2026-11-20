@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  kaohsiung-bus-proxy:
+    build: .
+    container_name: kaohsiung-bus-proxy
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared-config.yml:/etc/cloudflared/config.yml:ro
+      - ~/.cloudflared:/root/.cloudflared:ro
+    depends_on:
+      - kaohsiung-bus-proxy
+    network_mode: "host"  # 需要 host network 才能連到 localhost:8082
