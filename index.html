@@ -2971,7 +2971,7 @@
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 秒超時
                             
-                            const data = await fetchAPI('routes', {}, { signal: controller.signal });
+                            const data = await fetchAPI('routes', { '$top': '1000' }, { signal: controller.signal });
                             clearTimeout(timeoutId);
                             
                             allRoutes = data.data
