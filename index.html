@@ -3377,18 +3377,17 @@
                                                                                                                                         // to avoid matching unrelated routes like "28" or "E28"
                                                                                                                                         const useFullTermForNameMatch = categoryPrefixMatched && originalSearchTerm !== remainingSearchTerm;
                                                                                                                                         const nameMatchQuery = useFullTermForNameMatch ? originalSearchTerm : remainingSearchTerm;
-                                                                                                                                        const idMatchQuery = remainingSearchTerm; // ID matching still uses the numeric part
+                                                                                                                                        const idMatchQuery = useFullTermForNameMatch ? null : remainingSearchTerm; // ID matching disabled for category+number searches
                                                 
                                                                                             filteredRoutes = finalFilterTarget.filter(route =>
-                                                                                                String(route.id) !== '3000' && String(route.id) !== '3001' && 
-                                                                                                (
-                                                                                                    route.id.toString() === idMatchQuery ||
-                                                                                                    route.id.toString().startsWith(idMatchQuery) ||
-                                                                                                    route.name.toLowerCase().startsWith(nameMatchQuery) || 
-                                                                                                    route.name.toLowerCase().includes(nameMatchQuery) ||
-                                                                                                    (route.description && route.description.toLowerCase().includes(nameMatchQuery))
-                                                                                                )
-                                                                                            );
+                                                                                                                                                String(route.id) !== '3000' && String(route.id) !== '3001' && 
+                                                                                                                                                (
+                                                                                                                                                    (idMatchQuery && (route.id.toString() === idMatchQuery || route.id.toString().startsWith(idMatchQuery))) ||
+                                                                                                                                                    route.name.toLowerCase().startsWith(nameMatchQuery) || 
+                                                                                                                                                    route.name.toLowerCase().includes(nameMatchQuery) ||
+                                                                                                                                                    (route.description && route.description.toLowerCase().includes(nameMatchQuery))
+                                                                                                                                                )
+                                                                                                                                            );
                                                 
                                                                                             // Sort by: 1) Search relevance (priority), 2) Natural sort (numeric-aware)
                                                                                                                                         // Use originalSearchTerm for relevance to give higher priority to "紅28" over just "28"
