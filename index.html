@@ -1728,7 +1728,181 @@
         </div>
     </div>
     <script>
-let allRoutes =[];
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        }
+        setViewportHeight();
+        window.addEventListener('resize', setViewportHeight);
+        window.addEventListener('orientationchange', setViewportHeight);
+        document.addEventListener('DOMContentLoaded', async () => {
+            const splashScreen = document.getElementById('splashScreen');
+            const body = document.body;
+            if (localStorage.getItem('darkMode') === 'true') {
+                body.classList.add('dark-mode');
+            }
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDeepLink = urlParams.has('route'); 
+            const isUserEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
+            const showSplashScreen = isUserEnabled && !isDeepLink;
+
+            // 調整: 改為平行載入以提升體感速度
+            const startApp = () => {
+                const splashScreen = document.getElementById('splashScreen');
+                if(splashScreen) {
+                    splashScreen.style.transition = 'opacity 0.4s ease-out';
+                    splashScreen.style.opacity = '0';
+                    splashScreen.addEventListener('transitionend', () => {
+                        if (splashScreen) splashScreen.remove(); 
+                    }, { once: true });
+                }
+            };
+            
+            if (showSplashScreen) {
+                function startIconPhysics() {
+                    const container = document.getElementById('icons-container');
+                    if (!container) return;
+                    const iconNames =[
+                        'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
+                        'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
+                        'route', 'navigation', 'trip_origin'
+                    ];
+                    const numIcons = 200;
+                    let icons =[];
+                    const gravity = 0.2;
+                    const initialUpwardVelocity = -13;
+                    for (let i = 0; i < numIcons; i++) {
+                        const element = document.createElement('span');
+                        element.classList.add('material-icons', 'spray-icon');
+                        element.textContent = iconNames[Math.floor(Math.random() * iconNames.length)];
+                        const size = Math.random() * 22 + 18;
+                        element.style.fontSize = size + 'px';
+                        element.style.color = `hsl(${Math.random() * 360}, 70%, 65%)`;
+                        container.appendChild(element);
+                        icons.push({
+                            element: element,
+                            x: 0,
+                            y: 0,
+                            vx: (Math.random() - 0.5) * 18,
+                            vy: initialUpwardVelocity * (Math.random() * 0.5 + 0.8),
+                        });
+                    }
+                    function update() {
+                        const killMargin = 100;
+                        const killZone = {
+                            top: -window.innerHeight / 2 - killMargin,
+                            right: window.innerWidth / 2 + killMargin,
+                            bottom: window.innerHeight / 2 + killMargin,
+                            left: -window.innerWidth / 2 - killMargin
+                        };
+                        for (let i = icons.length - 1; i >= 0; i--) {
+                            let icon = icons[i];
+                            icon.vy += gravity;
+                            icon.x += icon.vx;
+                            icon.y += icon.vy;
+                            if (icon.x < killZone.left || icon.x > killZone.right || icon.y < killZone.top || icon.y > killZone.bottom) {
+                                if(icon.element) icon.element.remove();
+                                icons.splice(i, 1);
+                            } else {
+                                icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px)`;
+                            }
+                        }
+                        if (icons.length > 0) {
+                            requestAnimationFrame(update);
+                        }
+                    }
+                    update();
+                }
+                setTimeout(startIconPhysics, 100);
+                // 立刻開始載入資料，不強制鎖定 2.8 秒
+                initializeApp().then(() => {
+                    setTimeout(startApp, 500); // 資料載好後最短顯示時間
+                }); 
+            } else {
+                if(splashScreen) {
+                    splashScreen.remove();
+                }
+                initializeApp();
+            }
+            async function initializeApp() {
+                try { 
+                    const API_BASE = 'https://api.potatosserver.dpdns.org/api';
+                    const HEADERS = {
+                        'Accept': 'application/json',
+                    };
+                    const body = document.body;
+                    const routeSelectionPage = document.getElementById('routeSelectionPage');
+                    const busTrackerPage = document.getElementById('busTrackerPage');
+                    const favoriteStationsPage = document.getElementById('favoriteStationsPage');
+                    const lrtPage = document.getElementById('lrtPage');
+                    const homePage = document.getElementById('homePage');
+                    const settingsPage = document.getElementById('settingsPage');
+                    const routeSearchInput = document.getElementById('routeSearchInput');
+                    const categoryDisplay = document.getElementById('categoryDisplay');
+                    const routeListContainer = document.getElementById('routeListContainer');
+                    const initialLoading = document.getElementById('initialLoading');
+                    const noResultsMessage = document.getElementById('noResultsMessage');
+                    const filterKeyboard = document.getElementById('filterKeyboard');
+                    const filterKeyboardContainer = document.getElementById('filterKeyboardContainer');
+                    const trackerLoading = document.getElementById('trackerLoading');
+                    const routeTitle = document.getElementById('routeTitle');
+                    const routeDescription = document.getElementById('routeDescription');
+                    const stationListGo = document.getElementById('stationListGo');
+                    const stationListBack = document.getElementById('stationListBack');
+                    const stationListGoContent = document.getElementById('stationListGoContent');
+                    const stationListBackContent = document.getElementById('stationListBackContent');
+                    const goDirectionButton = document.getElementById('goDirectionButton');
+                    const backDirectionButton = document.getElementById('backDirectionButton');
+                    const updateCountdownButton = document.getElementById('updateCountdown');
+                    const mainNav = document.getElementById('mainNav');
+                    const favoriteListContainer = document.getElementById('favoriteListContainer');
+                    const noFavoritesMessage = document.getElementById('noFavoritesMessage');
+                    const favoriteGroupTabsContainer = document.getElementById('favoriteGroupTabsContainer');
+                    const favoriteActionButton = document.getElementById('favoriteActionButton');
+                    const favoriteActionIcon = document.getElementById('favoriteActionIcon');
+                    const favoriteActionText = document.getElementById('favoriteActionText');
+                    const toastContainer = document.getElementById('toastContainer');
+                    const selectGroupModal = document.getElementById('selectGroupModal');
+                    const selectGroupModalBody = document.getElementById('selectGroupModalBody');
+                    const closeSelectGroupModal = document.getElementById('closeSelectGroupModal');
+                    const manageGroupsModal = document.getElementById('manageGroupsModal');
+                    const manageGroupsModalBody = document.getElementById('manageGroupsModalBody');
+                    const closeManageGroupsModal = document.getElementById('closeManageGroupsModal');
+                    const addNewGroupBtn = document.getElementById('addNewGroupBtn');
+                    const customPromptModal = document.getElementById('customPromptModal');
+                    const customPromptTitle = document.getElementById('customPromptTitle');
+                    const customPromptMessage = document.getElementById('customPromptMessage');
+                    const customPromptInput = document.getElementById('customPromptInput');
+                    const customPromptConfirmBtn = document.getElementById('customPromptConfirmBtn');
+                    const customPromptCancelBtn = document.getElementById('customPromptCancelBtn');
+                    const customConfirmModal = document.getElementById('customConfirmModal');
+                    const customConfirmTitle = document.getElementById('customConfirmTitle');
+                    const customConfirmMessage = document.getElementById('customConfirmMessage');
+                    const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
+                    const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
+                    const darkModeToggle = document.getElementById('darkModeToggle');
+                    const splashScreenToggle = document.getElementById('splashScreenToggle');
+                    const mapDisplayToggle = document.getElementById('mapDisplayToggle');
+                    const languageSelect = document.getElementById('languageSelect');
+                    const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
+                    const updateIntervalSelect = document.getElementById('updateIntervalSelect');
+                    const weatherLoadingElement = document.getElementById('weatherLoading');
+                    const weatherErrorMessageElement = document.getElementById('weatherErrorMessage');
+                    const weatherInfoElement = document.getElementById('weatherInfo');
+                    const temperatureElement = document.getElementById('temperature');
+                    const weatherDescriptionElement = document.getElementById('weather-description');
+                    const weatherIconElement = document.getElementById('weather-icon');
+                    const apparentTemperatureElement = document.getElementById('apparent-temperature');
+                    const relativeHumidityElement = document.getElementById('relative-humidity');
+                    const windSpeedElement = document.getElementById('wind-speed');
+                    const currentDateElement = document.getElementById('current-date');
+                    const announcementContent = document.getElementById('announcementContent');
+                    const announcementLoading = document.getElementById('announcementLoading');
+                    const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+                    const lrtClockwiseBtn = document.getElementById('lrtClockwiseBtn');
+                    const lrtCounterClockwiseBtn = document.getElementById('lrtCounterClockwiseBtn');
+
+                    let allRoutes =[];
                     let currentRouteData = null;
                     let currentDirection = 1; 
                     let currentRouteId = null;
@@ -1753,7 +1927,8 @@ let allRoutes =[];
                     let announcementsDataLoaded = false;
                     let resolveCustomPrompt;
                     let resolveCustomConfirm;
-                                        let favTouchStartX = 0, favTouchStartY = 0;
+                    const favoritePage = document.getElementById('favoriteStationsPage');
+                    let favTouchStartX = 0, favTouchStartY = 0;
                     let favTouchEndX = 0, favTouchEndY = 0;
                     let isDraggingTouch = false;
                     let placeholder = null; 
@@ -1762,398 +1937,7 @@ let allRoutes =[];
                     let startTop = 0;
                     let favoriteUpdateInterval = null;
 
-                    
-
-        function setViewportHeight() {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        }
-        setViewportHeight();
-        window.addEventListener('resize', setViewportHeight);
-        window.addEventListener('orientationchange', setViewportHeight);
-        async function initializeAppUI() {
-                        
-        const favoritePage = document.getElementById("favoriteStationsPage");applyInitialTheme();
-                        
-                        if (!map) {
-                                                    map = L.map('map').setView([22.6273, 120.3014], 16);
-                                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-                            
-                                                    map.createPane('routePane').style.zIndex = 350;
-                                                    map.createPane('stationPane').style.zIndex = 450;
-                                                    map.createPane('busPane').style.zIndex = 550;
-    
-                                                    goLayerGroup = L.layerGroup().addTo(map);
-                                                    backLayerGroup = L.layerGroup();
-                                                    goBusLayerGroup = L.layerGroup().addTo(map);
-                                                    backBusLayerGroup = L.layerGroup().addTo(map);  // Fix: add to map initially
-                                                }
-
-                        const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
-                        splashScreenToggle.checked = splashScreenEnabled;
-                        const mapEnabled = localStorage.getItem('mapDisplayEnabled') !== 'false';
-                        mapDisplayToggle.checked = mapEnabled;
-                        updateTrackerLayout();
-
-                        currentLang = localStorage.getItem("lang") || "zh";
-                        languageSelect.value = currentLang;
-                        updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
-                        updateIntervalSelect.value = updateInterval;
-                        countdownTimer.remaining = updateInterval;
-                        loadFavorites(); 
-                        applyTranslations(); 
-                        defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
-                        defaultStartPageSelect.value = defaultStartPage;
-                        
-                        darkModeToggle.addEventListener('change', () => {
-                            if (darkModeToggle.checked) {
-                                body.classList.add('dark-mode');
-                                localStorage.setItem('darkMode', 'true');
-                            } else {
-                                body.classList.remove('dark-mode');
-                                localStorage.setItem('darkMode', 'false');
-                            }
-                        });
-                        splashScreenToggle.addEventListener('change', () => {
-                            localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
-                        });
-                        mapDisplayToggle.addEventListener('change', () => {
-                            localStorage.setItem('mapDisplayEnabled', mapDisplayToggle.checked);
-                            updateTrackerLayout();
-                        });
-                        languageSelect.addEventListener('change', async (e) => {
-                            await setLanguage(e.target.value);
-                        });
-                        favoriteActionButton.addEventListener('click', () => {
-                            if (currentStationContext) {
-                                const isCurrentlyFavorite = isFavorite(currentStationContext.routeId, currentStationContext.stationId, currentStationContext.direction);
-                                if (isCurrentlyFavorite) {
-                                    removeFavorite(currentStationContext);
-                                } else {
-                                    showSelectGroupModal(currentStationContext);
-                                }
-                                hideFavoriteButton();
-                            }
-                        });
-                        
-                        lrtClockwiseBtn.addEventListener('click', () => {
-                           navigateToTracker('3000', translations[currentLang].lrtClockwise, '籬仔內 → 凱旋公園');
-                        });
-                        lrtCounterClockwiseBtn.addEventListener('click', () => {
-                           navigateToTracker('3001', translations[currentLang].lrtCounterClockwise, '籬仔內 → 凱旋公園');
-                        });
-
-                        window.addEventListener('popstate', async (event) => {
-                            const modalWasClosed = handleHashChange(true);
-                            if (modalWasClosed) {
-                                event.stopImmediatePropagation();
-                                return;
-                            }
-                            const destinationState = event.state || { page: 'homePage' };
-                            const destinationPageId = destinationState.page;
-                            
-                            if (destinationPageId === 'busTrackerPage' && destinationState.routeId) {
-                                const routeId = destinationState.routeId.toString();
-                                const route = allRoutes.find(r => r.id.toString() === routeId);
-                                
-                                if (route) {
-                                    navigateToTracker(route.id, route.name, route.description, false);
-                                } else if (routeId === '3000' || routeId === '3001') {
-                                    const name = routeId === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
-                                    navigateToTracker(routeId, name, '籬仔內 → 凱旋公園', false);
-                                } else {
-                                    await showPage('routeSelectionPage', false);
-                                }
-                            } else if (destinationPageId && destinationPageId !== activePage) {
-                                await showPage(destinationPageId, false);
-                            }
-                        });
-
-                        filterKeyboard.addEventListener('click', (e) => {
-                            const button = e.target.closest('button');
-                            if (!button) return;
-                            const value = button.dataset.filter;
-                            const type = button.dataset.type;
-                            button.classList.add('active-keyboard-button');
-                            setTimeout(() => {
-                                button.classList.remove('active-keyboard-button');
-                            }, 150);
-                            if (type === 'category') {
-                                // Use the short prefix (category.prefix) for search, not the display name
-                                const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
-                                if (categoryObj) {
-                                    selectedCategoryPrefix = categoryObj.prefix;  // "紅", "橘", "黃", "綠", "幹線", "E", "小黃", "其他"
-                                } else {
-                                    selectedCategoryPrefix = value;
-                                }
-                                // Update display with translated name
-                                categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
-                                routeSearchInput.value = '';
-                            } else if (type === 'number') {
-                                routeSearchInput.value += value;
-                            } else if (type === 'action') {
-                                if (value === 'reset') {
-                                    resetSearch();
-                                } else if (value === 'backspace') {
-                                    routeSearchInput.value = routeSearchInput.value.slice(0, -1);
-                                }
-                            }
-                            const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
-                            applySearch(fullSearchTerm);
-                        });
-                        closeSelectGroupModal.addEventListener('click', () => {
-                            if (window.location.hash.includes('#select-group')) history.back();
-                            selectGroupModal.classList.remove('show');
-                        });
-                        closeManageGroupsModal.addEventListener('click', closeManageGroupsModalAndRefresh);
-                        addNewGroupBtn.addEventListener('click', addNewGroup);
-                        goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
-                        backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
-                        const estimateTimesSection = document.getElementById('estimateTimesSection');
-                        let touchStartX, touchStartY, touchEndX, touchEndY;
-                        estimateTimesSection.addEventListener('touchstart', (e) => {
-                            if (e.target.closest('#dragHandle')) return;
-                            if (e.touches.length !== 1) return;
-                            touchStartX = e.touches[0].clientX;
-                            touchStartY = e.touches[0].clientY;
-                            touchEndX = 0;
-                            touchEndY = 0;
-                        }, { passive: true });
-                        estimateTimesSection.addEventListener('touchmove', (e) => {
-                            if (e.touches.length !== 1) return;
-                            touchEndX = e.touches[0].clientX;
-                            touchEndY = e.touches[0].clientY;
-                        }, { passive: true });
-                        estimateTimesSection.addEventListener('touchend', (e) => {
-                            if (e.target.closest('#dragHandle')) return;
-                            if (touchEndX === 0) return;
-                            const diffX = touchStartX - touchEndX;
-                            const diffY = touchStartY - touchEndY;
-                            if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
-                                handleDirectionToggle(diffX > 0 ? 2 : 1);
-                            }
-                            touchStartX = 0;
-                            touchStartY = 0;
-                            touchEndX = 0;
-                            touchEndY = 0;
-                        });
-                        updateCountdownButton.addEventListener('click', () => {
-                            countdownTimer.update();
-                        });
-                        mainNav.addEventListener('click', (e) => {
-                            const button = e.target.closest('button');
-                            if (!button) return;
-                            const page = button.dataset.page;
-                            if (page === 'dynamic') {
-                                showPage('routeSelectionPage');
-                            }
-                            else if (page === 'favoriteStations') {
-                                showPage('favoriteStationsPage');
-                            }
-                            else if (page === 'lrt') {
-                                showPage('lrtPage');
-                            }
-                            else if (page === 'home') {
-                                showPage('homePage');
-                            }
-                            else if (page === 'settings') {
-                                showPage('settingsPage');
-                            }
-                        });
-                        defaultStartPageSelect.addEventListener('change', () => {
-                            const newDefault = defaultStartPageSelect.value;
-                            localStorage.setItem('defaultStartPage', newDefault);
-                            defaultStartPage = newDefault;
-                        });
-                        updateIntervalSelect.addEventListener('change', () => {
-                            const newInterval = parseInt(updateIntervalSelect.value, 10);
-                            updateInterval = newInterval;
-                            localStorage.setItem('updateInterval', newInterval);
-                            if (busTrackerPage.classList.contains('active')) {
-                                countdownTimer.reset();
-                            }
-                        });
-                        document.addEventListener('click', (e) => {
-                            if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
-                                hideFavoriteButton();
-                            }
-                        });
-                        let favTouchStartX = 0, favTouchStartY = 0;
-                        let favTouchEndX = 0, favTouchEndY = 0;
-                        favoritePage.addEventListener('touchstart', e => {
-                            if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
-                            favTouchStartX = e.changedTouches[0].screenX;
-                            favTouchStartY = e.changedTouches[0].screenY; 
-                        }, { passive: true });
-                        favoritePage.addEventListener('touchend', e => {
-                            if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
-                            favTouchEndX = e.changedTouches[0].screenX;
-                            favTouchEndY = e.changedTouches[0].screenY; 
-                            handleFavoriteSwipe();
-                        }, { passive: true });
-                        function handleFavoriteSwipe() {
-                            const swipeThreshold = 50; 
-                            if (favTouchEndX === 0 || favTouchEndY === 0) return; 
-                            const diffX = favTouchEndX - favTouchStartX;
-                            const diffY = favTouchEndY - favTouchStartY;
-                            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
-                                const groupTabsIds =['all', ...favoriteData.groups.map(g => g.id)];
-                                const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
-                                if (currentGroupIndex === -1) return;
-                                let nextGroupIndex;
-                                if (diffX < 0) {
-                                    nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
-                                } else { 
-                                    nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
-                                }
-                                activeGroupId = groupTabsIds[nextGroupIndex];
-                                displayFavoriteStations();
-                            }
-                            favTouchStartX = 0;
-                            favTouchStartY = 0;
-                            favTouchEndX = 0;
-                            favTouchEndY = 0;
-                        }
-
-                        const dragHandle = document.getElementById('dragHandle');
-                        const panel = document.getElementById('estimateTimesSection');
-                        let isDragging = false;
-                        let startY, startHeight;
-                        const onDragStart = (e) => {
-                            isDragging = true;
-                            startY = e.touches ? e.touches[0].clientY : e.clientY;
-                            startHeight = panel.offsetHeight;
-                            panel.style.transition = 'none';
-                            document.body.style.cursor = 'ns-resize';
-                            e.preventDefault();
-                        };
-                        const onDragMove = (e) => {
-                            if (!isDragging) return;
-                            const contentWrapper = document.getElementById('content-wrapper');
-                            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-                            const deltaY = startY - currentY;
-
-                            const finalMinHeight = 60; 
-
-                            const maxHeight = contentWrapper.offsetHeight;
-                            
-                            const newHeight = Math.min(Math.max(startHeight + deltaY, finalMinHeight), maxHeight);
-                            
-                            panel.style.height = `${newHeight}px`;
-                            if(map) map.invalidateSize();
-                        };
-
-                        const onDragEnd = () => {
-                            isDragging = false;
-                            panel.style.transition = '';
-                            document.body.style.cursor = '';
-                            if(map) map.invalidateSize();
-                        };
-                        dragHandle.addEventListener('mousedown', onDragStart);
-                        document.addEventListener('mousemove', onDragMove);
-                        document.addEventListener('mouseup', onDragEnd);
-                        dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
-                        document.addEventListener('touchmove', onDragMove, { passive: true });
-                        document.addEventListener('touchend', onDragEnd);
-
-
-                        adjustContentPadding();
-                        window.addEventListener('resize', () => {
-                            adjustContentPadding();
-                            if (busTrackerPage.classList.contains('active')) {
-                                updateDirectionButtons();
-                            }
-                        });
-                        window.addEventListener('hashchange', () => handleHashChange(false));
-                        countdownInterval = setInterval(() => {
-                            if (busTrackerPage.classList.contains('active') && navigator.onLine) {
-                                updateCountdownButton.style.display = "flex";
-                                countdownTimer.remaining--;
-                                if (countdownTimer.remaining <= 0) {
-                                    countdownTimer.update();
-                                }
-                                countdownTimer.updateDisplay();
-                            } else {
-                                updateCountdownButton.style.display = "none";
-                            }
-                        }, 1000);
-                        window.addEventListener('online', () => {
-                            if (busTrackerPage.classList.contains('active')) {
-                                updateCountdownButton.style.display = "flex";
-                                countdownTimer.update();
-                            }
-                        });
-                        window.addEventListener('offline', () => {
-                            updateCountdownButton.style.display = "none";
-                        });
-
-                        document.addEventListener('visibilitychange', () => {
-                            if (document.visibilityState === 'visible') {
-                                updateNavHighlight();
-                                if (busTrackerPage.classList.contains('active')) {
-                                    setTimeout(() => {
-                                        if (navigator.onLine) {
-                                            countdownTimer.update();
-                                        }
-                                    }, 1000);
-                                }
-                            }
-                        });
-
-                    }
-                    
-
-async function loadInitialData() {
-                        // 在背景嘗試獲取資料 (Stale-While-Revalidate)，不會卡住接下來的渲染
-					    initRouteSelection();
-					    
-					    const path = window.location.pathname;
-					    const pathParts = path.split('/').filter(p => p);
-					    
-					    const urlParams = new URLSearchParams(window.location.search);
-					    
-					    let targetPage = 'homePage';
-					    let targetRoute = urlParams.get('route');
-					    let targetStation = urlParams.get('station');
-					
-					    if (pathParts[0] === 'route' && pathParts[1]) {
-					        targetPage = 'busTrackerPage';
-					        targetRoute = pathParts[1];
-					    } else if (pathParts[0] === 'search') {
-					        targetPage = 'routeSelectionPage';
-					    } else if (pathParts[0] === 'favorites') {
-					        targetPage = 'favoriteStationsPage';
-					    } else if (pathParts[0] === 'lrt') {
-					        targetPage = 'lrtPage';
-					    } else if (pathParts[0] === 'settings') {
-					        targetPage = 'settingsPage';
-					    } else {
-					        const pageParam = urlParams.get('page');
-					        if (pageParam === 'tracker' || targetRoute) targetPage = 'busTrackerPage';
-					        else if (pageParam === 'dynamic') targetPage = 'routeSelectionPage';
-					        else targetPage = mapPageNameToId(pageParam) || mapPageNameToId(defaultStartPage) || 'homePage';
-					    }
-					
-					    if (targetPage === 'busTrackerPage' && targetRoute) {
-					        currentRouteId = targetRoute;
-					        const route = allRoutes.find(r => r.id.toString() === targetRoute);
-					        if (route) {
-					            navigateToTracker(route.id, route.name, route.description, false, targetStation, 1);
-					        } else if (targetRoute === '3000' || targetRoute === '3001') {
-					            const name = targetRoute === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
-					            navigateToTracker(targetRoute, name, '籬仔內 → 凱旋公園', false, targetStation, 1);
-					        } else {
-					            await showPage('routeSelectionPage', false);
-					        }
-					    } else {
-					        await showPage(targetPage, false);
-					    }
-						history.replaceState({ page: targetPage, routeId: targetRoute }, '', window.location.href);
-                        handleHashChange(false);
-                        updateNavHighlight(); 
-					}
-
-let draggedGroupItem = null;
+                    let draggedGroupItem = null;
                     let groupPlaceholder = null;
                     let groupGhost = null;
                     let startYGroupTouch = 0;
@@ -3857,7 +3641,6 @@ let draggedGroupItem = null;
                         const filteredRoutes = items.map(({ route }) => route);
 
                         displayRoutes(filteredRoutes);
-                    }
                     }(newDirection) {
                                             if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                                                 return;
@@ -5435,7 +5218,384 @@ let draggedGroupItem = null;
                             default: return null;
                         }
                     };
-                    
+                    async function initializeAppUI() {
+                        applyInitialTheme();
+                        
+                        if (!map) {
+                                                    map = L.map('map').setView([22.6273, 120.3014], 16);
+                                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+                            
+                                                    map.createPane('routePane').style.zIndex = 350;
+                                                    map.createPane('stationPane').style.zIndex = 450;
+                                                    map.createPane('busPane').style.zIndex = 550;
+    
+                                                    goLayerGroup = L.layerGroup().addTo(map);
+                                                    backLayerGroup = L.layerGroup();
+                                                    goBusLayerGroup = L.layerGroup().addTo(map);
+                                                    backBusLayerGroup = L.layerGroup().addTo(map);  // Fix: add to map initially
+                                                }
+
+                        const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
+                        splashScreenToggle.checked = splashScreenEnabled;
+                        const mapEnabled = localStorage.getItem('mapDisplayEnabled') !== 'false';
+                        mapDisplayToggle.checked = mapEnabled;
+                        updateTrackerLayout();
+
+                        currentLang = localStorage.getItem("lang") || "zh";
+                        languageSelect.value = currentLang;
+                        updateInterval = parseInt(localStorage.getItem('updateInterval'), 10) || 20;
+                        updateIntervalSelect.value = updateInterval;
+                        countdownTimer.remaining = updateInterval;
+                        loadFavorites(); 
+                        applyTranslations(); 
+                        defaultStartPage = localStorage.getItem('defaultStartPage') || 'home';
+                        defaultStartPageSelect.value = defaultStartPage;
+                        
+                        darkModeToggle.addEventListener('change', () => {
+                            if (darkModeToggle.checked) {
+                                body.classList.add('dark-mode');
+                                localStorage.setItem('darkMode', 'true');
+                            } else {
+                                body.classList.remove('dark-mode');
+                                localStorage.setItem('darkMode', 'false');
+                            }
+                        });
+                        splashScreenToggle.addEventListener('change', () => {
+                            localStorage.setItem('splashScreenEnabled', splashScreenToggle.checked);
+                        });
+                        mapDisplayToggle.addEventListener('change', () => {
+                            localStorage.setItem('mapDisplayEnabled', mapDisplayToggle.checked);
+                            updateTrackerLayout();
+                        });
+                        languageSelect.addEventListener('change', async (e) => {
+                            await setLanguage(e.target.value);
+                        });
+                        favoriteActionButton.addEventListener('click', () => {
+                            if (currentStationContext) {
+                                const isCurrentlyFavorite = isFavorite(currentStationContext.routeId, currentStationContext.stationId, currentStationContext.direction);
+                                if (isCurrentlyFavorite) {
+                                    removeFavorite(currentStationContext);
+                                } else {
+                                    showSelectGroupModal(currentStationContext);
+                                }
+                                hideFavoriteButton();
+                            }
+                        });
+                        
+                        lrtClockwiseBtn.addEventListener('click', () => {
+                           navigateToTracker('3000', translations[currentLang].lrtClockwise, '籬仔內 → 凱旋公園');
+                        });
+                        lrtCounterClockwiseBtn.addEventListener('click', () => {
+                           navigateToTracker('3001', translations[currentLang].lrtCounterClockwise, '籬仔內 → 凱旋公園');
+                        });
+
+                        window.addEventListener('popstate', async (event) => {
+                            const modalWasClosed = handleHashChange(true);
+                            if (modalWasClosed) {
+                                event.stopImmediatePropagation();
+                                return;
+                            }
+                            const destinationState = event.state || { page: 'homePage' };
+                            const destinationPageId = destinationState.page;
+                            
+                            if (destinationPageId === 'busTrackerPage' && destinationState.routeId) {
+                                const routeId = destinationState.routeId.toString();
+                                const route = allRoutes.find(r => r.id.toString() === routeId);
+                                
+                                if (route) {
+                                    navigateToTracker(route.id, route.name, route.description, false);
+                                } else if (routeId === '3000' || routeId === '3001') {
+                                    const name = routeId === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
+                                    navigateToTracker(routeId, name, '籬仔內 → 凱旋公園', false);
+                                } else {
+                                    await showPage('routeSelectionPage', false);
+                                }
+                            } else if (destinationPageId && destinationPageId !== activePage) {
+                                await showPage(destinationPageId, false);
+                            }
+                        });
+
+                        filterKeyboard.addEventListener('click', (e) => {
+                            const button = e.target.closest('button');
+                            if (!button) return;
+                            const value = button.dataset.filter;
+                            const type = button.dataset.type;
+                            button.classList.add('active-keyboard-button');
+                            setTimeout(() => {
+                                button.classList.remove('active-keyboard-button');
+                            }, 150);
+                            if (type === 'category') {
+                                // Use the short prefix (category.prefix) for search, not the display name
+                                const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
+                                if (categoryObj) {
+                                    selectedCategoryPrefix = categoryObj.prefix;  // "紅", "橘", "黃", "綠", "幹線", "E", "小黃", "其他"
+                                } else {
+                                    selectedCategoryPrefix = value;
+                                }
+                                // Update display with translated name
+                                categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
+                                routeSearchInput.value = '';
+                            } else if (type === 'number') {
+                                routeSearchInput.value += value;
+                            } else if (type === 'action') {
+                                if (value === 'reset') {
+                                    resetSearch();
+                                } else if (value === 'backspace') {
+                                    routeSearchInput.value = routeSearchInput.value.slice(0, -1);
+                                }
+                            }
+                            const fullSearchTerm = selectedCategoryPrefix + routeSearchInput.value;
+                            applySearch(fullSearchTerm);
+                        });
+                        closeSelectGroupModal.addEventListener('click', () => {
+                            if (window.location.hash.includes('#select-group')) history.back();
+                            selectGroupModal.classList.remove('show');
+                        });
+                        closeManageGroupsModal.addEventListener('click', closeManageGroupsModalAndRefresh);
+                        addNewGroupBtn.addEventListener('click', addNewGroup);
+                        goDirectionButton.addEventListener('click', () => handleDirectionToggle(1));
+                        backDirectionButton.addEventListener('click', () => handleDirectionToggle(2));
+                        const estimateTimesSection = document.getElementById('estimateTimesSection');
+                        let touchStartX, touchStartY, touchEndX, touchEndY;
+                        estimateTimesSection.addEventListener('touchstart', (e) => {
+                            if (e.target.closest('#dragHandle')) return;
+                            if (e.touches.length !== 1) return;
+                            touchStartX = e.touches[0].clientX;
+                            touchStartY = e.touches[0].clientY;
+                            touchEndX = 0;
+                            touchEndY = 0;
+                        }, { passive: true });
+                        estimateTimesSection.addEventListener('touchmove', (e) => {
+                            if (e.touches.length !== 1) return;
+                            touchEndX = e.touches[0].clientX;
+                            touchEndY = e.touches[0].clientY;
+                        }, { passive: true });
+                        estimateTimesSection.addEventListener('touchend', (e) => {
+                            if (e.target.closest('#dragHandle')) return;
+                            if (touchEndX === 0) return;
+                            const diffX = touchStartX - touchEndX;
+                            const diffY = touchStartY - touchEndY;
+                            if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+                                handleDirectionToggle(diffX > 0 ? 2 : 1);
+                            }
+                            touchStartX = 0;
+                            touchStartY = 0;
+                            touchEndX = 0;
+                            touchEndY = 0;
+                        });
+                        updateCountdownButton.addEventListener('click', () => {
+                            countdownTimer.update();
+                        });
+                        mainNav.addEventListener('click', (e) => {
+                            const button = e.target.closest('button');
+                            if (!button) return;
+                            const page = button.dataset.page;
+                            if (page === 'dynamic') {
+                                showPage('routeSelectionPage');
+                            }
+                            else if (page === 'favoriteStations') {
+                                showPage('favoriteStationsPage');
+                            }
+                            else if (page === 'lrt') {
+                                showPage('lrtPage');
+                            }
+                            else if (page === 'home') {
+                                showPage('homePage');
+                            }
+                            else if (page === 'settings') {
+                                showPage('settingsPage');
+                            }
+                        });
+                        defaultStartPageSelect.addEventListener('change', () => {
+                            const newDefault = defaultStartPageSelect.value;
+                            localStorage.setItem('defaultStartPage', newDefault);
+                            defaultStartPage = newDefault;
+                        });
+                        updateIntervalSelect.addEventListener('change', () => {
+                            const newInterval = parseInt(updateIntervalSelect.value, 10);
+                            updateInterval = newInterval;
+                            localStorage.setItem('updateInterval', newInterval);
+                            if (busTrackerPage.classList.contains('active')) {
+                                countdownTimer.reset();
+                            }
+                        });
+                        document.addEventListener('click', (e) => {
+                            if (!favoriteActionButton.contains(e.target) && favoriteActionButton.classList.contains('show')) {
+                                hideFavoriteButton();
+                            }
+                        });
+                        let favTouchStartX = 0, favTouchStartY = 0;
+                        let favTouchEndX = 0, favTouchEndY = 0;
+                        favoritePage.addEventListener('touchstart', e => {
+                            if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
+                            favTouchStartX = e.changedTouches[0].screenX;
+                            favTouchStartY = e.changedTouches[0].screenY; 
+                        }, { passive: true });
+                        favoritePage.addEventListener('touchend', e => {
+                            if (e.target.closest('.drag-handle') || e.target.closest('.group-tab')) return;
+                            favTouchEndX = e.changedTouches[0].screenX;
+                            favTouchEndY = e.changedTouches[0].screenY; 
+                            handleFavoriteSwipe();
+                        }, { passive: true });
+                        function handleFavoriteSwipe() {
+                            const swipeThreshold = 50; 
+                            if (favTouchEndX === 0 || favTouchEndY === 0) return; 
+                            const diffX = favTouchEndX - favTouchStartX;
+                            const diffY = favTouchEndY - favTouchStartY;
+                            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+                                const groupTabsIds =['all', ...favoriteData.groups.map(g => g.id)];
+                                const currentGroupIndex = groupTabsIds.indexOf(activeGroupId);
+                                if (currentGroupIndex === -1) return;
+                                let nextGroupIndex;
+                                if (diffX < 0) {
+                                    nextGroupIndex = (currentGroupIndex + 1) % groupTabsIds.length;
+                                } else { 
+                                    nextGroupIndex = (currentGroupIndex - 1 + groupTabsIds.length) % groupTabsIds.length;
+                                }
+                                activeGroupId = groupTabsIds[nextGroupIndex];
+                                displayFavoriteStations();
+                            }
+                            favTouchStartX = 0;
+                            favTouchStartY = 0;
+                            favTouchEndX = 0;
+                            favTouchEndY = 0;
+                        }
+
+                        const dragHandle = document.getElementById('dragHandle');
+                        const panel = document.getElementById('estimateTimesSection');
+                        let isDragging = false;
+                        let startY, startHeight;
+                        const onDragStart = (e) => {
+                            isDragging = true;
+                            startY = e.touches ? e.touches[0].clientY : e.clientY;
+                            startHeight = panel.offsetHeight;
+                            panel.style.transition = 'none';
+                            document.body.style.cursor = 'ns-resize';
+                            e.preventDefault();
+                        };
+                        const onDragMove = (e) => {
+                            if (!isDragging) return;
+                            const contentWrapper = document.getElementById('content-wrapper');
+                            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+                            const deltaY = startY - currentY;
+
+                            const finalMinHeight = 60; 
+
+                            const maxHeight = contentWrapper.offsetHeight;
+                            
+                            const newHeight = Math.min(Math.max(startHeight + deltaY, finalMinHeight), maxHeight);
+                            
+                            panel.style.height = `${newHeight}px`;
+                            if(map) map.invalidateSize();
+                        };
+
+                        const onDragEnd = () => {
+                            isDragging = false;
+                            panel.style.transition = '';
+                            document.body.style.cursor = '';
+                            if(map) map.invalidateSize();
+                        };
+                        dragHandle.addEventListener('mousedown', onDragStart);
+                        document.addEventListener('mousemove', onDragMove);
+                        document.addEventListener('mouseup', onDragEnd);
+                        dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
+                        document.addEventListener('touchmove', onDragMove, { passive: true });
+                        document.addEventListener('touchend', onDragEnd);
+
+
+                        adjustContentPadding();
+                        window.addEventListener('resize', () => {
+                            adjustContentPadding();
+                            if (busTrackerPage.classList.contains('active')) {
+                                updateDirectionButtons();
+                            }
+                        });
+                        window.addEventListener('hashchange', () => handleHashChange(false));
+                        countdownInterval = setInterval(() => {
+                            if (busTrackerPage.classList.contains('active') && navigator.onLine) {
+                                updateCountdownButton.style.display = "flex";
+                                countdownTimer.remaining--;
+                                if (countdownTimer.remaining <= 0) {
+                                    countdownTimer.update();
+                                }
+                                countdownTimer.updateDisplay();
+                            } else {
+                                updateCountdownButton.style.display = "none";
+                            }
+                        }, 1000);
+                        window.addEventListener('online', () => {
+                            if (busTrackerPage.classList.contains('active')) {
+                                updateCountdownButton.style.display = "flex";
+                                countdownTimer.update();
+                            }
+                        });
+                        window.addEventListener('offline', () => {
+                            updateCountdownButton.style.display = "none";
+                        });
+
+                        document.addEventListener('visibilitychange', () => {
+                            if (document.visibilityState === 'visible') {
+                                updateNavHighlight();
+                                if (busTrackerPage.classList.contains('active')) {
+                                    setTimeout(() => {
+                                        if (navigator.onLine) {
+                                            countdownTimer.update();
+                                        }
+                                    }, 1000);
+                                }
+                            }
+                        });
+
+                    }
+                    async function loadInitialData() {
+                        // 在背景嘗試獲取資料 (Stale-While-Revalidate)，不會卡住接下來的渲染
+					    initRouteSelection();
+					    
+					    const path = window.location.pathname;
+					    const pathParts = path.split('/').filter(p => p);
+					    
+					    const urlParams = new URLSearchParams(window.location.search);
+					    
+					    let targetPage = 'homePage';
+					    let targetRoute = urlParams.get('route');
+					    let targetStation = urlParams.get('station');
+					
+					    if (pathParts[0] === 'route' && pathParts[1]) {
+					        targetPage = 'busTrackerPage';
+					        targetRoute = pathParts[1];
+					    } else if (pathParts[0] === 'search') {
+					        targetPage = 'routeSelectionPage';
+					    } else if (pathParts[0] === 'favorites') {
+					        targetPage = 'favoriteStationsPage';
+					    } else if (pathParts[0] === 'lrt') {
+					        targetPage = 'lrtPage';
+					    } else if (pathParts[0] === 'settings') {
+					        targetPage = 'settingsPage';
+					    } else {
+					        const pageParam = urlParams.get('page');
+					        if (pageParam === 'tracker' || targetRoute) targetPage = 'busTrackerPage';
+					        else if (pageParam === 'dynamic') targetPage = 'routeSelectionPage';
+					        else targetPage = mapPageNameToId(pageParam) || mapPageNameToId(defaultStartPage) || 'homePage';
+					    }
+					
+					    if (targetPage === 'busTrackerPage' && targetRoute) {
+					        currentRouteId = targetRoute;
+					        const route = allRoutes.find(r => r.id.toString() === targetRoute);
+					        if (route) {
+					            navigateToTracker(route.id, route.name, route.description, false, targetStation, 1);
+					        } else if (targetRoute === '3000' || targetRoute === '3001') {
+					            const name = targetRoute === '3000' ? translations[currentLang].lrtClockwise : translations[currentLang].lrtCounterClockwise;
+					            navigateToTracker(targetRoute, name, '籬仔內 → 凱旋公園', false, targetStation, 1);
+					        } else {
+					            await showPage('routeSelectionPage', false);
+					        }
+					    } else {
+					        await showPage(targetPage, false);
+					    }
+						history.replaceState({ page: targetPage, routeId: targetRoute }, '', window.location.href);
+                        handleHashChange(false);
+                        updateNavHighlight(); 
+					}
                     await initializeAppUI(); 
                     await loadInitialData(); 
                 } catch (error) {
@@ -5465,56 +5625,8 @@ let draggedGroupItem = null;
                     }
                 }
             } 
-
-
-        // If DOMContentLoaded already fired (readyState = complete), run init immediately
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            setTimeout
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // If DOMContentLoaded already fired (readyState = complete), run init immediately
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        // Handler will run normally, just ensure init executes
-    }
-
-    // If DOMContentLoaded already fired (readyState = complete), run init immediately
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(async () => {
-            try {
-                await initializeAppUI();
-                await loadInitialData();
-            } catch (error) {
-                console.error('Critical error during initialization:', error);
-            }
-        }, 0);
-    }
-});
-
-(async () => {
-                try {
-                    await initializeAppUI();
-                    await loadInitialData();
-                } catch (error) {
-                    console.error('Critical error during initialization:', error);
-                }
-            }, 0);
-        }
         });
-    
-
-        // Run initialization if DOMContentLoaded already fired
-        (async () => {
-            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                try {
-                    await initializeAppUI();
-                    await loadInitialData();
-                } catch (error) {
-                    console.error('Critical error during deferred initialization:', error);
-                }
-            }
-        })();
-
-</script>
+    </script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -5530,179 +5642,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     </script>
 </body>
-</html
-
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-            // If DOMContentLoaded already fired (readyState = complete), run init immediately
-            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                // Handler will run normally, just ensure init executes
-            }
-            const splashScreen = document.getElementById('splashScreen');
-            const body = document.body;
-            if (localStorage.getItem('darkMode') === 'true') {
-                body.classList.add('dark-mode');
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const isDeepLink = urlParams.has('route'); 
-            const isUserEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
-            const showSplashScreen = isUserEnabled && !isDeepLink;
-
-            // 調整: 改為平行載入以提升體感速度
-            const startApp = () => {
-                const splashScreen = document.getElementById('splashScreen');
-                if(splashScreen) {
-                    splashScreen.style.transition = 'opacity 0.4s ease-out';
-                    splashScreen.style.opacity = '0';
-                    splashScreen.addEventListener('transitionend', () => {
-                        if (splashScreen) splashScreen.remove(); 
-                    }, { once: true });
-                }
-            };
-            
-            if (showSplashScreen) {
-                function startIconPhysics() {
-                    const container = document.getElementById('icons-container');
-                    if (!container) return;
-                    const iconNames =[
-                        'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
-                        'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
-                        'route', 'navigation', 'trip_origin'
-                    ];
-                    const numIcons = 200;
-                    let icons =[];
-                    const gravity = 0.2;
-                    const initialUpwardVelocity = -13;
-                    for (let i = 0; i < numIcons; i++) {
-                        const element = document.createElement('span');
-                        element.classList.add('material-icons', 'spray-icon');
-                        element.textContent = iconNames[Math.floor(Math.random() * iconNames.length)];
-                        const size = Math.random() * 22 + 18;
-                        element.style.fontSize = size + 'px';
-                        element.style.color = `hsl(${Math.random() * 360}, 70%, 65%)`;
-                        container.appendChild(element);
-                        icons.push({
-                            element: element,
-                            x: 0,
-                            y: 0,
-                            vx: (Math.random() - 0.5) * 18,
-                            vy: initialUpwardVelocity * (Math.random() * 0.5 + 0.8),
-                        });
-                    }
-                    function update() {
-                        const killMargin = 100;
-                        const killZone = {
-                            top: -window.innerHeight / 2 - killMargin,
-                            right: window.innerWidth / 2 + killMargin,
-                            bottom: window.innerHeight / 2 + killMargin,
-                            left: -window.innerWidth / 2 - killMargin
-                        };
-                        for (let i = icons.length - 1; i >= 0; i--) {
-                            let icon = icons[i];
-                            icon.vy += gravity;
-                            icon.x += icon.vx;
-                            icon.y += icon.vy;
-                            if (icon.x < killZone.left || icon.x > killZone.right || icon.y < killZone.top || icon.y > killZone.bottom) {
-                                if(icon.element) icon.element.remove();
-                                icons.splice(i, 1);
-                            } else {
-                                icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px)`;
-                            }
-                        }
-                        if (icons.length > 0) {
-                            requestAnimationFrame(update);
-                        }
-                    }
-                    update();
-                }
-                setTimeout(startIconPhysics, 100);
-                // 立刻開始載入資料，不強制鎖定 2.8 秒
-                initializeApp().then(() => {
-                    setTimeout(startApp, 500); // 資料載好後最短顯示時間
-                }); 
-            } else {
-                if(splashScreen) {
-                    splashScreen.remove();
-                }
-                initializeApp();
-            }
-            async function initializeApp() {
-                try { 
-                    const API_BASE = 'https://api.potatosserver.dpdns.org/api';
-                    const HEADERS = {
-                        'Accept': 'application/json',
-                    };
-                    const body = document.body;
-                    const routeSelectionPage = document.getElementById('routeSelectionPage');
-                    const busTrackerPage = document.getElementById('busTrackerPage');
-                    const favoriteStationsPage = document.getElementById('favoriteStationsPage');
-                    const lrtPage = document.getElementById('lrtPage');
-                    const homePage = document.getElementById('homePage');
-                    const settingsPage = document.getElementById('settingsPage');
-                    const routeSearchInput = document.getElementById('routeSearchInput');
-                    const categoryDisplay = document.getElementById('categoryDisplay');
-                    const routeListContainer = document.getElementById('routeListContainer');
-                    const initialLoading = document.getElementById('initialLoading');
-                    const noResultsMessage = document.getElementById('noResultsMessage');
-                    const filterKeyboard = document.getElementById('filterKeyboard');
-                    const filterKeyboardContainer = document.getElementById('filterKeyboardContainer');
-                    const trackerLoading = document.getElementById('trackerLoading');
-                    const routeTitle = document.getElementById('routeTitle');
-                    const routeDescription = document.getElementById('routeDescription');
-                    const stationListGo = document.getElementById('stationListGo');
-                    const stationListBack = document.getElementById('stationListBack');
-                    const stationListGoContent = document.getElementById('stationListGoContent');
-                    const stationListBackContent = document.getElementById('stationListBackContent');
-                    const goDirectionButton = document.getElementById('goDirectionButton');
-                    const backDirectionButton = document.getElementById('backDirectionButton');
-                    const updateCountdownButton = document.getElementById('updateCountdown');
-                    const mainNav = document.getElementById('mainNav');
-                    const favoriteListContainer = document.getElementById('favoriteListContainer');
-                    const noFavoritesMessage = document.getElementById('noFavoritesMessage');
-                    const favoriteGroupTabsContainer = document.getElementById('favoriteGroupTabsContainer');
-                    const favoriteActionButton = document.getElementById('favoriteActionButton');
-                    const favoriteActionIcon = document.getElementById('favoriteActionIcon');
-                    const favoriteActionText = document.getElementById('favoriteActionText');
-                    const toastContainer = document.getElementById('toastContainer');
-                    const selectGroupModal = document.getElementById('selectGroupModal');
-                    const selectGroupModalBody = document.getElementById('selectGroupModalBody');
-                    const closeSelectGroupModal = document.getElementById('closeSelectGroupModal');
-                    const manageGroupsModal = document.getElementById('manageGroupsModal');
-                    const manageGroupsModalBody = document.getElementById('manageGroupsModalBody');
-                    const closeManageGroupsModal = document.getElementById('closeManageGroupsModal');
-                    const addNewGroupBtn = document.getElementById('addNewGroupBtn');
-                    const customPromptModal = document.getElementById('customPromptModal');
-                    const customPromptTitle = document.getElementById('customPromptTitle');
-                    const customPromptMessage = document.getElementById('customPromptMessage');
-                    const customPromptInput = document.getElementById('customPromptInput');
-                    const customPromptConfirmBtn = document.getElementById('customPromptConfirmBtn');
-                    const customPromptCancelBtn = document.getElementById('customPromptCancelBtn');
-                    const customConfirmModal = document.getElementById('customConfirmModal');
-                    const customConfirmTitle = document.getElementById('customConfirmTitle');
-                    const customConfirmMessage = document.getElementById('customConfirmMessage');
-                    const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
-                    const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
-                    const darkModeToggle = document.getElementById('darkModeToggle');
-                    const splashScreenToggle = document.getElementById('splashScreenToggle');
-                    const mapDisplayToggle = document.getElementById('mapDisplayToggle');
-                    const languageSelect = document.getElementById('languageSelect');
-                    const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
-                    const updateIntervalSelect = document.getElementById('updateIntervalSelect');
-                    const weatherLoadingElement = document.getElementById('weatherLoading');
-                    const weatherErrorMessageElement = document.getElementById('weatherErrorMessage');
-                    const weatherInfoElement = document.getElementById('weatherInfo');
-                    const temperatureElement = document.getElementById('temperature');
-                    const weatherDescriptionElement = document.getElementById('weather-description');
-                    const weatherIconElement = document.getElementById('weather-icon');
-                    const apparentTemperatureElement = document.getElementById('apparent-temperature');
-                    const relativeHumidityElement = document.getElementById('relative-humidity');
-                    const windSpeedElement = document.getElementById('wind-speed');
-                    const currentDateElement = document.getElementById('current-date');
-                    const announcementContent = document.getElementById('announcementContent');
-                    const announcementLoading = document.getElementById('announcementLoading');
-                    const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
-                    const lrtClockwiseBtn = document.getElementById('lrtClockwiseBtn');
-                    const lrtCounterClockwiseBtn = document.getElementById('lrtCounterClockwiseBtn');
-
-                    >
+</html>
