@@ -4357,7 +4357,8 @@
                         backLayerGroup.clearLayers();
 
                         const goStops =[], backStops =[];
-                        routeData.stations.edges.forEach(edge => {
+                        // Use allStations which has both directions
+                        (routeData.allStations?.edges || routeData.stations?.edges || []).forEach(edge => {
                             if (edge.node.lat && edge.node.lon) {
                                 if (edge.goBack === 1) goStops.push(edge);
                                 else if (edge.goBack === 2) backStops.push(edge);
