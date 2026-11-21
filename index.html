@@ -3260,163 +3260,388 @@
                         'T502': '15137', 'T511': '15100',
                         '環東': '168環東', '環西': '168環西',
                     };
+
+                    // ============================================================
+                    // 新版搜尋演算法（參考 ai_studio_code_1_29.html）
+                    // ============================================================
+                    const PREFIX_ORDER = {
+                        "": 0,
+                        "紅": 1,
+                        "橘": 2,
+                        "黃": 3,
+                        "綠": 4,
+                        "E": 5,
+                        "H": 6,
+                        "JOY H": 7,
+                        "T": 8
+                    };
+
+                    // 1. 解析單一路線名稱為結構化資料
+                    function parseRouteCode(rawName) {
+                        const name = (rawName || "").trim();
+                        let prefix = "";
+                        let altPrefix = "";
+                        let numberStr = "";
+                        let variant = "";
+
+                        let m;
+                        if ((m = name.match(/^JOY\s*H\s*(\d+)([A-Za-z]\d*)?/i))) {
+                            prefix = "JOY H";
+                            altPrefix = "H";
+                            numberStr = m[1];
+                            variant = (m[2] || "").toUpperCase();
+                        } else if ((m = name.match(/^(紅|橘|黃|綠)\s*(\d+)([A-Za-z]\d*)?/))) {
+                            prefix = m[1];
+                            numberStr = m[2];
+                            variant = (m[3] || "").toUpperCase();
+                        } else if ((m = name.match(/^(E|T|H)\s*(\d+)([A-Za-z]\d*)?/i))) {
+                            prefix = m[1].toUpperCase();
+                            numberStr = m[2];
+                            variant = (m[3] || "").toUpperCase();
+                        } else if ((m = name.match(/^(\d+)([A-Za-z]\d*)?/))) {
+                            prefix = "";
+                            numberStr = m[1];
+                            variant = (m[2] || "").toUpperCase();
+                        }
+
+                        const number = numberStr ? parseInt(numberStr, 10) : Infinity;
+                        const cleanNumStr = numberStr ? String(number) : "";
+
+                        // 判斷正線 vs 支線/延駛/繞駛/區間/測試，確保正線永遠排在最前面
+                        let subRank = 0;
+                        if (/測試路線/.test(name)) subRank += 1000;
+                        if (/區間/.test(name)) subRank += 30;
+                        if (/延駛|延\b|延$/.test(name)) subRank += 20;
+                        if (/繞/.test(name)) subRank += 15;
+                        if (/副/.test(name)) subRank += 10;
+                        if (/接駁/.test(name)) subRank += 5;
+                        if (/公車式小黃/.test(name)) subRank += 2;
+                        // 若有括號說明但非上述關鍵字（例如假日停駛）給微幅權重讓純名稱更優先
+                        if (/[()]/.test(name) && subRank === 0) subRank += 1;
+
+                        return { prefix, altPrefix, numberStr, cleanNumStr, number, variant, subRank };
+                    }
+
+                    // 2. 確保路線有 parsed、categories、codes、searchFields
+                    function ensureParsed(routes) {
+                        for (const r of routes) {
+                            if (!r.parsed) {
+                                r.parsed = parseRouteCode(r.name);
+                            }
+                            // 確保有 categories Set
+                            if (!r.categories) {
+                                const cats = new Set();
+                                if (r.routetype_zh_tw) {
+                                    const tokens = r.routetype_zh_tw.split(",").map(s => s.trim()).filter(Boolean);
+                                    if (tokens.includes("幹線公車")) cats.add("main");
+                                    if (tokens.includes("快線公車")) cats.add("express");
+                                    if (tokens.includes("公車式小黃")) cats.add("taxi");
+                                    if (tokens.includes("其他")) cats.add("other");
+                                    if (tokens.includes("一般公車")) cats.add("general");
+                                }
+                                r.categories = cats;
+                            }
+                            // 確保有 codes 陣列
+                            if (!r.codes) {
+                                r.codes = [r.id, r.gxcode, r.routeuid].filter(Boolean).map(c => String(c).toUpperCase());
+                            }
+                            // 搜尋用欄位
+                            if (!r.searchFields) {
+                                const norm = s => (s || "").replace(/臺/g, "台").toLowerCase();
+                                r.searchFields = {
+                                    nameNorm: norm(r.name),
+                                    headsignNorm: norm(r.description || ""),
+                                    extraNorm: norm(r.routetype_zh_tw || "")
+                                };
+                            }
+                        }
+                    }
+
+                    // 3. 基礎瀏覽排序（空查詢或同分數層內排序）
+                    function baseCompare(a, b) {
+                        if (a.isTest !== b.isTest) return a.isTest ? 1 : -1;
+
+                        const pa = a.parsed;
+                        const pb = b.parsed;
+
+                        const oa = PREFIX_ORDER[pa.prefix] ?? 99;
+                        const ob = PREFIX_ORDER[pb.prefix] ?? 99;
+                        if (oa !== ob) return oa - ob;
+
+                        if (pa.number !== pb.number) return pa.number - pb.number;
+
+                        // 同一數字時，先無支線英文，再 A < B < C...
+                        if (pa.variant !== pb.variant) {
+                            if (!pa.variant) return -1;
+                            if (!pb.variant) return 1;
+                            return pa.variant.localeCompare(pb.variant, "en", { numeric: true });
+                        }
+
+                        // 正線 < 繞/延/區間/小黃
+                        if (pa.subRank !== pb.subRank) return pa.subRank - pb.subRank;
+
+                        return (a.name || "").localeCompare(b.name || "", "zh-Hant", { numeric: true });
+                    }
+
+                    // 4. 解析使用者搜尋字串
+                    function parseQuery(raw) {
+                        const q = (raw || "").trim();
+                        if (!q) return { mode: "empty", raw: "" };
+
+                        let m;
+                        // 純數字：7, 28, 56, 8561
+                        if ((m = q.match(/^(\d+)$/))) {
+                            return { mode: "num", qNum: m[1], qInt: parseInt(m[1], 10), qVar: "", raw: q };
+                        }
+                        // 數字+支線英文：7A, 16B, 8041C
+                        if ((m = q.match(/^(\d+)([A-Za-z]\d*)$/))) {
+                            return { mode: "num_var", qNum: m[1], qInt: parseInt(m[1], 10), qVar: m[2].toUpperCase(), raw: q };
+                        }
+                        // 色系純前綴：紅, 橘, 黃, 綠
+                        if ((m = q.match(/^(紅|橘|黃|綠)$/))) {
+                            return { mode: "prefix_only", qPrefix: m[1], qNum: "", qVar: "", raw: q };
+                        }
+                        // 色系+數字(+支線)：紅2, 紅28, 紅56, 橘7A
+                        if ((m = q.match(/^(紅|橘|黃|綠)\s*(\d+)([A-Za-z]\d*)?$/))) {
+                            return {
+                                mode: "prefixed",
+                                qPrefix: m[1],
+                                qNum: m[2],
+                                qInt: parseInt(m[2], 10),
+                                qVar: (m[3] || "").toUpperCase(),
+                                raw: q
+                            };
+                        }
+                        // JOY H 前綴
+                        if ((m = q.match(/^JOY\s*H\s*(\d*)([A-Za-z]\d*)?$/i))) {
+                            return {
+                                mode: m[1] ? "prefixed" : "prefix_only",
+                                qPrefix: "JOY H",
+                                qNum: m[1] || "",
+                                qInt: m[1] ? parseInt(m[1], 10) : NaN,
+                                qVar: (m[2] || "").toUpperCase(),
+                                raw: q
+                            };
+                        }
+                        // 字母前綴 E / T / H
+                        if ((m = q.match(/^(E|T|H)\s*(\d*)([A-Za-z]\d*)?$/i))) {
+                            return {
+                                mode: m[2] ? "prefixed" : "prefix_only",
+                                qPrefix: m[1].toUpperCase(),
+                                qNum: m[2] || "",
+                                qInt: m[2] ? parseInt(m[2], 10) : NaN,
+                                qVar: (m[3] || "").toUpperCase(),
+                                raw: q
+                            };
+                        }
+
+                        // 一般文字搜尋（中文地名、英文、混合字串）
+                        return {
+                            mode: "text",
+                            qNorm: q.replace(/臺/g, "台").toLowerCase(),
+                            qUpper: q.toUpperCase(),
+                            raw: q
+                        };
+                    }
+
+                    // 5. 核心搜尋與評分演算法
+                    function searchAndSortRoutes(routes, rawQuery, category) {
+                        // 先依分類過濾
+                        const pool = category === "all"
+                            ? routes
+                            : routes.filter(r => r.categories.has(category));
+
+                        const qp = parseQuery(rawQuery);
+
+                        if (qp.mode === "empty") {
+                            return pool
+                                .map(r => ({ route: r, score: 0, reason: "" }))
+                                .sort((x, y) => baseCompare(x.route, y.route));
+                        }
+
+                        const matched = [];
+
+                        for (const r of pool) {
+                            const p = r.parsed;
+                            let score = Infinity;
+                            let reason = "";
+
+                            // --- 模式 A：純數字 (e.g. 7, 28, 56, 8561) 或 數字+支線 (e.g. 7A) ---
+                            if (qp.mode === "num" || qp.mode === "num_var") {
+                                const qUpper = qp.raw.toUpperCase();
+                                const varMatch = !qp.qVar || (p.variant === qp.qVar || p.variant.startsWith(qp.qVar));
+                                const exactVarMatch = !qp.qVar || p.variant === qp.qVar;
+
+                                // Tier 100: 無前綴且號碼完全相等 (例：56 -> 56A, 56B；28 -> 28；7 -> 7A, 7C, 7D)
+                                if (p.prefix === "" && p.number === qp.qInt && varMatch) {
+                                    score = exactVarMatch ? 100 : 110;
+                                    reason = "正線號碼精準";
+                                }
+                                // Tier 200: 無前綴且號碼前綴相符 (例：7 -> 70A, 70B, 70D, 72, 73, 76, 77)
+                                else if (qp.mode === "num" && p.prefix === "" && (p.numberStr.startsWith(qp.qNum) || p.cleanNumStr.startsWith(qp.qNum))) {
+                                    score = 200;
+                                    reason = "號碼開頭相符";
+                                }
+                                // Tier 300: 有前綴且號碼完全相等 (例：56 -> 紅56；28 -> 紅28, E28；7 -> 紅7, 橘7)
+                                else if (p.prefix !== "" && p.number === qp.qInt && varMatch) {
+                                    score = exactVarMatch ? 300 : 310;
+                                    reason = "接駁/前綴號碼 (" + p.prefix + p.numberStr + ")";
+                                }
+                                // Tier 400: 有前綴且號碼前綴相符 (例：7 -> 紅70~79, T702)
+                                else if (qp.mode === "num" && p.prefix !== "" && (p.numberStr.startsWith(qp.qNum) || p.cleanNumStr.startsWith(qp.qNum))) {
+                                    score = 400;
+                                    reason = "前綴號碼開頭 (" + p.prefix + p.numberStr + ")";
+                                }
+                                // Tier 500: 內部路線代號精準匹配 routeid / gxcode / routeuid (例：8561 -> 紅56科技幹線區間車)
+                                else if (r.codes.includes(qUpper) && qp.raw.length >= 2) {
+                                    score = 500;
+                                    reason = "代號精準匹配 (" + r.id + ")";
+                                }
+                                // Tier 600: 3 碼以上內部代號前綴匹配 (例：856 -> 紅56區間車 8561；避免 7 誤匹配 7002 或 28 誤匹配 15228)
+                                else if (qp.raw.length >= 3 && r.codes.some(c => c.startsWith(qUpper))) {
+                                    score = 600;
+                                    reason = "代號前綴匹配 (" + r.id + ")";
+                                }
+                                // Tier 700: 僅限數字查詢且名稱數字包含該數字 (例：7 -> 87, 97, 217, 紅57, 橘17)
+                                else if (qp.mode === "num" && p.numberStr && p.numberStr.includes(qp.qNum)) {
+                                    score = p.prefix === "" ? 700 : 750;
+                                    reason = "號碼包含";
+                                }
+                                // Tier 800: 路線中文名稱內含（如 測試路線2 含 "2"）
+                                else if (qp.mode === "num" && !p.numberStr && (r.name || "").includes(qp.qNum)) {
+                                    score = 800;
+                                    reason = "名稱包含";
+                                }
+                            }
+
+                            // --- 模式 B：僅前綴 (e.g. 紅, 橘, 黃, 綠, E, T, H, JOY H) ---
+                            else if (qp.mode === "prefix_only") {
+                                const prefixOk =
+                                    p.prefix === qp.qPrefix ||
+                                    (qp.qPrefix === "H" && p.prefix === "JOY H");
+
+                                if (prefixOk) {
+                                    score = p.prefix === qp.qPrefix ? 100 : 150;
+                                    reason = "前綴分類 (" + p.prefix + ")";
+                                } else if (qp.qPrefix.length >= 1 && r.searchFields.nameNorm.startsWith(qp.qPrefix.toLowerCase())) {
+                                    score = 200;
+                                    reason = "名稱開頭";
+                                }
+                            }
+
+                            // --- 模式 C：前綴 + 數字 (e.g. 紅2, 紅28, 紅56, E03, E3, H11, T511) ---
+                            // 嚴格鎖定前綴，輸入「紅2」絕對不會出現「28」或「紅52」！
+                            else if (qp.mode === "prefixed") {
+                                const prefixOk =
+                                    p.prefix === qp.qPrefix ||
+                                    (qp.qPrefix === "H" && p.prefix === "JOY H");
+
+                                if (prefixOk) {
+                                    const prefixPenalty = p.prefix === qp.qPrefix ? 0 : 50;
+                                    const varMatch = !qp.qVar || (p.variant === qp.qVar || p.variant.startsWith(qp.qVar));
+                                    const exactVarMatch = !qp.qVar || p.variant === qp.qVar;
+
+                                    // Tier 100: 號碼完全相同 (紅2 -> 紅2；E3 -> E03A/B)
+                                    if (p.number === qp.qInt && varMatch) {
+                                        score = (exactVarMatch ? 100 : 110) + prefixPenalty;
+                                        reason = "前綴+號碼精準";
+                                    }
+                                    // Tier 200: 號碼開頭相符 (紅2 -> 紅21, 紅25, 紅28, 紅29)
+                                    else if (!qp.qVar && (p.numberStr.startsWith(qp.qNum) || p.cleanNumStr.startsWith(qp.qNum))) {
+                                        score = 200 + prefixPenalty;
+                                        reason = "前綴+號碼開頭";
+                                    }
+                                }
+                            }
+
+                            // --- 模式 D：一般文字搜尋 (地名、站名、業者、英文、KHH代碼) ---
+                            else if (qp.mode === "text") {
+                                if (r.codes.includes(qp.qUpper)) {
+                                    score = 100;
+                                    reason = "代碼精準 (" + r.routeuid + ")";
+                                } else if (r.codes.some(c => c.startsWith(qp.qUpper)) && qp.qUpper.length >= 3) {
+                                    score = 150;
+                                    reason = "代碼前綴";
+                                } else if (r.searchFields.nameNorm.startsWith(qp.qNorm)) {
+                                    score = 200;
+                                    reason = "路線名稱開頭";
+                                } else if (r.searchFields.nameNorm.includes(qp.qNorm) || (r.searchFields.masterNameNorm && r.searchFields.masterNameNorm.includes(qp.qNorm))) {
+                                    score = 300;
+                                    reason = "路線名稱包含";
+                                } else if (r.searchFields.headsignNorm.includes(qp.qNorm)) {
+                                    score = 400;
+                                    reason = "起訖站匹配";
+                                } else if (r.searchFields.extraNorm.includes(qp.qNorm)) {
+                                    score = 500;
+                                    reason = "業者/英文/描述匹配";
+                                }
+                            }
+
+                            if (score < Infinity) {
+                                matched.push({ route: r, score, reason });
+                            }
+                        }
+
+                        // 排序：1. 測試路線沉底 -> 2. 分數 tier 升序 -> 3. 結構化數值順序 (baseCompare)
+                        matched.sort((a, b) => {
+                            if (a.route.isTest !== b.route.isTest) return a.route.isTest ? 1 : -1;
+                            if (a.score !== b.score) return a.score - b.score;
+                            return baseCompare(a.route, b.route);
+                        });
+
+                        return matched;
+                    }
+
                     // Natural sort collator for route names/IDs (handles 7A < 7C < 7D < 70A < 70B < 77)
-                                        const routeCollator = new Intl.Collator('zh-Hant', { numeric: true, sensitivity: 'base' });
+                    const routeCollator = new Intl.Collator('zh-Hant', { numeric: true, sensitivity: 'base' });
 
-                                        function computeSearchRelevance(route, query) {
-                                            const id = route.id.toString();
-                                            const name = route.name.toLowerCase();
-                                            const q = query.toLowerCase();
+                    function applySearch(searchTerm) {
+                        const lowerCaseTerm = searchTerm.toLowerCase().trim();
+                        if (!lowerCaseTerm) {
+                            if (allRoutes.length === 0) {
+                                routeListContainer.innerHTML = '<p class="text-center py-10 text-red-500">${translations[currentLang].loadingRoutesError}</p>';
+                            } else {
+                                displayInitialPrompt();
+                            }
+                            return;
+                        }
 
-                                            // Priority 0: Exact ID match (highest)
-                                            if (id === q) return 0;
-                        
-                                            // Priority 1: Exact name match
-                                            if (name === q) return 1;
-                        
-                                            // Priority 2: ID starts with query AND matches natural 7-series pattern
-                                            // e.g., query "7" matches "7", "7A", "7C", "7D" but NOT "70", "77"
-                                            if (id.startsWith(q)) {
-                                                const afterQuery = id.substring(q.length);
-                                                // If query is single digit and next char is non-digit or end → true 7-series
-                                                if (q.length === 1 && /^\d$/.test(q) && (afterQuery === '' || !/^\d/.test(afterQuery))) {
-                                                    return 2; // True 7-series: 7, 7A, 7C, 7D
-                                                }
-                                                // General prefix match (70A, 72, 77, etc.)
-                                                return 3;
-                                            }
-                        
-                                            // Priority 3: Name starts with query (prefix match on name)
-                                            if (name.startsWith(q)) return 4;
-                        
-                                            // Priority 4: Name contains query anywhere
-                                            if (name.includes(q)) return 5;
-                        
-                                            // Priority 5: Description contains query
-                                            if (route.description && route.description.toLowerCase().includes(q)) return 6;
-                        
-                                            return 99; // No match
-                                        }
+                        // 確保 allRoutes 有 parsed、categories、codes、searchFields
+                        ensureParsed(allRoutes);
 
-                                        function applySearch(searchTerm) {
-                                            const lowerCaseTerm = searchTerm.toLowerCase().trim();
-                                            if (!lowerCaseTerm) {
-                                                if (allRoutes.length === 0) {
-                                                     routeListContainer.innerHTML = `<p class="text-center py-10 text-red-500">${translations[currentLang].loadingRoutesError}</p>`;
-                                                } else {
-                                                    displayInitialPrompt();
-                                                }
-                                                return;
-                                            }
-                        
-                                            // Resolve alias to route ID if matched (exact match only, no substring)
-                                            let resolvedTerm = lowerCaseTerm;
-                                            let wasResolvedByAlias = false;
-                                            for (const [alias, routeId] of Object.entries(routeAliases)) {
-                                                // Exact match only: "紅28" !== "紅2"
-                                                if (lowerCaseTerm === alias.toLowerCase()) {
-                                                    resolvedTerm = routeId.toLowerCase();
-                                                    wasResolvedByAlias = true;
-                                                    break;
-                                                }
-                                            }
-                        
-                                            let filteredRoutes = [...allRoutes];
-                                                                                        let categoryPrefixMatched = false; // Track if a category prefix was detected (even if filter skipped)
-                                                                                        let remainingSearchTerm = resolvedTerm;
-                                                                                        // Use resolvedTerm for originalSearchTerm if resolved by alias, otherwise keep original input for category+number prefix matching
-                                                                                        let originalSearchTerm = wasResolvedByAlias ? resolvedTerm : lowerCaseTerm; // Keep original for relevance
+                        // 解析別名 (精確匹配)
+                        let resolvedTerm = lowerCaseTerm;
+                        let wasResolvedByAlias = false;
+                        for (const [alias, routeId] of Object.entries(routeAliases)) {
+                            if (lowerCaseTerm === alias.toLowerCase()) {
+                                resolvedTerm = routeId.toLowerCase();
+                                wasResolvedByAlias = true;
+                                break;
+                            }
+                        }
 
-                                                                                        // Only do category prefix detection on the original input if not resolved by alias
-                                                                                        // If resolved by alias (e.g., "紅56" → "856"), skip category detection and search by resolved ID/name
-                                                                                        if (!wasResolvedByAlias) {
-                                                                                            const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
-                                                                                            if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
-                                                                                                const filterVal = category.filterValue;
-                                                                                                // Only apply category filter if the remaining term doesn't look like a specific route number
-                                                                                                // e.g., "紅28" → remaining "28" looks like route number, don't hard-filter by category
-                                                                                                const remaining = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
-                                                                                                const looksLikeRouteNumber = /^\d+[a-zA-Z]?$/.test(remaining) || /^e\d+$/i.test(remaining);
+                        // 判斷分類過濾模式
+                        let activeCategory = "all";
+                        const catPrefix = translations[currentLang][category?.i18nKey]?.toLowerCase() || category?.prefix?.toLowerCase();
+                        if (!wasResolvedByAlias && catPrefix && lowerCaseTerm.startsWith(catPrefix)) {
+                            const filterVal = category?.filterValue;
+                            if (filterVal === '小黃') activeCategory = "taxi";
+                            else if (filterVal === '幹線') activeCategory = "main";
+                            else if (filterVal === '快線') activeCategory = "express";
+                            else if (['紅', '橘', '黃', '綠'].includes(filterVal)) activeCategory = "all"; // 色系不硬過濾，交給搜尋演算法
+                            else if (filterVal === '其他') activeCategory = "other";
+                            else if (filterVal === '一般公車') activeCategory = "general";
+                            else if (filterVal === 'E') activeCategory = "all"; // E 類交給搜尋演算法
+                        }
 
-                                                                                                categoryPrefixMatched = true; // Category prefix detected
-                                                                                                remainingSearchTerm = remaining;
+                        // 執行搜尋
+                        const items = searchAndSortRoutes(allRoutes, wasResolvedByAlias ? resolvedTerm : lowerCaseTerm, activeCategory);
 
-                                                                                                if (!looksLikeRouteNumber) {
-                                                                                                    // Apply category filter only for generic category searches (e.g., just "紅")
-                                                                                                    if (filterVal === '其他') {
-                                                                                                        filteredRoutes = allRoutes.filter(route =>
-                                                                                                            route.name.toLowerCase().includes('joy') ||
-                                                                                                            route.name.toLowerCase().includes('dashu blessing bus') ||
-                                                                                                            route.name.toLowerCase().includes('大樹祈福')
-                                                                                                        );
-                                                                                                    } else if (filterVal === 'E') {
-                                                                                                        filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().startsWith('e'));
-                                                                                                    } else if (filterVal === '小黃') {
-                                                                                                        filteredRoutes = allRoutes.filter(route => route.routetype_zh_tw && route.routetype_zh_tw.includes('公車式小黃'));
-                                                                                                    } else if (filterVal === '幹線') {
-                                                                                                        const keyword = currentLang === 'en' ? 'main line' : '幹線';
-                                                                                                        filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
-                                                                                                    } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) {
-                                                                                                        const keyword = translations[currentLang][category.i18nKey].toLowerCase();
-                                                                                                        if (currentLang === 'zh' && filterVal === '黃') {
-                                                                                                            filteredRoutes = allRoutes.filter(route =>
-                                                                                                                route.name.includes(keyword) &&
-                                                                                                                route.routetype_zh_tw &&
-                                                                                                                !route.routetype_zh_tw.includes('公車式小黃')
-                                                                                                            );
-                                                                                                        } else {
-                                                                                                            filteredRoutes = allRoutes.filter(route =>
-                                                                                                                route.name.toLowerCase().includes(keyword)
-                                                                                                            );
-                                                                                                        }
-                                                                                                    }
-                                                                                                }
-                                                                                        }
-                                                                                        }
-                        
-                                            if (remainingSearchTerm) {
-                                                                                                                                        const finalFilterTarget = categoryPrefixMatched ? filteredRoutes : allRoutes;
+                        // 轉換為 filteredRoutes 格式供 displayRoutes 使用
+                        const filteredRoutes = items.map(({ route }) => route);
 
-                                                                                                                                        // Filter routes matching the search term
-                                                                                                                                        // If we have a category prefix + route number (e.g., "紅28"), use full original term for name matching
-                                                                                                                                        // to avoid matching unrelated routes like "28" or "E28"
-                                                                                                                                        const useFullTermForNameMatch = categoryPrefixMatched && originalSearchTerm !== remainingSearchTerm;
-                                                                                            
-                                                                                                                                        // For category+number searches, name matching should use the category prefix + number as prefix
-                                                                                                                                        // e.g., "紅2" → match names starting with "紅2" (紅2, 紅28, 紅28(繞...))
-                                                                                                                                        // e.g., "紅28" → match names starting with "紅28" (紅28, 紅28(繞...))
-                                                                                                                                        const nameMatchQuery = useFullTermForNameMatch ? originalSearchTerm : remainingSearchTerm;
-                                                                                                                                        const idMatchQuery = useFullTermForNameMatch ? null : remainingSearchTerm; // ID matching disabled for category+number searches
-                                                
-                                                                                            filteredRoutes = finalFilterTarget.filter(route =>
-                                                                                                                                                String(route.id) !== '3000' && String(route.id) !== '3001' && 
-                                                                                                                                                (
-                                                                                                                                                    (idMatchQuery && (route.id.toString() === idMatchQuery || route.id.toString().startsWith(idMatchQuery))) ||
-                                                                                                                                                    route.name.toLowerCase().startsWith(nameMatchQuery) || 
-                                                                                                                                                    route.name.toLowerCase().includes(nameMatchQuery) ||
-                                                                                                                                                    (route.description && route.description.toLowerCase().includes(nameMatchQuery))
-                                                                                                                                                )
-                                                                                                                                            );
-                                                
-                                                                                            // Sort by: 1) Search relevance (priority), 2) Natural sort (numeric-aware)
-                                                                                                                                        // Use originalSearchTerm for relevance to give higher priority to "紅28" over just "28"
-                                                                                                                                        const relevanceQuery = useFullTermForNameMatch ? originalSearchTerm : remainingSearchTerm;
-                                                                                                                                            filteredRoutes.sort((a, b) => {
-                                                                                                const relevanceA = computeSearchRelevance(a, relevanceQuery);
-                                                                                                const relevanceB = computeSearchRelevance(b, relevanceQuery);
-                                                    
-                                                                                                if (relevanceA !== relevanceB) {
-                                                                                                    return relevanceA - relevanceB; // Lower relevance number = higher priority
-                                                                                                }
-                                                    
-                                                                                                // Same relevance: natural sort by name (handles 7A < 7C < 7D < 70A < 70B < 77)
-                                                                                                return routeCollator.compare(a.name, b.name);
-                                                                                            });
-                                                                                        }
-                                            displayRoutes(filteredRoutes);
-                                        }
-
-                    function handleDirectionToggle(newDirection) {
+                        displayRoutes(filteredRoutes);
+                    }(newDirection) {
                                             if (newDirection === currentDirection || !currentRouteData || isAnimatingDirection) {
                                                 return;
                                             }
