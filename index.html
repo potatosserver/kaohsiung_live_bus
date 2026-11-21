@@ -3321,71 +3321,84 @@
                                             let filteredRoutes = [...allRoutes];
                                             let categoryMatched = false;
                                             let remainingSearchTerm = resolvedTerm;
+                                            let originalSearchTerm = resolvedTerm; // Keep original for relevance
                         
                                             for (const category of categoryFilters) {
                                                 const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
                                                 if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
                                                     const filterVal = category.filterValue;
-                                                    if (filterVal === '其他') {
-                                                        filteredRoutes = allRoutes.filter(route =>
-                                                            route.name.toLowerCase().includes('joy') ||
-                                                            route.name.toLowerCase().includes('dashu blessing bus') ||
-                                                            route.name.toLowerCase().includes('大樹祈福')
-                                                        );
-                                                    } else if (filterVal === 'E') {
-                                                        filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().startsWith('e'));
-                                                    } else if (filterVal === '小黃') {
-                                                        filteredRoutes = allRoutes.filter(route => route.routetype_zh_tw && route.routetype_zh_tw.includes('公車式小黃'));
-                                                    } else if (filterVal === '幹線') {
-                                                        const keyword = currentLang === 'en' ? 'main line' : '幹線';
-                                                        filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
-                                                    } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) {
-                                                        const keyword = translations[currentLang][category.i18nKey].toLowerCase();
-                                                         if (currentLang === 'zh' && filterVal === '黃') {
-                                                            filteredRoutes = allRoutes.filter(route => 
-                                                                route.name.includes(keyword) && 
-                                                                route.routetype_zh_tw && 
-                                                                !route.routetype_zh_tw.includes('公車式小黃')
+                                                    // Only apply category filter if the remaining term doesn't look like a specific route number
+                                                    // e.g., "紅28" → remaining "28" looks like route number, don't hard-filter by category
+                                                    const remaining = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
+                                                    const looksLikeRouteNumber = /^\d+[a-zA-Z]?$/.test(remaining) || /^e\d+$/i.test(remaining);
+                                                    
+                                                    if (!looksLikeRouteNumber) {
+                                                        // Apply category filter only for generic category searches (e.g., just "紅")
+                                                        if (filterVal === '其他') {
+                                                            filteredRoutes = allRoutes.filter(route =>
+                                                                route.name.toLowerCase().includes('joy') ||
+                                                                route.name.toLowerCase().includes('dashu blessing bus') ||
+                                                                route.name.toLowerCase().includes('大樹祈福')
                                                             );
-                                                        } else {
-                                                            filteredRoutes = allRoutes.filter(route => 
-                                                                route.name.toLowerCase().includes(keyword)
-                                                            );
+                                                        } else if (filterVal === 'E') {
+                                                            filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().startsWith('e'));
+                                                        } else if (filterVal === '小黃') {
+                                                            filteredRoutes = allRoutes.filter(route => route.routetype_zh_tw && route.routetype_zh_tw.includes('公車式小黃'));
+                                                        } else if (filterVal === '幹線') {
+                                                            const keyword = currentLang === 'en' ? 'main line' : '幹線';
+                                                            filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
+                                                        } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) {
+                                                            const keyword = translations[currentLang][category.i18nKey].toLowerCase();
+                                                            if (currentLang === 'zh' && filterVal === '黃') {
+                                                                filteredRoutes = allRoutes.filter(route => 
+                                                                    route.name.includes(keyword) && 
+                                                                    route.routetype_zh_tw && 
+                                                                    !route.routetype_zh_tw.includes('公車式小黃')
+                                                                );
+                                                            } else {
+                                                                filteredRoutes = allRoutes.filter(route => 
+                                                                    route.name.toLowerCase().includes(keyword)
+                                                                );
+                                                            }
                                                         }
+                                                        categoryMatched = true;
                                                     }
-                                                    remainingSearchTerm = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
-                                                    categoryMatched = true;
+                                                    remainingSearchTerm = remaining;
                                                     break;
                                                 }
                                             }
                         
                                             if (remainingSearchTerm) {
-                                                const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
-                            
-                                                // Filter routes matching the search term
-                                                filteredRoutes = finalFilterTarget.filter(route =>
-                                                    String(route.id) !== '3000' && String(route.id) !== '3001' && 
-                                                    (
-                                                        route.id.toString() === remainingSearchTerm ||
-                                                        route.id.toString().startsWith(remainingSearchTerm) ||
-                                                        route.name.toLowerCase().startsWith(remainingSearchTerm) || 
-                                                        (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
-                                                    )
-                                                );
-                            
-                                                // Sort by: 1) Search relevance (priority), 2) Natural sort (numeric-aware)
-                                                filteredRoutes.sort((a, b) => {
-                                                    const relevanceA = computeSearchRelevance(a, remainingSearchTerm);
-                                                    const relevanceB = computeSearchRelevance(b, remainingSearchTerm);
-                                
-                                                    if (relevanceA !== relevanceB) {
-                                                        return relevanceA - relevanceB; // Lower relevance number = higher priority
-                                                    }
-                                
-                                                    // Same relevance: natural sort by name (handles 7A < 7C < 7D < 70A < 70B < 77)
-                                                    return routeCollator.compare(a.name, b.name);
-                                                });
-                                            }
+                                                                                            const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
+                           
+                                                                                            // Filter routes matching the search term
+                                                                                            filteredRoutes = finalFilterTarget.filter(route =>
+                                                                                                String(route.id) !== '3000' && String(route.id) !== '3001' && 
+                                                                                                (
+                                                                                                    route.id.toString() === remainingSearchTerm ||
+                                                                                                    route.id.toString().startsWith(remainingSearchTerm) ||
+                                                                                                    route.name.toLowerCase().startsWith(remainingSearchTerm) || 
+                                                                                                    // Also check full name (for cases like "紅28" where category "紅" was stripped)
+                                                                                                    route.name.toLowerCase().includes(remainingSearchTerm) ||
+                                                                                                    (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
+                                                                                                )
+                                                                                            );
+                                                
+                                                                                            // Sort by: 1) Search relevance (priority), 2) Natural sort (numeric-aware)
+                                                                                            // Use originalSearchTerm for relevance to give higher priority to "紅28" over just "28"
+                                                                                            const relevanceQuery = categoryMatched ? originalSearchTerm : remainingSearchTerm;
+                                                                                            filteredRoutes.sort((a, b) => {
+                                                                                                const relevanceA = computeSearchRelevance(a, relevanceQuery);
+                                                                                                const relevanceB = computeSearchRelevance(b, relevanceQuery);
+                                                    
+                                                                                                if (relevanceA !== relevanceB) {
+                                                                                                    return relevanceA - relevanceB; // Lower relevance number = higher priority
+                                                                                                }
+                                                    
+                                                                                                // Same relevance: natural sort by name (handles 7A < 7C < 7D < 70A < 70B < 77)
+                                                                                                return routeCollator.compare(a.name, b.name);
+                                                                                            });
+                                                                                        }
                                             displayRoutes(filteredRoutes);
                                         }
 
