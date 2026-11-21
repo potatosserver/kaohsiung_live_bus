@@ -3309,10 +3309,11 @@
                                                 return;
                                             }
                         
-                                            // Resolve alias to route ID if matched
+                                            // Resolve alias to route ID if matched (exact match only, no substring)
                                             let resolvedTerm = lowerCaseTerm;
                                             for (const [alias, routeId] of Object.entries(routeAliases)) {
-                                                if (lowerCaseTerm === alias.toLowerCase() || lowerCaseTerm.includes(alias.toLowerCase())) {
+                                                // Exact match only: "紅28" !== "紅2"
+                                                if (lowerCaseTerm === alias.toLowerCase()) {
                                                     resolvedTerm = routeId.toLowerCase();
                                                     break;
                                                 }
