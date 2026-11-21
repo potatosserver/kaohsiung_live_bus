@@ -3339,12 +3339,15 @@
                             
                                                 // Update time pills for new direction
                                                 setTimeout(() => {
-                                                    renderOrUpdateEstimateTimes({ 
-                                                        estimates: allEstimates, 
-                                                        stations: { edges: filteredStations } 
-                                                    }, newDirection, targetContent);
-                                                }, 100);
-                                            }
+                                                                                                renderOrUpdateEstimateTimes({ 
+                                                                                                    estimates: allEstimates, 
+                                                                                                    stations: { edges: filteredStations } 
+                                                                                                }, newDirection, targetContent);
+                                                                                            }, 100);
+                                                                                        }
+                                        
+                                                                                        // Re-render map to ensure both directions' route lines are drawn
+                                                                                        renderMap(currentRouteData);
 
                                             setTimeout(() => {
                                                 outgoingList.classList.add('hidden');
