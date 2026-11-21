@@ -3377,6 +3377,10 @@
                                                                                                                                         // If we have a category prefix + route number (e.g., "紅28"), use full original term for name matching
                                                                                                                                         // to avoid matching unrelated routes like "28" or "E28"
                                                                                                                                         const useFullTermForNameMatch = categoryPrefixMatched && originalSearchTerm !== remainingSearchTerm;
+                                                                                            
+                                                                                                                                        // For category+number searches, name matching should use the category prefix + number as prefix
+                                                                                                                                        // e.g., "紅2" → match names starting with "紅2" (紅2, 紅28, 紅28(繞...))
+                                                                                                                                        // e.g., "紅28" → match names starting with "紅28" (紅28, 紅28(繞...))
                                                                                                                                         const nameMatchQuery = useFullTermForNameMatch ? originalSearchTerm : remainingSearchTerm;
                                                                                                                                         const idMatchQuery = useFullTermForNameMatch ? null : remainingSearchTerm; // ID matching disabled for category+number searches
                                                 
