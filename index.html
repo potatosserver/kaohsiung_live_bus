@@ -3811,20 +3811,23 @@
                         }
                     }
                     function navigateToTracker(routeId, routeName, routeDesc, pushState = true, scrollToStationId = null, direction = 1) {
-					    currentRouteId = routeId;
-					    currentRouteName = routeName;
-					    currentDirection = direction;
-					    
-					    showPage('busTrackerPage', pushState);
-					    updateSEO(routeName, routeDesc);
-					    
-					    routeTitle.textContent = routeName;
-					    routeDescription.textContent = routeDesc;
-					    loadBusData(currentRouteId, true, scrollToStationId).then(() => {
-					       startInfoCycler();
-					    });
-					    countdownTimer.reset();
-					}
+                    			currentRouteId = routeId;
+                    			currentRouteName = routeName;
+                    			currentDirection = direction;
+			
+                    			showPage('busTrackerPage', pushState);
+                    			updateSEO(routeName, routeDesc);
+			
+                    			// Ensure tracker layout is updated even when showPage early-returns
+                    			updateTrackerLayout();
+			
+                    			routeTitle.textContent = routeName;
+                    			routeDescription.textContent = routeDesc;
+                    			loadBusData(currentRouteId, true, scrollToStationId).then(() => {
+                    			   startInfoCycler();
+                    			});
+                    			countdownTimer.reset();
+                    		}
                     function createTimePillHtml(estimate) {
                         let timeDisplay = translations[currentLang].lastBusDeparted;
                         let pillBgColorClass = 'bg-slate-200';
