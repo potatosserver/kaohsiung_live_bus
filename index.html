@@ -2314,7 +2314,7 @@
                                     seq: route.gxcode ? parseInt(route.gxcode) : 999999,
                                     name: currentLang === 'en' ? route.routename_en : route.routename_zh_tw,
                                     description: currentLang === 'en' ? route.headsign_en_corrected : route.headsign_zh_tw_corrected,
-                                    opType: route.busroutetype,
+                                    opType: route.routetype_zh_tw,  // Use routetype_zh_tw for type identification
                                     direction: route.direction,
                                     // Keep raw fields for destination/departure lookup
                                     departurestopname_zh_tw_corrected: route.departurestopname_zh_tw_corrected,
@@ -2322,7 +2322,9 @@
                                     departurestopname_en_corrected: route.departurestopname_en_corrected,
                                     destinationstopname_en_corrected: route.destinationstopname_en_corrected,
                                     headsign_zh_tw_corrected: route.headsign_zh_tw_corrected,
-                                    headsign_en_corrected: route.headsign_en_corrected
+                                    headsign_en_corrected: route.headsign_en_corrected,
+                                    routetype_zh_tw: route.routetype_zh_tw,
+                                    busroutetype: route.busroutetype
                                 }))
                                 .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001')
                                 .sort((a, b) => a.seq - b.seq);
@@ -3251,16 +3253,22 @@
                                 } else if (filterVal === 'E') {
                                     filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().startsWith('e'));
                                 } else if (filterVal === '小黃') {
-                                    filteredRoutes = allRoutes.filter(route => route.opType === 9);
+                                    filteredRoutes = allRoutes.filter(route => route.routetype_zh_tw && route.routetype_zh_tw.includes('公車式小黃'));
                                 } else if (filterVal === '幹線') {
                                     const keyword = currentLang === 'en' ? 'main line' : '幹線';
                                     filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
                                 } else if (['紅', '橘', '黃', '綠'].includes(filterVal)) {
                                     const keyword = translations[currentLang][category.i18nKey].toLowerCase();
                                      if (currentLang === 'zh' && filterVal === '黃') {
-                                        filteredRoutes = allRoutes.filter(route => route.name.includes(keyword) && route.opType !== 9);
+                                        filteredRoutes = allRoutes.filter(route => 
+                                            route.name.includes(keyword) && 
+                                            route.routetype_zh_tw && 
+                                            !route.routetype_zh_tw.includes('公車式小黃')
+                                        );
                                     } else {
-                                        filteredRoutes = allRoutes.filter(route => route.name.toLowerCase().includes(keyword));
+                                        filteredRoutes = allRoutes.filter(route => 
+                                            route.name.toLowerCase().includes(keyword)
+                                        );
                                     }
                                 }
                                 remainingSearchTerm = lowerCasePrefix.length > 0 ? lowerCaseTerm.substring(lowerCasePrefix.length).trim() : lowerCaseTerm;
@@ -3275,9 +3283,11 @@
                             filteredRoutes = finalFilterTarget.filter(route =>
                                 String(route.id) !== '3000' && String(route.id) !== '3001' && 
                                 (
+                                    // Exact match on route ID first
+                                    route.id.toString() === remainingSearchTerm ||
+                                    // Then match on name/description
                                     route.name.toLowerCase().includes(remainingSearchTerm) || 
-                                    (route.description && route.description.toLowerCase().includes(remainingSearchTerm)) ||
-                                    route.id.toString() === remainingSearchTerm
+                                    (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
                                 )
                             );
                         }
