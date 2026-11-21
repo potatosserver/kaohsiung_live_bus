@@ -4459,20 +4459,20 @@
                         });
                     }
                     function updateBusMarkers(buses) {
-                    						if(!map) return;
-						
-                    						// Handle new API format: buses have platenumb, positionlat, positionlon, direction, carType, crowding, etaTime
-                    						const normalizedBuses = buses.map(bus => ({
-                    							node: {
-                    								id: bus.platenumb,
-                    								lat: parseFloat(bus.positionlat),
-                    								lon: parseFloat(bus.positionlon)
-                    							},
-                    							goBack: bus.direction === 0 ? 1 : 2,  // direction 0=go, 1=back
-                    							carType: bus.cartype,
-                    							crowding: bus.crowding,
-                    							etaTime: bus.etatime
-                    						})).filter(b => b.node.id && !isNaN(b.node.lat) && !isNaN(b.node.lon));
+                    					if(!map) return;
+	
+                    					// Handle parsed format from ApiParser.parseRealtime: {goBack, node: {id, lat, lon}, direction, ...}
+                    					const normalizedBuses = buses.map(bus => ({
+                    						node: {
+                    							id: bus.node?.id || bus.platenumb,
+                    							lat: parseFloat(bus.node?.lat ?? bus.positionlat),
+                    							lon: parseFloat(bus.node?.lon ?? bus.positionlon)
+                    						},
+                    						goBack: bus.goBack || (bus.direction === 0 ? 1 : 2),
+                    						carType: bus.carType || bus.cartype,
+                    						crowding: bus.crowding,
+                    						etaTime: bus.etaTime || bus.etatime
+                    					})).filter(b => b.node.id && !isNaN(b.node.lat) && !isNaN(b.node.lon));
 				
                     				const newBusIds = new Set(normalizedBuses.map(bus => String(bus.node.id)));
                     				const isLrt = currentRouteId === '3000' || currentRouteId === '3001';
