@@ -3226,6 +3226,40 @@
                                 routeListContainer.appendChild(card);
                             });
                         }
+                    // Route aliases for common names/nicknames → route IDs
+                    const routeAliases = {
+                        // 幹線公車
+                        '紅56': '856', '科技幹線': '856', '856紅56': '856',
+                        '百貨幹線': '100', '100百貨': '100',
+                        '覺民幹線': '60', '60覺民': '60',
+                        '小港幹線': '69', '69小港': '69',
+                        '三多幹線': '70', '70三多': '70',
+                        '昌福幹線': '77', '77昌福': '77',
+                        '建國幹線': '88', '88建國': '88',
+                        '民族幹線': '90', '90民族': '90',
+                        '自由幹線': '92', '92自由': '92',
+                        '中華幹線': '205', '205中華': '205',
+                        '新昌幹線': '217', '217新昌': '217',
+                        '內惟幹線': '218', '218內惟': '218',
+                        '林園幹線': '紅3', '紅3林園': '紅3',
+                        '旗津幹線': '紅9', '紅9旗津': '紅9',
+                        '明誠幹線': '紅33', '紅33明誠': '紅33',
+                        '裕誠幹線': '紅36', '紅36裕誠': '紅36',
+                        '梓官幹線': '紅53', '紅53梓官': '紅53',
+                        // 快線公車
+                        '旗美國道快捷': 'E01', 'E01旗美': 'E01',
+                        '哈佛快線': 'E02', 'E02哈佛': 'E02',
+                        '高旗美濃快線': 'E28', 'E28高旗美濃': 'E28',
+                        // 接駁公車常用簡稱
+                        '紅2': '807', '紅7': '807', '紅7B': '8071',
+                        '橘7': '9701', '橘7B': '9701',
+                        '黃1': '黃1', '黃2': '6023',
+                        '綠2': '7002',
+                        // 特殊路線
+                        'JOY': 'JOY', '大湖線': '大湖線',
+                        'T502': '15137', 'T511': '15100',
+                        '環東': '168環東', '環西': '168環西',
+                    };
                     function applySearch(searchTerm) {
                         const lowerCaseTerm = searchTerm.toLowerCase().trim();
                         if (!lowerCaseTerm) {
@@ -3236,9 +3270,19 @@
                             }
                             return;
                         }
+                        
+                        // Resolve alias to route ID if matched
+                        let resolvedTerm = lowerCaseTerm;
+                        for (const [alias, routeId] of Object.entries(routeAliases)) {
+                            if (lowerCaseTerm === alias.toLowerCase() || lowerCaseTerm.includes(alias.toLowerCase())) {
+                                resolvedTerm = routeId.toLowerCase();
+                                break;
+                            }
+                        }
+                        
                         let filteredRoutes = [...allRoutes];
                         let categoryMatched = false;
-                        let remainingSearchTerm = lowerCaseTerm;
+                        let remainingSearchTerm = resolvedTerm;
                         
                         for (const category of categoryFilters) {
                             const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
