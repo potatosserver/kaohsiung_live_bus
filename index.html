@@ -1728,6 +1728,43 @@
         </div>
     </div>
     <script>
+let allRoutes =[];
+                    let currentRouteData = null;
+                    let currentDirection = 1; 
+                    let currentRouteId = null;
+                    let currentRouteName = null;
+                    let countdownInterval = null;
+                    let currentLang = "zh";
+                    let defaultStartPage = 'home';
+                    let updateInterval = 20; 
+                    let routeDataLang = null;
+                    let activePage = 'homePage'; 
+                    let selectedCategoryPrefix = '';
+                    let favoriteData = { groups:[], favorites: [], groupOrder: { all:[] } };
+                    let activeGroupId = 'all'; 
+                    let longPressTimer;
+                    let currentStationContext = null;
+                    let favoriteButtonHideTimeout;
+                    let draggedItem = null;
+                    let draggedGroupTab = null;
+                    let isAnimatingDirection = false;
+                    let lastPage = null;
+                    let weatherDataLoaded = false;
+                    let announcementsDataLoaded = false;
+                    let resolveCustomPrompt;
+                    let resolveCustomConfirm;
+                    const favoritePage = document.getElementById('favoriteStationsPage');
+                    let favTouchStartX = 0, favTouchStartY = 0;
+                    let favTouchEndX = 0, favTouchEndY = 0;
+                    let isDraggingTouch = false;
+                    let placeholder = null; 
+                    let ghost = null; 
+                    let startYTouch = 0;
+                    let startTop = 0;
+                    let favoriteUpdateInterval = null;
+
+                    
+
         function setViewportHeight() {
             const vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -2116,42 +2153,7 @@ async function loadInitialData() {
                         updateNavHighlight(); 
 					}
 
-let allRoutes =[];
-                    let currentRouteData = null;
-                    let currentDirection = 1; 
-                    let currentRouteId = null;
-                    let currentRouteName = null;
-                    let countdownInterval = null;
-                    let currentLang = "zh";
-                    let defaultStartPage = 'home';
-                    let updateInterval = 20; 
-                    let routeDataLang = null;
-                    let activePage = 'homePage'; 
-                    let selectedCategoryPrefix = '';
-                    let favoriteData = { groups:[], favorites: [], groupOrder: { all:[] } };
-                    let activeGroupId = 'all'; 
-                    let longPressTimer;
-                    let currentStationContext = null;
-                    let favoriteButtonHideTimeout;
-                    let draggedItem = null;
-                    let draggedGroupTab = null;
-                    let isAnimatingDirection = false;
-                    let lastPage = null;
-                    let weatherDataLoaded = false;
-                    let announcementsDataLoaded = false;
-                    let resolveCustomPrompt;
-                    let resolveCustomConfirm;
-                    const favoritePage = document.getElementById('favoriteStationsPage');
-                    let favTouchStartX = 0, favTouchStartY = 0;
-                    let favTouchEndX = 0, favTouchEndY = 0;
-                    let isDraggingTouch = false;
-                    let placeholder = null; 
-                    let ghost = null; 
-                    let startYTouch = 0;
-                    let startTop = 0;
-                    let favoriteUpdateInterval = null;
-
-                    let draggedGroupItem = null;
+let draggedGroupItem = null;
                     let groupPlaceholder = null;
                     let groupGhost = null;
                     let startYGroupTouch = 0;
