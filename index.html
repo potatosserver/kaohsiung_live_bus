@@ -2450,8 +2450,10 @@
                                 buses: { edges: buses },
                                 // Destination/departure names for direction toggle buttons
                                 // Use the correct headsign_corrected fields from API
-                                destination: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 0)?.destinationstopname_zh_tw_corrected || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 1)?.destinationstopname_zh_tw_corrected || routeName)),
-                                departure: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 1)?.departurestopname_zh_tw_corrected || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 0)?.departurestopname_zh_tw_corrected || routeName))
+                                // "去程往" always shows direction 0's destination
+                                // "返程往" always shows direction 1's destination
+                                destination: allRoutes.find(r => r.id === routeId && r.direction === 0)?.destinationstopname_zh_tw_corrected || routeName,
+                                departure: allRoutes.find(r => r.id === routeId && r.direction === 1)?.destinationstopname_zh_tw_corrected || routeName
                             };
                         },
                         
