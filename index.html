@@ -2116,178 +2116,7 @@ async function loadInitialData() {
                         updateNavHighlight(); 
 					}
 
-document.addEventListener('DOMContentLoaded', async () => {
-            // If DOMContentLoaded already fired (readyState = complete), run init immediately
-            if (document.readyState === 'complete' || document.readyState === 'interactive') {
-                // Handler will run normally, just ensure init executes
-            }
-            const splashScreen = document.getElementById('splashScreen');
-            const body = document.body;
-            if (localStorage.getItem('darkMode') === 'true') {
-                body.classList.add('dark-mode');
-            }
-            const urlParams = new URLSearchParams(window.location.search);
-            const isDeepLink = urlParams.has('route'); 
-            const isUserEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
-            const showSplashScreen = isUserEnabled && !isDeepLink;
-
-            // 調整: 改為平行載入以提升體感速度
-            const startApp = () => {
-                const splashScreen = document.getElementById('splashScreen');
-                if(splashScreen) {
-                    splashScreen.style.transition = 'opacity 0.4s ease-out';
-                    splashScreen.style.opacity = '0';
-                    splashScreen.addEventListener('transitionend', () => {
-                        if (splashScreen) splashScreen.remove(); 
-                    }, { once: true });
-                }
-            };
-            
-            if (showSplashScreen) {
-                function startIconPhysics() {
-                    const container = document.getElementById('icons-container');
-                    if (!container) return;
-                    const iconNames =[
-                        'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
-                        'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
-                        'route', 'navigation', 'trip_origin'
-                    ];
-                    const numIcons = 200;
-                    let icons =[];
-                    const gravity = 0.2;
-                    const initialUpwardVelocity = -13;
-                    for (let i = 0; i < numIcons; i++) {
-                        const element = document.createElement('span');
-                        element.classList.add('material-icons', 'spray-icon');
-                        element.textContent = iconNames[Math.floor(Math.random() * iconNames.length)];
-                        const size = Math.random() * 22 + 18;
-                        element.style.fontSize = size + 'px';
-                        element.style.color = `hsl(${Math.random() * 360}, 70%, 65%)`;
-                        container.appendChild(element);
-                        icons.push({
-                            element: element,
-                            x: 0,
-                            y: 0,
-                            vx: (Math.random() - 0.5) * 18,
-                            vy: initialUpwardVelocity * (Math.random() * 0.5 + 0.8),
-                        });
-                    }
-                    function update() {
-                        const killMargin = 100;
-                        const killZone = {
-                            top: -window.innerHeight / 2 - killMargin,
-                            right: window.innerWidth / 2 + killMargin,
-                            bottom: window.innerHeight / 2 + killMargin,
-                            left: -window.innerWidth / 2 - killMargin
-                        };
-                        for (let i = icons.length - 1; i >= 0; i--) {
-                            let icon = icons[i];
-                            icon.vy += gravity;
-                            icon.x += icon.vx;
-                            icon.y += icon.vy;
-                            if (icon.x < killZone.left || icon.x > killZone.right || icon.y < killZone.top || icon.y > killZone.bottom) {
-                                if(icon.element) icon.element.remove();
-                                icons.splice(i, 1);
-                            } else {
-                                icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px)`;
-                            }
-                        }
-                        if (icons.length > 0) {
-                            requestAnimationFrame(update);
-                        }
-                    }
-                    update();
-                }
-                setTimeout(startIconPhysics, 100);
-                // 立刻開始載入資料，不強制鎖定 2.8 秒
-                initializeApp().then(() => {
-                    setTimeout(startApp, 500); // 資料載好後最短顯示時間
-                }); 
-            } else {
-                if(splashScreen) {
-                    splashScreen.remove();
-                }
-                initializeApp();
-            }
-            async function initializeApp() {
-                try { 
-                    const API_BASE = 'https://api.potatosserver.dpdns.org/api';
-                    const HEADERS = {
-                        'Accept': 'application/json',
-                    };
-                    const body = document.body;
-                    const routeSelectionPage = document.getElementById('routeSelectionPage');
-                    const busTrackerPage = document.getElementById('busTrackerPage');
-                    const favoriteStationsPage = document.getElementById('favoriteStationsPage');
-                    const lrtPage = document.getElementById('lrtPage');
-                    const homePage = document.getElementById('homePage');
-                    const settingsPage = document.getElementById('settingsPage');
-                    const routeSearchInput = document.getElementById('routeSearchInput');
-                    const categoryDisplay = document.getElementById('categoryDisplay');
-                    const routeListContainer = document.getElementById('routeListContainer');
-                    const initialLoading = document.getElementById('initialLoading');
-                    const noResultsMessage = document.getElementById('noResultsMessage');
-                    const filterKeyboard = document.getElementById('filterKeyboard');
-                    const filterKeyboardContainer = document.getElementById('filterKeyboardContainer');
-                    const trackerLoading = document.getElementById('trackerLoading');
-                    const routeTitle = document.getElementById('routeTitle');
-                    const routeDescription = document.getElementById('routeDescription');
-                    const stationListGo = document.getElementById('stationListGo');
-                    const stationListBack = document.getElementById('stationListBack');
-                    const stationListGoContent = document.getElementById('stationListGoContent');
-                    const stationListBackContent = document.getElementById('stationListBackContent');
-                    const goDirectionButton = document.getElementById('goDirectionButton');
-                    const backDirectionButton = document.getElementById('backDirectionButton');
-                    const updateCountdownButton = document.getElementById('updateCountdown');
-                    const mainNav = document.getElementById('mainNav');
-                    const favoriteListContainer = document.getElementById('favoriteListContainer');
-                    const noFavoritesMessage = document.getElementById('noFavoritesMessage');
-                    const favoriteGroupTabsContainer = document.getElementById('favoriteGroupTabsContainer');
-                    const favoriteActionButton = document.getElementById('favoriteActionButton');
-                    const favoriteActionIcon = document.getElementById('favoriteActionIcon');
-                    const favoriteActionText = document.getElementById('favoriteActionText');
-                    const toastContainer = document.getElementById('toastContainer');
-                    const selectGroupModal = document.getElementById('selectGroupModal');
-                    const selectGroupModalBody = document.getElementById('selectGroupModalBody');
-                    const closeSelectGroupModal = document.getElementById('closeSelectGroupModal');
-                    const manageGroupsModal = document.getElementById('manageGroupsModal');
-                    const manageGroupsModalBody = document.getElementById('manageGroupsModalBody');
-                    const closeManageGroupsModal = document.getElementById('closeManageGroupsModal');
-                    const addNewGroupBtn = document.getElementById('addNewGroupBtn');
-                    const customPromptModal = document.getElementById('customPromptModal');
-                    const customPromptTitle = document.getElementById('customPromptTitle');
-                    const customPromptMessage = document.getElementById('customPromptMessage');
-                    const customPromptInput = document.getElementById('customPromptInput');
-                    const customPromptConfirmBtn = document.getElementById('customPromptConfirmBtn');
-                    const customPromptCancelBtn = document.getElementById('customPromptCancelBtn');
-                    const customConfirmModal = document.getElementById('customConfirmModal');
-                    const customConfirmTitle = document.getElementById('customConfirmTitle');
-                    const customConfirmMessage = document.getElementById('customConfirmMessage');
-                    const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
-                    const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
-                    const darkModeToggle = document.getElementById('darkModeToggle');
-                    const splashScreenToggle = document.getElementById('splashScreenToggle');
-                    const mapDisplayToggle = document.getElementById('mapDisplayToggle');
-                    const languageSelect = document.getElementById('languageSelect');
-                    const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
-                    const updateIntervalSelect = document.getElementById('updateIntervalSelect');
-                    const weatherLoadingElement = document.getElementById('weatherLoading');
-                    const weatherErrorMessageElement = document.getElementById('weatherErrorMessage');
-                    const weatherInfoElement = document.getElementById('weatherInfo');
-                    const temperatureElement = document.getElementById('temperature');
-                    const weatherDescriptionElement = document.getElementById('weather-description');
-                    const weatherIconElement = document.getElementById('weather-icon');
-                    const apparentTemperatureElement = document.getElementById('apparent-temperature');
-                    const relativeHumidityElement = document.getElementById('relative-humidity');
-                    const windSpeedElement = document.getElementById('wind-speed');
-                    const currentDateElement = document.getElementById('current-date');
-                    const announcementContent = document.getElementById('announcementContent');
-                    const announcementLoading = document.getElementById('announcementLoading');
-                    const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
-                    const lrtClockwiseBtn = document.getElementById('lrtClockwiseBtn');
-                    const lrtCounterClockwiseBtn = document.getElementById('lrtCounterClockwiseBtn');
-
-                    let allRoutes =[];
+let allRoutes =[];
                     let currentRouteData = null;
                     let currentDirection = 1; 
                     let currentRouteId = null;
@@ -5678,4 +5507,179 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     </script>
 </body>
-</html>
+</html
+
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+            // If DOMContentLoaded already fired (readyState = complete), run init immediately
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                // Handler will run normally, just ensure init executes
+            }
+            const splashScreen = document.getElementById('splashScreen');
+            const body = document.body;
+            if (localStorage.getItem('darkMode') === 'true') {
+                body.classList.add('dark-mode');
+            }
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDeepLink = urlParams.has('route'); 
+            const isUserEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
+            const showSplashScreen = isUserEnabled && !isDeepLink;
+
+            // 調整: 改為平行載入以提升體感速度
+            const startApp = () => {
+                const splashScreen = document.getElementById('splashScreen');
+                if(splashScreen) {
+                    splashScreen.style.transition = 'opacity 0.4s ease-out';
+                    splashScreen.style.opacity = '0';
+                    splashScreen.addEventListener('transitionend', () => {
+                        if (splashScreen) splashScreen.remove(); 
+                    }, { once: true });
+                }
+            };
+            
+            if (showSplashScreen) {
+                function startIconPhysics() {
+                    const container = document.getElementById('icons-container');
+                    if (!container) return;
+                    const iconNames =[
+                        'directions_bus', 'commute', 'map', 'pin_drop', 'explore', 'rocket_launch',
+                        'favorite', 'star', 'settings', 'place', 'local_shipping', 'emoji_transportation',
+                        'route', 'navigation', 'trip_origin'
+                    ];
+                    const numIcons = 200;
+                    let icons =[];
+                    const gravity = 0.2;
+                    const initialUpwardVelocity = -13;
+                    for (let i = 0; i < numIcons; i++) {
+                        const element = document.createElement('span');
+                        element.classList.add('material-icons', 'spray-icon');
+                        element.textContent = iconNames[Math.floor(Math.random() * iconNames.length)];
+                        const size = Math.random() * 22 + 18;
+                        element.style.fontSize = size + 'px';
+                        element.style.color = `hsl(${Math.random() * 360}, 70%, 65%)`;
+                        container.appendChild(element);
+                        icons.push({
+                            element: element,
+                            x: 0,
+                            y: 0,
+                            vx: (Math.random() - 0.5) * 18,
+                            vy: initialUpwardVelocity * (Math.random() * 0.5 + 0.8),
+                        });
+                    }
+                    function update() {
+                        const killMargin = 100;
+                        const killZone = {
+                            top: -window.innerHeight / 2 - killMargin,
+                            right: window.innerWidth / 2 + killMargin,
+                            bottom: window.innerHeight / 2 + killMargin,
+                            left: -window.innerWidth / 2 - killMargin
+                        };
+                        for (let i = icons.length - 1; i >= 0; i--) {
+                            let icon = icons[i];
+                            icon.vy += gravity;
+                            icon.x += icon.vx;
+                            icon.y += icon.vy;
+                            if (icon.x < killZone.left || icon.x > killZone.right || icon.y < killZone.top || icon.y > killZone.bottom) {
+                                if(icon.element) icon.element.remove();
+                                icons.splice(i, 1);
+                            } else {
+                                icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px)`;
+                            }
+                        }
+                        if (icons.length > 0) {
+                            requestAnimationFrame(update);
+                        }
+                    }
+                    update();
+                }
+                setTimeout(startIconPhysics, 100);
+                // 立刻開始載入資料，不強制鎖定 2.8 秒
+                initializeApp().then(() => {
+                    setTimeout(startApp, 500); // 資料載好後最短顯示時間
+                }); 
+            } else {
+                if(splashScreen) {
+                    splashScreen.remove();
+                }
+                initializeApp();
+            }
+            async function initializeApp() {
+                try { 
+                    const API_BASE = 'https://api.potatosserver.dpdns.org/api';
+                    const HEADERS = {
+                        'Accept': 'application/json',
+                    };
+                    const body = document.body;
+                    const routeSelectionPage = document.getElementById('routeSelectionPage');
+                    const busTrackerPage = document.getElementById('busTrackerPage');
+                    const favoriteStationsPage = document.getElementById('favoriteStationsPage');
+                    const lrtPage = document.getElementById('lrtPage');
+                    const homePage = document.getElementById('homePage');
+                    const settingsPage = document.getElementById('settingsPage');
+                    const routeSearchInput = document.getElementById('routeSearchInput');
+                    const categoryDisplay = document.getElementById('categoryDisplay');
+                    const routeListContainer = document.getElementById('routeListContainer');
+                    const initialLoading = document.getElementById('initialLoading');
+                    const noResultsMessage = document.getElementById('noResultsMessage');
+                    const filterKeyboard = document.getElementById('filterKeyboard');
+                    const filterKeyboardContainer = document.getElementById('filterKeyboardContainer');
+                    const trackerLoading = document.getElementById('trackerLoading');
+                    const routeTitle = document.getElementById('routeTitle');
+                    const routeDescription = document.getElementById('routeDescription');
+                    const stationListGo = document.getElementById('stationListGo');
+                    const stationListBack = document.getElementById('stationListBack');
+                    const stationListGoContent = document.getElementById('stationListGoContent');
+                    const stationListBackContent = document.getElementById('stationListBackContent');
+                    const goDirectionButton = document.getElementById('goDirectionButton');
+                    const backDirectionButton = document.getElementById('backDirectionButton');
+                    const updateCountdownButton = document.getElementById('updateCountdown');
+                    const mainNav = document.getElementById('mainNav');
+                    const favoriteListContainer = document.getElementById('favoriteListContainer');
+                    const noFavoritesMessage = document.getElementById('noFavoritesMessage');
+                    const favoriteGroupTabsContainer = document.getElementById('favoriteGroupTabsContainer');
+                    const favoriteActionButton = document.getElementById('favoriteActionButton');
+                    const favoriteActionIcon = document.getElementById('favoriteActionIcon');
+                    const favoriteActionText = document.getElementById('favoriteActionText');
+                    const toastContainer = document.getElementById('toastContainer');
+                    const selectGroupModal = document.getElementById('selectGroupModal');
+                    const selectGroupModalBody = document.getElementById('selectGroupModalBody');
+                    const closeSelectGroupModal = document.getElementById('closeSelectGroupModal');
+                    const manageGroupsModal = document.getElementById('manageGroupsModal');
+                    const manageGroupsModalBody = document.getElementById('manageGroupsModalBody');
+                    const closeManageGroupsModal = document.getElementById('closeManageGroupsModal');
+                    const addNewGroupBtn = document.getElementById('addNewGroupBtn');
+                    const customPromptModal = document.getElementById('customPromptModal');
+                    const customPromptTitle = document.getElementById('customPromptTitle');
+                    const customPromptMessage = document.getElementById('customPromptMessage');
+                    const customPromptInput = document.getElementById('customPromptInput');
+                    const customPromptConfirmBtn = document.getElementById('customPromptConfirmBtn');
+                    const customPromptCancelBtn = document.getElementById('customPromptCancelBtn');
+                    const customConfirmModal = document.getElementById('customConfirmModal');
+                    const customConfirmTitle = document.getElementById('customConfirmTitle');
+                    const customConfirmMessage = document.getElementById('customConfirmMessage');
+                    const customConfirmConfirmBtn = document.getElementById('customConfirmConfirmBtn');
+                    const customConfirmCancelBtn = document.getElementById('customConfirmCancelBtn');
+                    const darkModeToggle = document.getElementById('darkModeToggle');
+                    const splashScreenToggle = document.getElementById('splashScreenToggle');
+                    const mapDisplayToggle = document.getElementById('mapDisplayToggle');
+                    const languageSelect = document.getElementById('languageSelect');
+                    const defaultStartPageSelect = document.getElementById('defaultStartPageSelect');
+                    const updateIntervalSelect = document.getElementById('updateIntervalSelect');
+                    const weatherLoadingElement = document.getElementById('weatherLoading');
+                    const weatherErrorMessageElement = document.getElementById('weatherErrorMessage');
+                    const weatherInfoElement = document.getElementById('weatherInfo');
+                    const temperatureElement = document.getElementById('temperature');
+                    const weatherDescriptionElement = document.getElementById('weather-description');
+                    const weatherIconElement = document.getElementById('weather-icon');
+                    const apparentTemperatureElement = document.getElementById('apparent-temperature');
+                    const relativeHumidityElement = document.getElementById('relative-humidity');
+                    const windSpeedElement = document.getElementById('wind-speed');
+                    const currentDateElement = document.getElementById('current-date');
+                    const announcementContent = document.getElementById('announcementContent');
+                    const announcementLoading = document.getElementById('announcementLoading');
+                    const noAnnouncementsMessage = document.getElementById('noAnnouncementsMessage');
+                    const lrtClockwiseBtn = document.getElementById('lrtClockwiseBtn');
+                    const lrtCounterClockwiseBtn = document.getElementById('lrtCounterClockwiseBtn');
+
+                    >
