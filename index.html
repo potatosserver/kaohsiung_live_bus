@@ -2448,7 +2448,11 @@
                                 stations: { edges: currentStops },
                                 allStations: { edges: stops },  // Keep all for direction switching
                                 shapes: { edges: shapes },
-                                buses: { edges: buses }
+                                buses: { edges: buses },
+                                // Destination/departure names for direction toggle buttons
+                                // Use description (headsign_zh_tw_corrected) from routes data
+                                destination: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 0)?.description || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 1)?.description || routeName)),
+                                departure: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 1)?.description || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 0)?.description || routeName))
                             };
                         },
                         
