@@ -2302,28 +2302,27 @@
                     // Centralized API Response Parser
                     // Handles all format conversions from new OData API to internal data structures
                     const ApiParser = {
-                        // Parse routes list - deduplicate by routeid, handle null gxcode
+                        // Parse routes list - keep both directions for destination/departure lookup
                         parseRoutes(rawData) {
                             if (!Array.isArray(rawData)) return [];
                             
-                            // Deduplicate by routeid (API returns both directions)
-                            const routeMap = new Map();
-                            rawData.forEach(route => {
-                                const id = route.routeid;
-                                if (!routeMap.has(id) || (route.direction === 0 && routeMap.get(id).direction === 1)) {
-                                    routeMap.set(id, route);
-                                }
-                            });
-                            const uniqueRoutes = Array.from(routeMap.values());
-                            
-                            return uniqueRoutes
+                            // Keep all directions (don't deduplicate by direction)
+                            // Each direction has different headsign_corrected
+                            return rawData
                                 .map(route => ({
                                     id: route.routeid,
                                     seq: route.gxcode ? parseInt(route.gxcode) : 999999,
                                     name: currentLang === 'en' ? route.routename_en : route.routename_zh_tw,
                                     description: currentLang === 'en' ? route.headsign_en_corrected : route.headsign_zh_tw_corrected,
                                     opType: route.busroutetype,
-                                    direction: route.direction
+                                    direction: route.direction,
+                                    // Keep raw fields for destination/departure lookup
+                                    departurestopname_zh_tw_corrected: route.departurestopname_zh_tw_corrected,
+                                    destinationstopname_zh_tw_corrected: route.destinationstopname_zh_tw_corrected,
+                                    departurestopname_en_corrected: route.departurestopname_en_corrected,
+                                    destinationstopname_en_corrected: route.destinationstopname_en_corrected,
+                                    headsign_zh_tw_corrected: route.headsign_zh_tw_corrected,
+                                    headsign_en_corrected: route.headsign_en_corrected
                                 }))
                                 .filter(route => route.id !== 0 && String(route.id) !== '3000' && String(route.id) !== '3001')
                                 .sort((a, b) => a.seq - b.seq);
@@ -2450,9 +2449,9 @@
                                 shapes: { edges: shapes },
                                 buses: { edges: buses },
                                 // Destination/departure names for direction toggle buttons
-                                // Use description (headsign_zh_tw_corrected) from routes data
-                                destination: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 0)?.description || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 1)?.description || routeName)),
-                                departure: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 1)?.description || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 0)?.description || routeName))
+                                // Use the correct headsign_corrected fields from API
+                                destination: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 0)?.destinationstopname_zh_tw_corrected || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 1)?.destinationstopname_zh_tw_corrected || routeName)),
+                                departure: routeName.includes('往') ? routeName : (currentDirection === 1 ? (allRoutes.find(r => r.id === routeId && r.direction === 1)?.departurestopname_zh_tw_corrected || routeName) : (allRoutes.find(r => r.id === routeId && r.direction === 0)?.departurestopname_zh_tw_corrected || routeName))
                             };
                         },
                         
@@ -3197,28 +3196,32 @@
                         noResultsMessage.style.display = 'none';
                     }
                     function displayRoutes(routes) {
-                        routeListContainer.innerHTML = '';
-                        if (routes.length === 0 && allRoutes.length > 0) { 
-                            noResultsMessage.style.display = 'block';
-                        } else {
-                            noResultsMessage.style.display = 'none';
-                        }
-                        routes.forEach(route => {
-                            const card = document.createElement('div');
-                            card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors';
-                            card.dataset.routeId = route.id;
-                            card.dataset.routeName = route.name;
-                            card.dataset.routeDesc = route.description;
-                            card.innerHTML = `
-                                <h3 class="font-bold text-lg text-slate-800 dark:text-slate-200">${route.name}</h3>
-                                <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${route.description || '&nbsp;'}</p>
-                            `;
-                            card.addEventListener('click', () => {
-                                navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc);
+                            routeListContainer.innerHTML = '';
+                            if (routes.length === 0 && allRoutes.length > 0) { 
+                                noResultsMessage.style.display = 'block';
+                            } else {
+                                noResultsMessage.style.display = 'none';
+                            }
+                            // Deduplicate by route id for display (keep first occurrence, typically direction 0)
+                            const seen = new Set();
+                            routes.forEach(route => {
+                                if (seen.has(route.id)) return;
+                                seen.add(route.id);
+                                const card = document.createElement('div');
+                                card.className = 'route-card p-4 bg-white rounded-lg shadow-md cursor-pointer border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors';
+                                card.dataset.routeId = route.id;
+                                card.dataset.routeName = route.name;
+                                card.dataset.routeDesc = route.description;
+                                card.innerHTML = `
+                                    <h3 class="font-bold text-lg text-slate-800 dark:text-slate-200">${route.name}</h3>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">${route.description || '&nbsp;'}</p>
+                                `;
+                                card.addEventListener('click', () => {
+                                    navigateToTracker(card.dataset.routeId, card.dataset.routeName, card.dataset.routeDesc);
+                                });
+                                routeListContainer.appendChild(card);
                             });
-                            routeListContainer.appendChild(card);
-                        });
-                    }
+                        }
                     function applySearch(searchTerm) {
                         const lowerCaseTerm = searchTerm.toLowerCase().trim();
                         if (!lowerCaseTerm) {
