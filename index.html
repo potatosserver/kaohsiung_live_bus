@@ -3283,10 +3283,12 @@
                             filteredRoutes = finalFilterTarget.filter(route =>
                                 String(route.id) !== '3000' && String(route.id) !== '3001' && 
                                 (
-                                    // Exact match on route ID first
+                                    // Exact match on route ID first (highest priority)
                                     route.id.toString() === remainingSearchTerm ||
-                                    // Then match on name/description
-                                    route.name.toLowerCase().includes(remainingSearchTerm) || 
+                                    // Prefix match on route ID (for numeric search like "7" → "7A", "7C", not "17", "70")
+                                    route.id.toString().startsWith(remainingSearchTerm) ||
+                                    // Then match on name/description (prefix for name, includes for description)
+                                    route.name.toLowerCase().startsWith(remainingSearchTerm) || 
                                     (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
                                 )
                             );
