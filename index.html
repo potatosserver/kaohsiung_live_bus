@@ -5469,7 +5469,28 @@ let draggedGroupItem = null;
 
         // If DOMContentLoaded already fired (readyState = complete), run init immediately
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            setTimeout(async () => {
+            setTimeout
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // If DOMContentLoaded already fired (readyState = complete), run init immediately
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        // Handler will run normally, just ensure init executes
+    }
+
+    // If DOMContentLoaded already fired (readyState = complete), run init immediately
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(async () => {
+            try {
+                await initializeAppUI();
+                await loadInitialData();
+            } catch (error) {
+                console.error('Critical error during initialization:', error);
+            }
+        }, 0);
+    }
+});
+
+(async () => {
                 try {
                     await initializeAppUI();
                     await loadInitialData();
