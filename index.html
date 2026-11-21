@@ -1736,6 +1736,10 @@
         window.addEventListener('resize', setViewportHeight);
         window.addEventListener('orientationchange', setViewportHeight);
         document.addEventListener('DOMContentLoaded', async () => {
+            // If DOMContentLoaded already fired (readyState = complete), run init immediately
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                // Handler will run normally, just ensure init executes
+            }
             const splashScreen = document.getElementById('splashScreen');
             const body = document.body;
             if (localStorage.getItem('darkMode') === 'true') {
