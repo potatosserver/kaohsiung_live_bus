@@ -1753,8 +1753,7 @@ let allRoutes =[];
                     let announcementsDataLoaded = false;
                     let resolveCustomPrompt;
                     let resolveCustomConfirm;
-                    const favoritePage = document.getElementById('favoriteStationsPage');
-                    let favTouchStartX = 0, favTouchStartY = 0;
+                                        let favTouchStartX = 0, favTouchStartY = 0;
                     let favTouchEndX = 0, favTouchEndY = 0;
                     let isDraggingTouch = false;
                     let placeholder = null; 
@@ -1773,7 +1772,8 @@ let allRoutes =[];
         window.addEventListener('resize', setViewportHeight);
         window.addEventListener('orientationchange', setViewportHeight);
         async function initializeAppUI() {
-                        applyInitialTheme();
+                        
+        const favoritePage = document.getElementById("favoriteStationsPage");applyInitialTheme();
                         
                         if (!map) {
                                                     map = L.map('map').setView([22.6273, 120.3014], 16);
