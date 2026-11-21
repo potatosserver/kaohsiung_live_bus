@@ -19,9 +19,11 @@ SUBSCRIPTION_KEY = "676ec13f73aa4cdfbdffd6598189593b"
 UPSTREAM_HEADERS = {
     "Ocp-Apim-Subscription-Key": SUBSCRIPTION_KEY,
     "Accept": "application/json",
+    "X-Api-Version": "1",
+    "Accept-Language": "zh-TW",
 }
 
-# API Endpoints mapping
+# API Endpoints mapping (only those used by official iBus+ frontend)
 ENDPOINTS = {
     "routes": "/abfs/dal/v_stg_tdx_route",
     "stations": "/abfs/dal/v_stg_tdx_station",
@@ -36,19 +38,6 @@ ENDPOINTS = {
     "news": "/abfs/dal/v_stg_tdx_news",
     "groups": "/abfs/dal/v_stg_ibus_routegrp",
     "gateway": "/abfs/dal/v_stg_ibus_gateway",
-    "weather": "/abfs/dal/v_stg_cwa_weather_7d",
-    "aqx_p_07": "/abfs/dal/v_stg_moenv_aqx_p_07",
-    "aqx_p_432": "/abfs/dal/v_stg_moenv_aqx_p_432",
-    "district_boundary": "/abfs/dal/v_stg_tdx_map_district_boundary",
-    "kao1999": "/abfs/dal/v_stg_tbkc_other_kao1999info_pt1m",
-    "rail_liveboard": "/abfs/dal/v_stg_tdx_rail_metro_liveboard_pt1m",
-    "metro_peakdistance": "/abfs/dal/v_stg_tdx_metro_peakdistance",
-    "metro_shape": "/abfs/dal/v_stg_tdx_metro_shape",
-    "metro_firstlast": "/abfs/dal/v_stg_tdx_metro_firstlasttimetable",
-    "metro_station_timetable": "/abfs/dal/v_stg_tdx_metro_stationtimetable",
-    "metro_station": "/abfs/dal/v_stg_tdx_metro_station",
-    "bike_station": "/abfs/dal/v_stg_tdx_bike_station",
-    "bike_availability": "/abfs/dal/v_stg_tdx_bike_availability",
 }
 
 # Set up logging
