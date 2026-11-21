@@ -1735,7 +1735,23 @@
         setViewportHeight();
         window.addEventListener('resize', setViewportHeight);
         window.addEventListener('orientationchange', setViewportHeight);
-        document.addEventListener('DOMContentLoaded', async () => {
+        
+        // Top-level: if DOMContentLoaded already fired, run init immediately
+        // This handles the case where script loads after DOMContentLoaded (e.g., GitHub Pages)
+        (async () => {
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                try {
+                    // Wait a tick for DOM to be fully ready
+                    await new Promise(r => setTimeout(r, 0));
+                    await initializeAppUI();
+                    await loadInitialData();
+                } catch (error) {
+                    console.error('Critical error during top-level initialization:', error);
+                }
+            }
+        })();
+
+document.addEventListener('DOMContentLoaded', async () => {
             // If DOMContentLoaded already fired (readyState = complete), run init immediately
             if (document.readyState === 'complete' || document.readyState === 'interactive') {
                 // Handler will run normally, just ensure init executes
@@ -5660,4 +5676,20 @@
         }
     </script>
 </body>
-</html>
+</html
+        // Top-level: if DOMContentLoaded already fired, run init immediately
+        // This handles the case where script loads after DOMContentLoaded (e.g., GitHub Pages)
+        (async () => {
+            if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                try {
+                    // Wait a tick for DOM to be fully ready
+                    await new Promise(r => setTimeout(r, 0));
+                    await initializeAppUI();
+                    await loadInitialData();
+                } catch (error) {
+                    console.error('Critical error during top-level initialization:', error);
+                }
+            }
+        })();
+
+>
