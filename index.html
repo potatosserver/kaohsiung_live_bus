@@ -2481,6 +2481,8 @@
                     // REST API fetch function
                     async function fetchAPI(endpoint, params = {}, customOptions = {}) {
                         try {
+                            // Always request max results to avoid OData default pagination (20)
+                            params.$top = 1000;
                             const url = buildApiUrl(endpoint, params);
                             const response = await fetch(url, {
                                 method: 'GET',
@@ -3150,7 +3152,7 @@
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 秒超時
                             
-                            const data = await fetchAPI('routes', { '$top': '1000' }, { signal: controller.signal });
+                            const data = await fetchAPI('routes', {}, { signal: controller.signal });
                             clearTimeout(timeoutId);
                             
                             // Use centralized parser
