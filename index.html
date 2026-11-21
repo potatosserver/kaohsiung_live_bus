@@ -3645,8 +3645,18 @@
                         offlineNotice.textContent = translations[currentLang].networkErrorOfflineView;
                         offlineNotice.classList.remove('hidden');
                     }
+                    let isLoadingBusData = false;
+
                     async function loadBusData(routeId, isInitialLoad = false, scrollToStationId = null) {
-                        if (isInitialLoad) {
+                        // Prevent duplicate concurrent requests
+                        if (isLoadingBusData) {
+                            console.log('[loadBusData] Skipping duplicate request for route:', routeId);
+                            return;
+                        }
+                        isLoadingBusData = true;
+                        
+                        try {
+                            if (isInitialLoad) {
                             isFirstMapLoad = true;
                             trackerLoading.style.display = 'flex';
                             
@@ -3790,6 +3800,7 @@
                         } finally {
                             trackerLoading.style.display = 'none';
                             updateCountdownButton.disabled = false;
+                            isLoadingBusData = false;
                         }
                     }
                     function navigateToTracker(routeId, routeName, routeDesc, pushState = true, scrollToStationId = null, direction = 1) {
