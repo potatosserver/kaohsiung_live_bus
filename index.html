@@ -5091,14 +5091,14 @@
                                 button.classList.remove('active-keyboard-button');
                             }, 150);
                             if (type === 'category') {
-                                let searchPrefix;
+                                // Use the short prefix (category.prefix) for search, not the display name
                                 const categoryObj = categoryFilters.find(cat => cat.filterValue === value);
-                                if(categoryObj && translations[currentLang][categoryObj.i18nKey]){
-                                     searchPrefix = translations[currentLang][categoryObj.i18nKey];
+                                if (categoryObj) {
+                                    selectedCategoryPrefix = categoryObj.prefix;  // "紅", "橘", "黃", "綠", "幹線", "E", "小黃", "其他"
                                 } else {
-                                     searchPrefix = button.textContent;
+                                    selectedCategoryPrefix = value;
                                 }
-                                selectedCategoryPrefix = searchPrefix;
+                                // Update display with translated name
                                 categoryDisplay.textContent = translations[currentLang][categoryDisplayMap[value]] || translations[currentLang].allRoutes;
                                 routeSearchInput.value = '';
                             } else if (type === 'number') {
