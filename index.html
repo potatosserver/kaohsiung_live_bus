@@ -3372,22 +3372,27 @@
                                                                                             const finalFilterTarget = categoryMatched ? filteredRoutes : allRoutes;
                            
                                                                                             // Filter routes matching the search term
+                                                                                            // If we have a category prefix + route number (e.g., "紅28"), use full original term for name matching
+                                                                                            // to avoid matching unrelated routes like "28" or "E28"
+                                                                                            const useFullTermForNameMatch = categoryMatched && originalSearchTerm !== remainingSearchTerm;
+                                                                                            const nameMatchQuery = useFullTermForNameMatch ? originalSearchTerm : remainingSearchTerm;
+                                                                                            const idMatchQuery = remainingSearchTerm; // ID matching still uses the numeric part
+                                                
                                                                                             filteredRoutes = finalFilterTarget.filter(route =>
                                                                                                 String(route.id) !== '3000' && String(route.id) !== '3001' && 
                                                                                                 (
-                                                                                                    route.id.toString() === remainingSearchTerm ||
-                                                                                                    route.id.toString().startsWith(remainingSearchTerm) ||
-                                                                                                    route.name.toLowerCase().startsWith(remainingSearchTerm) || 
-                                                                                                    // Also check full name (for cases like "紅28" where category "紅" was stripped)
-                                                                                                    route.name.toLowerCase().includes(remainingSearchTerm) ||
-                                                                                                    (route.description && route.description.toLowerCase().includes(remainingSearchTerm))
+                                                                                                    route.id.toString() === idMatchQuery ||
+                                                                                                    route.id.toString().startsWith(idMatchQuery) ||
+                                                                                                    route.name.toLowerCase().startsWith(nameMatchQuery) || 
+                                                                                                    route.name.toLowerCase().includes(nameMatchQuery) ||
+                                                                                                    (route.description && route.description.toLowerCase().includes(nameMatchQuery))
                                                                                                 )
                                                                                             );
                                                 
                                                                                             // Sort by: 1) Search relevance (priority), 2) Natural sort (numeric-aware)
-                                                                                            // Use originalSearchTerm for relevance to give higher priority to "紅28" over just "28"
-                                                                                            const relevanceQuery = categoryMatched ? originalSearchTerm : remainingSearchTerm;
-                                                                                            filteredRoutes.sort((a, b) => {
+                                                                                                                                            // Use originalSearchTerm for relevance to give higher priority to "紅28" over just "28"
+                                                                                                                                            const relevanceQuery = useFullTermForNameMatch ? originalSearchTerm : remainingSearchTerm;
+                                                                                                                                            filteredRoutes.sort((a, b) => {
                                                                                                 const relevanceA = computeSearchRelevance(a, relevanceQuery);
                                                                                                 const relevanceB = computeSearchRelevance(b, relevanceQuery);
                                                     
