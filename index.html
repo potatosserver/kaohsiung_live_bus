@@ -5539,38 +5539,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         en: { title: 'Network Connection Failed', message: 'Could not fetch bus data, functionality is limited. Please check your connection and retry.' }
                     };
                     const announcementContent = document.getElementById('announcementContent');
-                    const errorCard = document.createElement('div');
-                    errorCard.className = 'error-announcement announcement-item bg-red-100 dark:bg-red-900 p-3 rounded-lg shadow-sm mb-3 border border-red-300 dark:border-red-700';
-                    errorCard.innerHTML = `
-                        <h3 class="font-semibold text-red-800 dark:text-red-200 flex items-center">
-                            <span class="material-icons-outlined mr-2">wifi_off</span>
-                            ${criticalErrorTranslations[lang].title}
-                        </h3>
-                        <p class="text-sm text-red-700 dark:text-red-300 mt-1">${criticalErrorTranslations[lang].message}</p>
-                    `;
-                    if(announcementContent) {
-                        announcementContent.innerHTML = ''; 
-                        announcementContent.appendChild(errorCard);
-                    }
-                }
-            } 
+                    con
 
-
-        // If DOMContentLoaded already fired (readyState = complete), run init immediately
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            setTimeout(async () => {
-                try {
-                    await initializeAppUI();
-                    await loadInitialData();
-                } catch (error) {
-                    console.error('Critical error during initialization:', error);
-                }
-            }, 0);
-        }
-        
-
-        // Run initialization if DOMContentLoaded already fired
-        (async () => {
+(async () => {
             if (document.readyState === 'complete' || document.readyState === 'interactive') {
                 try {
                     await initializeAppUI();
@@ -5609,7 +5580,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     console.error('Critical error during top-level initialization:', error);
                 }
             }
-        })()
+        })(
+st errorCard = document.createElement('div');
+                    errorCard.className = 'error-announcement announcement-item bg-red-100 dark:bg-red-900 p-3 rounded-lg shadow-sm mb-3 border border-red-300 dark:border-red-700';
+                    errorCard.innerHTML = `
+                        <h3 class="font-semibold text-red-800 dark:text-red-200 flex items-center">
+                            <span class="material-icons-outlined mr-2">wifi_off</span>
+                            ${criticalErrorTranslations[lang].title}
+                        </h3>
+                        <p class="text-sm text-red-700 dark:text-red-300 mt-1">${criticalErrorTranslations[lang].message}</p>
+                    `;
+                    if(announcementContent) {
+                        announcementContent.innerHTML = ''; 
+                        announcementContent.appendChild(errorCard);
+                    }
+                }
+            } 
+
+
+        // If DOMContentLoaded already fired (readyState = complete), run init immediately
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout)
 </script>
 </body>
 </html
