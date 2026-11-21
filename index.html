@@ -3311,10 +3311,12 @@
                         
                                             // Resolve alias to route ID if matched (exact match only, no substring)
                                             let resolvedTerm = lowerCaseTerm;
+                                            let wasResolvedByAlias = false;
                                             for (const [alias, routeId] of Object.entries(routeAliases)) {
                                                 // Exact match only: "紅28" !== "紅2"
                                                 if (lowerCaseTerm === alias.toLowerCase()) {
                                                     resolvedTerm = routeId.toLowerCase();
+                                                    wasResolvedByAlias = true;
                                                     break;
                                                 }
                                             }
@@ -3322,9 +3324,12 @@
                                             let filteredRoutes = [...allRoutes];
                                                                                         let categoryPrefixMatched = false; // Track if a category prefix was detected (even if filter skipped)
                                                                                         let remainingSearchTerm = resolvedTerm;
-                                                                                        let originalSearchTerm = resolvedTerm; // Keep original for relevance
+                                                                                        // Use resolvedTerm for originalSearchTerm if resolved by alias, otherwise keep original input for category+number prefix matching
+                                                                                        let originalSearchTerm = wasResolvedByAlias ? resolvedTerm : lowerCaseTerm; // Keep original for relevance
 
-                                                                                        for (const category of categoryFilters) {
+                                                                                        // Only do category prefix detection on the original input if not resolved by alias
+                                                                                        // If resolved by alias (e.g., "紅56" → "856"), skip category detection and search by resolved ID/name
+                                                                                        if (!wasResolvedByAlias) {
                                                                                             const lowerCasePrefix = translations[currentLang][category.i18nKey] ? translations[currentLang][category.i18nKey].toLowerCase() : category.prefix.toLowerCase();
                                                                                             if (lowerCaseTerm.startsWith(lowerCasePrefix)) {
                                                                                                 const filterVal = category.filterValue;
