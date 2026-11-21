@@ -3753,9 +3753,8 @@
                             }
                             
                             renderAllDirections(currentRouteData, isInitialLoad, false);
-                            renderMap(currentRouteData);
-                            
                             updateDirectionButtons();
+                            renderMap(currentRouteData);
 
                             if (scrollToStationId) {
                                 await new Promise(resolve => setTimeout(resolve, 500)); 
@@ -3807,8 +3806,8 @@
                                     renderAllDirections(cachedData, isInitialLoad, false); 
                                 }
                                 currentRouteData = cachedData;
-                                renderMap(cachedData);
                                 updateDirectionButtons();
+                                renderMap(cachedData);
                             } else {
                                 showToast(translations[currentLang].networkErrorCriticalMessage, 'error');
                                 currentRouteData = null;
@@ -4876,18 +4875,18 @@
                         applyInitialTheme();
                         
                         if (!map) {
-                            map = L.map('map').setView([22.6273, 120.3014], 16);
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+                                                    map = L.map('map').setView([22.6273, 120.3014], 16);
+                                                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
                             
-                            map.createPane('routePane').style.zIndex = 350;
-                            map.createPane('stationPane').style.zIndex = 450;
-                            map.createPane('busPane').style.zIndex = 550;
-
-                            goLayerGroup = L.layerGroup().addTo(map);
-                            backLayerGroup = L.layerGroup();
-                            goBusLayerGroup = L.layerGroup().addTo(map);
-                            backBusLayerGroup = L.layerGroup();
-                        }
+                                                    map.createPane('routePane').style.zIndex = 350;
+                                                    map.createPane('stationPane').style.zIndex = 450;
+                                                    map.createPane('busPane').style.zIndex = 550;
+    
+                                                    goLayerGroup = L.layerGroup().addTo(map);
+                                                    backLayerGroup = L.layerGroup();
+                                                    goBusLayerGroup = L.layerGroup().addTo(map);
+                                                    backBusLayerGroup = L.layerGroup().addTo(map);  // Fix: add to map initially
+                                                }
 
                         const splashScreenEnabled = localStorage.getItem('splashScreenEnabled') !== 'false';
                         splashScreenToggle.checked = splashScreenEnabled;
