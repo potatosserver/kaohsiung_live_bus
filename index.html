@@ -5626,7 +5626,19 @@
                     }
                 }
             } 
-        });
+
+
+        // If DOMContentLoaded already fired (readyState = complete), run init immediately
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(async () => {
+                try {
+                    await initializeAppUI();
+                    await loadInitialData();
+                } catch (error) {
+                    console.error('Critical error during initialization:', error);
+                }
+            }, 0);
+        }        });
     </script>
     <script>
         if ('serviceWorker' in navigator) {
